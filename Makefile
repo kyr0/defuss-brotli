@@ -54,7 +54,8 @@ coverage: $(STAMP) ## Rust line coverage (floor 60 %), then the TS `All files` t
 	$(CARGO) llvm-cov --locked --summary-only --fail-under-lines 60
 	bunx vitest run --coverage
 
-lint: ## oxlint, tsc, clippy and rustfmt; warnings fail
+# tsc type-checks against the generated wasm/pkg and dist/ modules, so lint needs the build (a clean CI checkout has neither).
+lint: $(STAMP) ## oxlint, tsc, clippy and rustfmt; warnings fail
 	bunx oxlint --deny-warnings --ignore-pattern "docs/assets/**"
 	bunx tsc --noEmit --project tsconfig.json
 	$(CARGO) clippy --all-targets --locked -- -D warnings

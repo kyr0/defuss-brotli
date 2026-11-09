@@ -84,4 +84,12 @@ RULES = [{
     "glob": "src/*",
     "pattern": r"__wbindgen_cast_[0-9]|__wbg_[A-Za-z0-9]+_[0-9a-f]{16}",
     "claim": "the TS entry points wire WASM imports from the glue namespace, never by hashed shim name",
+}, {
+    "id": "ci.lint-builds-first",
+    "kind": "regex",
+    "path": "Makefile",
+    # VERIFIED 2026-11-09: CI failed from 0.3.0 to 0.4.0 at `tsc` in a clean checkout, because lint ran before the
+    # build that generates wasm/pkg and dist/; locally both always existed, so the gate never saw it.
+    "pattern": r"(?m)^lint: \$\(STAMP\)",
+    "claim": "lint depends on the build, so tsc finds the generated modules in a clean CI checkout",
 }]
