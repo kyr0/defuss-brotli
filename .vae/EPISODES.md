@@ -69,3 +69,23 @@ Wrap: EVERY lead becomes a test | .vae/VERIFY.py rule | one MEMORY line with BC,
 2026-11-09T13:20:37Z s=698894d0 FINDING ARCH.md:40 B learn=none: doc corrected against the probe output
 2026-11-09T13:20:37Z s=698894d0 FINDING src/compressor.test.ts:compressParallel learn=none: tests assert verified requirements only
 2026-11-09T13:20:37Z s=698894d0 FINDING CHANGELOG.md:27 B learn=none: release notes state only what the history shows
+2026-11-09T14:59:29Z s=698894d0 FAIL coverage
+2026-11-09T15:06:24Z s=698894d0 DONE fp=ef5fd9d0c01d cov=96.1% paths=ARCH.md,CHANGELOG.md,Makefile,README.md(+35)
+2026-11-09T15:06:24Z s=698894d0 FINDING src/compressor-core.ts:partRanges learn=test: src/compressor.test.ts 'compresses the SVG fixture at every quality' and the site e2e quality-5 check
+2026-11-09T15:06:24Z s=698894d0 FINDING src/compressor-encode.ts:encodeWith learn=none: a trap cannot be produced on demand without the upstream bug; covered indirectly
+2026-11-09T15:06:24Z s=698894d0 FINDING site/ui/demos.ts:runCompress learn=test: site/e2e.mjs 'compress demo: File without a file uses the sample'
+2026-11-09T15:06:24Z s=698894d0 FINDING site/ui/demos.ts:RUNNERS learn=test: site/e2e.mjs race check counts exactly one busy period despite Ctrl+Enter
+2026-11-09T15:06:24Z s=698894d0 FINDING site/ui/perf.ts:render learn=none: UI state; low risk, no deterministic check worth its cost
+2026-11-09T15:06:24Z s=698894d0 FINDING site/ui/perf.ts:mount learn=test: site/e2e.mjs German run switches languages and asserts no console errors
+2026-11-09T15:06:24Z s=698894d0 FINDING site/ui/shared.ts:countUp learn=none: visual; the e2e runs with reduced motion
+2026-11-09T15:06:24Z s=698894d0 FINDING site/assets/site.css:.run-btn .kbd learn=test: site/e2e.mjs axe WCAG 2.1 AA in light and dark
+2026-11-09T15:06:24Z s=698894d0 FINDING site/code.ts:CONTRAST learn=test: axe contrast in site/e2e.mjs
+2026-11-09T15:06:24Z s=698894d0 FINDING site/page.html:usps learn=none: prose review; facts traced to README/probes
+2026-11-09T15:06:24Z s=698894d0 FINDING site/build.ts:fonts learn=none: license hygiene
+2026-11-09T15:06:24Z s=698894d0 FINDING CHANGELOG.md:Fixed (T/P precision) learn=none: page precision
+2026-11-09T17:03:31Z s=698894d0 DONE fp=9d9d9be6eb53 cov=96.1% paths=ARCH.md,CHANGELOG.md,Makefile,README.md(+35)
+2026-11-09T17:24:01Z s=698894d0 DONE fp=079f743d2ec4 cov=96.1% paths=ARCH.md,CHANGELOG.md,Makefile,README.md(+35)
+2026-11-09T17:24:01Z s=698894d0 FINDING site/assets/site.css:.hero-title learn=test: site/e2e.mjs 'hero box, footnote, six cards, services without anchor' asserts the title box ends left of the hero box
+2026-11-09T17:24:01Z s=698894d0 FINDING site/page.html hero copy learn=test: site/e2e.mjs asserts the footnote text 'Files from 1 MiB at quality 11'
+2026-11-09T17:24:01Z s=698894d0 FINDING site/ui/demos.ts:renderCompress learn=none: wording only; the e2e language switch covers re-rendering of script-written text
+2026-11-09T17:24:01Z s=698894d0 FINDING site/assets/site.css:.pack learn=test: site/e2e.mjs hero check and the axe-core check

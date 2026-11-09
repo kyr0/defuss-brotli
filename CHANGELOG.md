@@ -2,6 +2,16 @@
 
 All notable changes to `defuss-brotli`. Versions follow [Semantic Versioning](https://semver.org/); before 1.0.0, a minor version may change behavior.
 
+## 0.3.1 - 2026-11-09
+
+### Added
+
+- The website [brotli.defuss.org](https://brotli.defuss.org/), built from `site/` into `docs/`: live demos of compression, the slim decoder and `compressParallel` against `compress`, interactive charts of size, time, window and download size, in English and German. `llms.txt` there sums up the API, limits and numbers for coding agents.
+
+### Fixed
+
+- `compressParallel`, and with it the `defuss-brotli` command, failed on some inputs larger than 32 KiB at qualities 2 to 9 with `attempted to take ownership of Rust value while it was borrowed` (the 1 MiB start of `huge.svg` at quality 5 and 6). The `brotli` crate's matcher for these qualities can panic when a part has a dictionary. They now compress on one thread and return what `compress` returns; qualities 10 and 11 still compress in parts. An error inside the encoder now keeps its own message instead of that one.
+
 ## 0.3.0 - 2026-11-09
 
 ### Changed

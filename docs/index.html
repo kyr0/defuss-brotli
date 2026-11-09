@@ -1,0 +1,1062 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>defuss-brotli: Brotli compression in the browser, Node.js and Bun</title>
+  <meta name="description" content="Brotli compression and decompression in WebAssembly for browsers, Node.js and Bun: a 51 KB decoder, quality 11 on all CPU cores and a brotli-compatible CLI.">
+  <meta name="color-scheme" content="light dark">
+  <meta property="og:title" content="defuss-brotli">
+  <meta property="og:description" content="Brotli compression and decompression in WebAssembly for browsers, Node.js and Bun.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="alternate" type="text/plain" href="llms.txt" title="llms.txt">
+  <script>
+    // Before paint, before df$ exists (defuss-shadcn Dark Mode guide): the saved choice, else the OS default.
+    let saved = '';
+    try {
+      const raw = JSON.parse(localStorage.getItem('defuss-shadcn-theme'));
+      saved = raw && raw.format === 'defuss-store' ? raw.value : raw;
+    } catch {}
+    if (saved === 'dark' || (saved !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+      document.documentElement.style.colorScheme = 'dark';
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kyr0/defuss-shadcn@0.9.13/dist/components/core.min.css" integrity="sha384-qUQCm/MM2DNkdT3uEdx8Mpocj+GwXlgLat0FnWv657c16tHWOouZFT2nV7kg5pBE" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kyr0/defuss-shadcn@0.9.13/dist/theme/utils/shapes.min.css" integrity="sha384-kvFwbKkyut1la4E1oBfImp6tvRZsBSKiVEu6vX+V1r0MIPS6LlN/52Vaa3qrAbSc" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kyr0/defuss-shadcn@0.9.13/dist/components/all.min.css" integrity="sha384-vB1PejcxP+B7v4xfBBV7nxNuX/M3cDqmOv1bNhU/BMOlAh5h3NWG4aKtcAlws/Xh" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kyr0/defuss-shadcn@0.9.13/dist/components/shaders.min.css" integrity="sha384-+y3ugMzY7jrZ6VYD8ynPBGVMcrM/qOaHI7Eeac//NqAtcDRBYAzHqfZcbRBN3VeP" crossorigin="anonymous">
+  <link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<svg class="sr-only" aria-hidden="true">
+  <defs>
+    <linearGradient id="g-crust" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2b94b"/><stop offset="1" stop-color="#c2562a"/></linearGradient>
+  </defs>
+  <!-- The mark: two chevrons pressing three lines of text together. -->
+  <symbol id="i-logo" viewBox="0 0 24 24"><path d="M3.5 6.5 8.5 12l-5 5.5M20.5 6.5 15.5 12l5 5.5M10.75 8h2.5M10.25 12h3.5M10.75 16h2.5"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2m-7.07-17.07 1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-7-7 7 7-7 7"/></symbol>
+  <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14m7-7-7 7-7-7"/></symbol>
+  <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7M12 19V5"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M7 7h10v10M7 17 17 7"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 15V3M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 3v12M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/></symbol>
+  <symbol id="i-cpu" viewBox="0 0 24 24"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2m0 16v2M2 15h2m-2-6h2m16 6h2m-2-6h2M9 2v2m0 16v2"/></symbol>
+  <symbol id="i-terminal" viewBox="0 0 24 24"><path d="m4 17 6-6-6-6m8 14h8"/></symbol>
+  <symbol id="i-zip" viewBox="0 0 24 24"><path d="M10 12v-1M10 18v-2M10 7V6M14 2v4a2 2 0 0 0 2 2h4"/><path d="M15.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v16a2 2 0 0 0 .27 1"/><circle cx="10" cy="20" r="2"/></symbol>
+  <symbol id="i-unpack" viewBox="0 0 24 24"><path d="M12 22v-9"/><path d="M15.17 2.21a1.67 1.67 0 0 1 1.63 0L21 4.57a1.93 1.93 0 0 1 0 3.36L8.82 14.79a1.66 1.66 0 0 1-1.64 0L3 12.43a1.93 1.93 0 0 1 0-3.36z"/><path d="M20 13v3.87a2.06 2.06 0 0 1-1.11 1.83l-6 3.08a1.93 1.93 0 0 1-1.78 0l-6-3.08A2.06 2.06 0 0 1 4 16.87V13"/><path d="M21 12.43a1.93 1.93 0 0 0 0-3.36L8.83 2.2a1.64 1.64 0 0 0-1.63 0L3 4.57a1.93 1.93 0 0 0 0 3.36l12.18 6.86a1.64 1.64 0 0 0 1.63 0z"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/></symbol>
+  <symbol id="i-window" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M10 4v4M2 8h20M6 4v4"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16M18 17V9M13 17V5M8 17v-3"/></symbol>
+  <symbol id="i-shrink" viewBox="0 0 24 24"><path d="m15 15 6 6m-6-6v4.8m0-4.8h4.8M9 19.8V15m0 0H4.2M9 15l-6 6M15 4.2V9m0 0h4.8M15 9l6-6M9 4.2V9m0 0H4.2M9 9 3 3"/></symbol>
+  <symbol id="i-memory" viewBox="0 0 24 24"><path d="M6 19v-3M10 19v-3M14 19v-3M18 19v-3M8 11V9M16 11V9M12 11V9M2 15h20M2 7a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1.1a2 2 0 0 0 0 3.837V17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5.1a2 2 0 0 0 0-3.837Z"/></symbol>
+  <symbol id="i-package" viewBox="0 0 24 24"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12m0 0 8.7-5M12 12 3.3 7"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></symbol>
+  <symbol id="i-type" viewBox="0 0 24 24"><path d="M12 4v16M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2M9 20h6"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12.83 2.18 8.58 3.9a1 1 0 0 1 0 1.83l-8.58 3.9a2 2 0 0 1-1.66 0L2.6 7.91a1 1 0 0 1 0-1.83l8.58-3.9a2 2 0 0 1 1.66 0Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65M22 12.65l-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></symbol>
+  <symbol id="i-bot" viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2m16 0h2m-7-1v2m-6-2v2"/></symbol>
+  <symbol id="i-linkedin" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></symbol>
+  <symbol id="i-github" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></symbol>
+  <!-- npm mark from Simple Icons 13.21.0 (CC0-1.0) -->
+  <symbol id="i-npm" viewBox="0 0 24 24"><path d="M1.76 0C.79 0 0 .79 0 1.76v20.48C0 23.21.79 24 1.76 24h20.48c.97 0 1.76-.79 1.76-1.76V1.76C24 .79 23.21 0 22.24 0zM5.13 5.32l13.84.02-.01 13.84H15.5l.01-10.38h-3.46l-.01 10.38H5.11z"/></symbol>
+</svg>
+
+<div id="top" class="site" data-i18n-component>
+  <a class="btn skip-link" data-variant="outline" href="#main"><span data-i18n-target="t1">Skip to content</span></a>
+  <header class="mk-header" data-variant="floating">
+    <div class="mk-header-inner">
+      <a href="#/" data-router-link class="mk-header-brand" aria-label="defuss-brotli, back to the top" data-i18n-aria-label-en="defuss-brotli, back to the top" data-i18n-aria-label-de="defuss-brotli, zurück nach oben"><svg class="icon brand-icon" aria-hidden="true"><use href="#i-logo"/></svg><span class="mk-header-name">defuss-brotli</span></a>
+      <nav class="mk-header-nav" aria-label="Main" data-i18n-aria-label-en="Main" data-i18n-aria-label-de="Hauptmenü">
+        <ul class="nav-menu-list">
+          <li class="nav-menu-item"><a class="nav-menu-link" href="#/demo" data-router-link data-route="demo"><span data-i18n-target="t2">Demo</span></a></li>
+          <li class="nav-menu-item"><a class="nav-menu-link" href="#/how" data-router-link data-route="how"><span data-i18n-target="t3">How it works</span></a></li>
+          <li class="nav-menu-item"><a class="nav-menu-link" href="#/perf" data-router-link data-route="perf"><span data-i18n-target="t4">Performance</span></a></li>
+          <li class="nav-menu-item"><a class="nav-menu-link" href="#/use" data-router-link data-route="use"><span data-i18n-target="t5">Use it</span></a></li>
+        </ul>
+      </nav>
+      <div class="mk-header-actions">
+        <select class="select lang-select" data-size="sm" data-app-locale aria-label="Language" data-i18n-aria-label-en="Language" data-i18n-aria-label-de="Sprache">
+          <option value="en" lang="en">English</option>
+          <option value="de" lang="de">Deutsch</option>
+        </select>
+        <label class="swap" data-variant="rotate" data-size="sm" title="Light or dark" data-i18n-title-en="Light or dark" data-i18n-title-de="Hell oder dunkel">
+          <input type="checkbox" id="theme-toggle" aria-label="Dark mode" data-i18n-aria-label-en="Dark mode" data-i18n-aria-label-de="Dunkler Modus">
+          <span class="swap-on"><svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg></span>
+          <span class="swap-off"><svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg></span>
+        </label>
+        <a class="btn mk-header-wide" data-variant="ghost" data-size="icon" href="https://www.npmjs.com/package/defuss-brotli" aria-label="defuss-brotli on npm" data-i18n-aria-label-en="defuss-brotli on npm" data-i18n-aria-label-de="defuss-brotli auf npm"><svg class="icon icon-fill" aria-hidden="true"><use href="#i-npm"/></svg></a>
+        <a class="btn mk-header-wide" data-variant="ghost" data-size="icon" href="https://github.com/kyr0/defuss-brotli" aria-label="defuss-brotli on GitHub" data-i18n-aria-label-en="defuss-brotli on GitHub" data-i18n-aria-label-de="defuss-brotli auf GitHub"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg></a>
+        <button type="button" class="btn mk-header-menu" data-variant="ghost" data-size="icon" data-sheet-trigger="site-menu" aria-haspopup="dialog" aria-label="Open menu" data-i18n-aria-label-en="Open menu" data-i18n-aria-label-de="Menü öffnen"><svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg></button>
+      </div>
+    </div>
+    <dialog id="site-menu" class="sheet" data-side="right" aria-modal="true" aria-labelledby="site-menu-title">
+      <div class="sheet-content">
+        <div class="sheet-header">
+          <h2 class="sheet-title" id="site-menu-title">defuss-brotli</h2>
+        </div>
+        <div class="sheet-body">
+          <ul class="mk-header-sheet-nav">
+            <li><a href="#/demo" data-router-link data-route="demo" data-sheet-close><span data-i18n-target="t6">Demo</span></a></li>
+            <li><a href="#/how" data-router-link data-route="how" data-sheet-close><span data-i18n-target="t7">How it works</span></a></li>
+            <li><a href="#/perf" data-router-link data-route="perf" data-sheet-close><span data-i18n-target="t8">Performance</span></a></li>
+            <li><a href="#/use" data-router-link data-route="use" data-sheet-close><span data-i18n-target="t9">Use it</span></a></li>
+          </ul>
+        </div>
+        <div class="sheet-footer mk-header-sheet-actions">
+          <a class="btn" data-variant="outline" href="https://github.com/kyr0/defuss-brotli"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg>GitHub</a>
+          <a class="btn" data-variant="outline" href="https://www.npmjs.com/package/defuss-brotli"><svg class="icon icon-fill" aria-hidden="true"><use href="#i-npm"/></svg>npm</a>
+        </div>
+      </div>
+    </dialog>
+  </header>
+
+  <main id="main" class="site-main" tabindex="-1">
+
+  <section class="parallax hero-scene" aria-labelledby="hero-title">
+    <div class="parallax-layer" data-depth="far" aria-hidden="true">
+      <div class="surface hero-grid" data-pattern="grid" data-style="outline"></div>
+    </div>
+    <div class="parallax-layer" data-depth="mid" aria-hidden="true" style="--parallax-speed:22%">
+      <div class="corner-blob hero-blob hero-blob-1"></div>
+      <div class="corner-blob-3 hero-blob hero-blob-2"></div>
+    </div>
+    <div class="parallax-content">
+      <div class="hero section-inner">
+        <div class="hero-copy">
+          <a class="mk-hero-pill" href="https://github.com/kyr0/defuss-brotli/blob/main/CHANGELOG.md"><span class="badge" data-size="sm">0.3.1</span><span data-i18n-target="t10">Rust compiled to WebAssembly, MIT licensed</span><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          <h1 class="hero-title" id="hero-title"><span data-i18n-target="hero-title">Brotli compression <span class="text-rotate hero-rotate" style="--text-rotate-duration:12s"><span><span class="accent">in your browser</span><span class="accent">on up to 8 cores</span><span class="accent">with a 51 KB decoder</span><span class="accent">in Node.js and Bun</span></span></span></span></h1>
+          <p class="hero-desc" data-i18n-target="t12">Compress and decompress Brotli in browsers, Node.js and Bun. The decoder is tiny, and the command line compresses at least twice as fast as the official brotli CLI.*</p>
+          <div class="hero-actions">
+            <span class="aura aura-gold cta-aura"><a class="btn" data-size="lg" href="#/demo" data-router-link data-route="demo"><span data-i18n-target="t13">Try now (in-browser)</span><svg class="icon" aria-hidden="true"><use href="#i-arrow-down"/></svg></a></span>
+            <a class="btn" data-variant="outline" data-size="lg" href="#/perf" data-router-link data-route="perf"><svg class="icon" aria-hidden="true"><use href="#i-chart"/></svg><span data-i18n-target="t14">See the numbers</span></a>
+          </div>
+          <p class="hero-note" data-i18n-target="t15">* Files from 1 MiB at quality 11, the default. Measured on an Apple M5 Max with 48 GB of RAM.</p>
+          <div class="install" data-install>
+            <div class="toggle-group pm-switch" role="group" data-type="single" data-variant="outline" data-size="sm" aria-label="Package manager" data-i18n-aria-label-en="Package manager" data-i18n-aria-label-de="Paketmanager">
+              <button class="toggle" aria-pressed="true" value="bun">bun</button>
+              <button class="toggle" aria-pressed="false" value="pnpm">pnpm</button>
+              <button class="toggle" aria-pressed="false" value="npm">npm</button>
+              <button class="toggle" aria-pressed="false" value="yarn">yarn</button>
+            </div>
+            <div class="copy-wrap">
+              <div class="mockup-code hl" data-variant="outline" data-wrap data-title="terminal" data-pm="bun" data-source="bun add defuss-brotli"><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">bun</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">add</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span></code></pre></div><div class="mockup-code hl" data-variant="outline" data-wrap data-title="terminal" data-pm="pnpm" hidden data-source="pnpm add defuss-brotli"><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">pnpm</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">add</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span></code></pre></div><div class="mockup-code hl" data-variant="outline" data-wrap data-title="terminal" data-pm="npm" hidden data-source="npm install defuss-brotli"><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">npm</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">install</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span></code></pre></div><div class="mockup-code hl" data-variant="outline" data-wrap data-title="terminal" data-pm="yarn" hidden data-source="yarn add defuss-brotli"><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">yarn</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">add</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span></code></pre></div>
+              <button type="button" class="btn copy-btn" data-variant="ghost" data-size="icon" data-copy aria-label="Copy command" data-i18n-aria-label-en="Copy command" data-i18n-aria-label-de="Befehl kopieren"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
+            </div>
+          </div>
+        </div>
+        <div class="hero-side">
+          <div class="hero-stage aura aura-glow aura-gold" aria-hidden="true">
+            <div class="pack">
+              <div class="pack-tilt">
+                <div class="pack-bits"><i></i><i></i><i></i></div>
+                <div class="pack-spin">
+                  <div class="pack-box">
+                    <div class="pack-face" style="--r:0deg"></div><div class="pack-face" style="--r:90deg"></div><div class="pack-face" style="--r:180deg"></div><div class="pack-face" style="--r:270deg"></div>
+                    <div class="pack-floor"></div>
+                    <div class="pack-flap" data-flap="side" style="--r:90deg"></div><div class="pack-flap" data-flap="side" style="--r:270deg"></div><div class="pack-flap" data-flap="main" style="--r:0deg"></div><div class="pack-flap" data-flap="main" style="--r:180deg"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="hero-quick">
+            <p class="hero-quick-label" data-i18n-target="t16">Or run it without installing</p>
+            <div class="toggle-group pm-switch" role="group" data-type="single" data-variant="outline" data-size="sm" aria-label="Package runner" data-i18n-aria-label-en="Package runner" data-i18n-aria-label-de="Paket-Runner">
+              <button class="toggle" aria-pressed="true" value="bun">bunx</button>
+              <button class="toggle" aria-pressed="false" value="pnpm">pnpm dlx</button>
+              <button class="toggle" aria-pressed="false" value="npm">npx</button>
+              <button class="toggle" aria-pressed="false" value="yarn">yarn dlx</button>
+            </div>
+            <div class="copy-wrap">
+              <div class="mockup-code hl" data-variant="outline" data-wrap data-title="terminal" data-pm="bun" data-source="bunx defuss-brotli dist/app.js"><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># writes dist/app.js.br, keeps dist/app.js</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">bunx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/app.js</span></code></pre></div><div class="mockup-code hl" data-variant="outline" data-wrap data-title="terminal" data-pm="pnpm" hidden data-source="pnpm dlx defuss-brotli dist/app.js"><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># writes dist/app.js.br, keeps dist/app.js</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">pnpm</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dlx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/app.js</span></code></pre></div><div class="mockup-code hl" data-variant="outline" data-wrap data-title="terminal" data-pm="npm" hidden data-source="npx defuss-brotli dist/app.js"><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># writes dist/app.js.br, keeps dist/app.js</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">npx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/app.js</span></code></pre></div><div class="mockup-code hl" data-variant="outline" data-wrap data-title="terminal" data-pm="yarn" hidden data-source="yarn dlx defuss-brotli dist/app.js"><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># writes dist/app.js.br, keeps dist/app.js</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">yarn</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dlx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/app.js</span></code></pre></div>
+              <button type="button" class="btn copy-btn" data-variant="ghost" data-size="icon" data-copy aria-label="Copy command" data-i18n-aria-label-en="Copy command" data-i18n-aria-label-de="Befehl kopieren"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ul class="usps section-inner" aria-label="What it offers" data-i18n-aria-label-en="What it offers" data-i18n-aria-label-de="Was es bietet">
+        <li class="usp">
+          <span class="usp-icon" aria-hidden="true"><svg class="icon"><use href="#i-globe"/></svg></span>
+          <h2 class="usp-title" data-i18n-target="t17">Brotli in the browser</h2>
+          <p data-i18n-target="t18">Chromium's built-in CompressionStream and DecompressionStream reject Brotli. defuss-brotli does both inside the page.</p>
+        </li>
+        <li class="usp">
+          <span class="usp-icon" aria-hidden="true"><svg class="icon"><use href="#i-download"/></svg></span>
+          <h2 class="usp-title" data-i18n-target="t19">51 KB to decompress</h2>
+          <p data-i18n-target="t20">Pages that only decompress load just the decoder: <strong>51 KB</strong>, or 85 KB from jsDelivr. The compression code is never loaded.</p>
+        </li>
+        <li class="usp">
+          <span class="usp-icon" aria-hidden="true"><svg class="icon"><use href="#i-shrink"/></svg></span>
+          <h2 class="usp-title" data-i18n-target="t21">Smaller than gzip</h2>
+          <p data-i18n-target="t22">Quality 11 is the default: <strong>38 % smaller</strong> than gzip at its highest level on an HTML page, 27 % on JSON.</p>
+        </li>
+        <li class="usp">
+          <span class="usp-icon" aria-hidden="true"><svg class="icon"><use href="#i-cpu"/></svg></span>
+          <h2 class="usp-title" data-i18n-target="t23">Multicore Brotli</h2>
+          <p data-i18n-target="t24"><code>compressParallel</code> spreads large inputs over up to 8 cores: <strong>2.3 to 4.3 times faster</strong> from 256 KiB, at most 0.1 % larger.</p>
+        </li>
+        <li class="usp">
+          <span class="usp-icon" aria-hidden="true"><svg class="icon"><use href="#i-memory"/></svg></span>
+          <h2 class="usp-title" data-i18n-target="t25">Little memory</h2>
+          <p data-i18n-target="t26">Data passes through in 1 MiB pieces. Unpacking 100 MiB, the decoder uses <strong>19.6 MiB</strong> of RAM.</p>
+        </li>
+        <li class="usp">
+          <span class="usp-icon" aria-hidden="true"><svg class="icon"><use href="#i-terminal"/></svg></span>
+          <h2 class="usp-title" data-i18n-target="t27">Faster than the brotli CLI</h2>
+          <p data-i18n-target="t28"><code>bunx defuss-brotli</code> accepts the options of the brotli command and is <strong>1.2 to 5.3 times faster</strong> than brotli 1.2.0 on files from 256 KiB.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="flythrough" aria-hidden="true">
+    <section class="parallax" data-sticky style="--parallax-length:2">
+      <div class="parallax-stage fly-stage">
+        <div class="parallax-layer" data-motion="spin" style="--parallax-turn:40deg;--parallax-speed:0%;opacity:.5">
+          <svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice"><g fill="none" stroke="#f2b94b" stroke-width="1.2" stroke-linecap="round"><path d="M200 200 L20 40"/><path d="M200 200 L380 40"/><path d="M200 200 L20 360"/><path d="M200 200 L380 360"/><path d="M200 200 L200 0"/><path d="M200 200 L200 400"/><path d="M200 200 L0 200"/><path d="M200 200 L400 200"/></g><circle cx="200" cy="200" r="34" fill="none" stroke="#f2b94b" stroke-width="2"/></svg>
+        </div>
+        <div class="parallax-layer" data-motion="pass" style="animation-range:contain 0% contain 40%;z-index:1"><p class="fly-word"><span data-i18n-target="t29">Split.</span></p></div>
+        <div class="parallax-layer" data-motion="pass" style="animation-range:contain 30% contain 70%;z-index:2"><p class="fly-word"><span data-i18n-target="t30">Compress.</span></p></div>
+        <div class="parallax-layer" data-motion="pass" style="animation-range:contain 60% contain 100%;z-index:3"><p class="fly-word"><span data-i18n-target="t31">Join.</span></p></div>
+      </div>
+    </section>
+  </div>
+
+  <section id="demo" class="section section-inner parallax-reveal" data-reveal="zoom" aria-labelledby="demo-title">
+    <header class="mk-section-header" data-align="center">
+      <div class="mk-section-header-copy">
+        <span class="mk-section-header-eyebrow" data-i18n-target="t32">Live demo</span>
+        <h2 class="mk-section-header-title" id="demo-title"><a class="heading-anchor" href="#/demo" data-router-link data-route="demo" aria-label="Link to section: Try it on your own data" data-i18n-aria-label-en="Link to section: Try it on your own data" data-i18n-aria-label-de="Link zum Abschnitt: Probier es mit deinen Daten">§</a><span data-i18n-target="t33">Try it on your own data</span></h2>
+        <p class="mk-section-header-desc" data-i18n-target="t34">Everything runs in this tab; nothing is uploaded. Start with <kbd class="kbd-group"><kbd class="kbd" data-mod>Ctrl</kbd><kbd class="kbd">Enter</kbd></kbd>.</p>
+      </div>
+    </header>
+    <p class="browser-check" id="browser-check" role="status" hidden></p>
+
+    <div class="demo-window">
+      <div class="tabs demo-tabs">
+        <div class="tab-list" role="tablist" aria-label="Demos" data-size="lg" id="demo-tabs">
+          <button class="tab-trigger demo-tab" role="tab" aria-selected="true" aria-controls="panel-compress" id="tab-compress"><svg class="icon demo-tab-icon" aria-hidden="true"><use href="#i-zip"/></svg><span class="demo-tab-text"><span class="demo-tab-title" data-i18n-target="t35">Compress</span><span class="demo-tab-desc" data-i18n-target="t36">Any input, any quality</span></span></button>
+          <button class="tab-trigger demo-tab" role="tab" aria-selected="false" aria-controls="panel-decompress" id="tab-decompress" tabindex="-1"><svg class="icon demo-tab-icon" aria-hidden="true"><use href="#i-unpack"/></svg><span class="demo-tab-text"><span class="demo-tab-title" data-i18n-target="t37">Decompress</span><span class="demo-tab-desc" data-i18n-target="t38">With the 51 KB decoder</span></span></button>
+          <button class="tab-trigger demo-tab" role="tab" aria-selected="false" aria-controls="panel-race" id="tab-race" tabindex="-1"><svg class="icon demo-tab-icon" aria-hidden="true"><use href="#i-zap"/></svg><span class="demo-tab-text"><span class="demo-tab-title" data-i18n-target="t39">Single vs. Multicore</span><span class="demo-tab-desc" data-i18n-target="t40">Same data, 1 core against up to 8</span></span></button>
+        </div>
+
+        <div class="tab-content" role="tabpanel" id="panel-compress" aria-labelledby="tab-compress" tabindex="0">
+          <div class="split">
+            <form class="pane controls" id="compress-form" aria-label="Compression settings" data-i18n-aria-label-en="Compression settings" data-i18n-aria-label-de="Einstellungen der Kompression">
+              <fieldset class="field">
+                <legend class="field-label" data-i18n-target="t41">Input</legend>
+                <div class="toggle-group source-switch" role="group" data-type="single" data-variant="outline" aria-label="Input source" data-i18n-aria-label-en="Input source" data-i18n-aria-label-de="Quelle der Eingabe" id="compress-source">
+                  <button type="button" class="toggle" aria-pressed="true" value="sample"><svg class="icon" aria-hidden="true"><use href="#i-file"/></svg><span data-i18n-target="t42">Sample</span></button>
+                  <button type="button" class="toggle" aria-pressed="false" value="text"><svg class="icon" aria-hidden="true"><use href="#i-type"/></svg><span data-i18n-target="t43">Text</span></button>
+                  <button type="button" class="toggle" aria-pressed="false" value="file"><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg><span data-i18n-target="t44">File</span></button>
+                </div>
+                <div data-source="sample">
+                  <label class="sr-only" for="compress-sample" data-i18n-target="t45">Sample input</label>
+                  <select class="select" id="compress-sample">
+                    <option value="html" data-i18n-target="t46">HTML page, 29 KB</option>
+                    <option value="json" data-i18n-target="t47">JSON document, 21 KB</option>
+                    <option value="logs" data-i18n-target="t48">Log lines, 2 MiB, generated here</option>
+                    <option value="svg" data-i18n-target="t49">SVG drawing, 1 MiB</option>
+                  </select>
+                </div>
+                <div data-source="text" hidden>
+                  <label class="sr-only" for="compress-text" data-i18n-target="t50">Text to compress</label>
+                  <textarea class="textarea" id="compress-text" rows="5" spellcheck="false">Brotli finds repeats: the more a text repeats itself, the smaller it gets. Brotli finds repeats: the more a text repeats itself, the smaller it gets.</textarea>
+                </div>
+                <div data-source="file" hidden>
+                  <label class="file-drop" for="compress-file"><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg><span data-i18n-target="t51">Choose a file or drop it here. It stays on this device.</span><span class="file-name" id="compress-file-name"></span></label>
+                  <input class="sr-only" type="file" id="compress-file">
+                </div>
+              </fieldset>
+              <div class="field">
+                <div class="field-row"><label class="field-label" for="compress-quality" data-i18n-target="t52">Quality</label><output class="field-value" for="compress-quality" id="compress-quality-value">11</output></div>
+                <input class="slider" type="range" id="compress-quality" min="0" max="11" step="1" value="11">
+                <p class="field-hint" data-i18n-target="t53">0 is fastest, 11 (the default) is smallest.</p>
+              </div>
+              <div class="field">
+                <div class="field-row"><label class="field-label" for="compress-lgwin" data-i18n-target="t54">Look-back distance</label><output class="field-value" for="compress-lgwin" id="compress-lgwin-value">4 MiB</output></div>
+                <input class="slider" type="range" id="compress-lgwin" min="10" max="24" step="1" value="22">
+                <p class="field-hint" data-i18n-target="t55">How far back Brotli looks for repeated data. Further finds more, and unpacking needs that much memory.</p>
+              </div>
+              <div class="field">
+                <div class="field-row"><label class="field-label" for="compress-threads" data-i18n-target="t56">CPU cores</label><output class="field-value" for="compress-threads" id="compress-threads-value">8</output></div>
+                <input class="slider" type="range" id="compress-threads" min="1" max="8" step="1" value="8">
+                <p class="field-hint" data-i18n-target="t57">Shares the work at quality 10 and 11 for inputs above 32 KiB.</p>
+              </div>
+              <button class="btn run-btn" data-size="lg" type="submit" id="compress-run"><svg class="icon" aria-hidden="true"><use href="#i-zip"/></svg><span data-i18n-target="t58">Compress</span><kbd class="kbd-group" aria-hidden="true"><kbd class="kbd" data-size="sm" data-mod>Ctrl</kbd><kbd class="kbd" data-size="sm">Enter</kbd></kbd></button>
+            </form>
+
+            <div class="pane result" aria-live="polite" id="compress-result">
+              <div class="result-head">
+                <p class="result-big"><span id="compress-ratio">-</span></p>
+                <p class="result-sub" id="compress-summary" data-idle="compress-idle">Press Compress to start.</p>
+              </div>
+              <ul class="bars" id="compress-bars" aria-label="Sizes" data-i18n-aria-label-en="Sizes" data-i18n-aria-label-de="Größen">
+                <li class="bar" data-bar="input"><span class="bar-label" data-i18n-target="t59">Original</span><span class="bar-track"><span class="bar-fill"></span></span><span class="bar-value">-</span></li>
+                <li class="bar" data-bar="gzip"><span class="bar-label">gzip <small data-i18n-target="t60">(built-in)</small></span><span class="bar-track"><span class="bar-fill"></span></span><span class="bar-value">-</span></li>
+                <li class="bar" data-bar="brotli"><span class="bar-label">Brotli <small id="compress-bar-q" data-idle="bar-quality-idle">quality 11</small></span><span class="bar-track"><span class="bar-fill"></span></span><span class="bar-value">-</span></li>
+              </ul>
+              <p class="check" id="compress-check" hidden><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n-target="t61">Decompressed again and compared: identical to the input.</span></p>
+              <div class="mockup-code call-code" data-variant="outline" data-wrap data-title="what ran" id="compress-code"><pre data-prefix=">"><code>await compressParallel(input, { quality: 11 })</code></pre></div>
+              <div class="result-actions">
+                <a class="btn" data-variant="outline" id="compress-download" hidden download="input.br"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><span data-i18n-target="t62">Download .br</span></a>
+                <button type="button" class="btn" data-variant="ghost" id="compress-to-decoder" hidden><svg class="icon" aria-hidden="true"><use href="#i-unpack"/></svg><span data-i18n-target="t63">Decompress this</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" role="tabpanel" id="panel-decompress" aria-labelledby="tab-decompress" tabindex="0" hidden>
+          <div class="split">
+            <form class="pane controls" id="decompress-form" aria-label="Decompression input" data-i18n-aria-label-en="Decompression input" data-i18n-aria-label-de="Eingabe zum Entpacken">
+              <fieldset class="field">
+                <legend class="field-label" data-i18n-target="t64">Brotli data</legend>
+                <div class="radio-list" role="radiogroup">
+                  <label class="radio-row"><input class="radio" type="radio" name="decompress-source" value="sample" checked><span><strong data-i18n-target="t65">Precompressed page</strong><small data-i18n-target="t66">page.html.br from this website, made at quality 11</small></span></label>
+                  <label class="radio-row"><input class="radio" type="radio" name="decompress-source" value="last" id="decompress-last" disabled><span><strong data-i18n-target="t67">Your last result</strong><small data-i18n-target="t68">From the Compress tab</small></span></label>
+                  <label class="radio-row"><input class="radio" type="radio" name="decompress-source" value="file"><span><strong data-i18n-target="t69">A .br file</strong><small data-i18n-target="t70">Made by any Brotli encoder</small></span></label>
+                </div>
+                <label class="file-drop" for="decompress-file" data-source="file" hidden><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg><span data-i18n-target="t71">Choose a .br file or drop it here.</span><span class="file-name" id="decompress-file-name"></span></label>
+                <input class="sr-only" type="file" id="decompress-file" accept=".br,application/octet-stream">
+              </fieldset>
+              <div class="loaded" id="decoder-loaded">
+                <p class="field-label" data-i18n-target="t72">Decoder download</p>
+                <p class="loaded-value" id="decoder-bytes">-</p>
+                <p class="field-hint" data-i18n-target="t73">decompressor-slim.js and decompressor.wasm, as this server sent them</p>
+              </div>
+              <button class="btn run-btn" data-size="lg" type="submit" id="decompress-run"><svg class="icon" aria-hidden="true"><use href="#i-unpack"/></svg><span data-i18n-target="t74">Decompress</span><kbd class="kbd-group" aria-hidden="true"><kbd class="kbd" data-size="sm" data-mod>Ctrl</kbd><kbd class="kbd" data-size="sm">Enter</kbd></kbd></button>
+            </form>
+            <div class="pane result" aria-live="polite" id="decompress-result">
+              <div class="result-head">
+                <p class="result-big"><span id="decompress-size">-</span></p>
+                <p class="result-sub" id="decompress-summary" data-idle="decompress-idle">Press Decompress to start.</p>
+              </div>
+              <pre class="preview" id="decompress-preview" tabindex="0" aria-label="Preview of the output" data-i18n-aria-label-en="Preview of the output" data-i18n-aria-label-de="Vorschau der Ausgabe"></pre>
+              <div class="mockup-code call-code" data-variant="outline" data-wrap data-title="what ran" id="decompress-code"><pre data-prefix=">"><code>decompress(bytes)</code></pre></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" role="tabpanel" id="panel-race" aria-labelledby="tab-race" tabindex="0" hidden>
+          <div class="split">
+            <form class="pane controls" id="race-form" aria-label="Race settings" data-i18n-aria-label-en="Race settings" data-i18n-aria-label-de="Einstellungen des Vergleichs">
+              <div class="field">
+                <label class="field-label" for="race-sample" data-i18n-target="t75">Input</label>
+                <select class="select" id="race-sample">
+                  <option value="logs" data-i18n-target="t76">Log lines, 2 MiB, generated here</option>
+                  <option value="svg" data-i18n-target="t77">SVG drawing, 1 MiB</option>
+                </select>
+              </div>
+              <div class="field">
+                <div class="field-row"><label class="field-label" for="race-threads" data-i18n-target="t78">CPU cores</label><output class="field-value" for="race-threads" id="race-threads-value">8</output></div>
+                <input class="slider" type="range" id="race-threads" min="2" max="8" step="1" value="8">
+              </div>
+              <p class="field-hint race-note" data-i18n-target="t79">Both run at quality 11. The single-core run uses this page's own thread, so the page freezes until it is done.</p>
+              <button class="btn run-btn" data-size="lg" type="submit" id="race-run"><svg class="icon" aria-hidden="true"><use href="#i-zap"/></svg><span data-i18n-target="t80">Start</span><kbd class="kbd-group" aria-hidden="true"><kbd class="kbd" data-size="sm" data-mod>Ctrl</kbd><kbd class="kbd" data-size="sm">Enter</kbd></kbd></button>
+            </form>
+            <div class="pane result" aria-live="polite" id="race-result">
+              <div class="result-head">
+                <p class="result-big"><span id="race-speedup">-</span></p>
+                <p class="result-sub" id="race-summary" data-idle="race-idle">Press Start to compare.</p>
+              </div>
+              <ul class="lanes">
+                <li class="lane" id="lane-parallel"><span class="lane-name"><code>compressParallel</code> <small id="lane-parallel-threads">8 cores</small></span><span class="lane-track"><span class="lane-fill"></span></span><span class="lane-time">-</span></li>
+                <li class="lane" id="lane-single"><span class="lane-name"><code>compress</code> <small data-i18n-target="t81">1 core</small></span><span class="lane-track"><span class="lane-fill"></span></span><span class="lane-time">-</span></li>
+              </ul>
+              <p class="check" id="race-check" hidden><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span id="race-check-text"></span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="section section-inner parallax-reveal" aria-labelledby="how-title">
+    <header class="mk-section-header">
+      <div class="mk-section-header-copy">
+        <span class="mk-section-header-eyebrow" data-i18n-target="t82">How it works</span>
+        <h2 class="mk-section-header-title" id="how-title"><a class="heading-anchor" href="#/how" data-router-link data-route="how" aria-label="Link to section: Two packages in one, split where it pays" data-i18n-aria-label-en="Link to section: Two packages in one, split where it pays" data-i18n-aria-label-de="Link zum Abschnitt: Zwei Pakete in einem, geteilt, wo es sich lohnt">§</a><span data-i18n-target="t83">Two packages in one, split where it pays</span></h2>
+        <p class="mk-section-header-desc" data-i18n-target="t84">The encoder and the decoder are separate Rust libraries compiled to separate WebAssembly files. Pages that only decompress load only the decoder.</p>
+      </div>
+    </header>
+    <figure class="diagram how-diagram" data-type="data-flow" aria-label="How data flows through defuss-brotli" data-i18n-aria-label-en="How data flows through defuss-brotli" data-i18n-aria-label-de="Wie Daten durch defuss-brotli fließen">
+      <div class="diagram-canvas" style="grid-template-columns:8rem repeat(4,minmax(9.5rem,1fr));--diagram-node-w:12rem">
+        <div class="diagram-group" data-shape="lane" style="--col:1;--row:1;--span:5"><span class="diagram-group-label" data-i18n-target="t85">Compress</span></div>
+        <div class="diagram-group" data-shape="lane" style="--col:1;--row:2;--span:5"><span class="diagram-group-label" data-i18n-target="t86">Decompress</span></div>
+        <div class="diagram-node" data-node="input" data-shape="pill" style="--col:2;--row:1">
+          <span class="diagram-node-name" data-i18n-target="t87">Your data</span>
+          <span class="diagram-node-meta" data-i18n-target="t88">bytes or text</span>
+        </div>
+        <div class="diagram-node" data-node="split" style="--col:3;--row:1">
+          <span class="diagram-node-eyebrow" data-i18n-target="t89">Quality 10 and 11</span>
+          <span class="diagram-node-name" data-i18n-target="t90">Up to 8 parts</span>
+          <span class="diagram-node-meta" data-i18n-target="t91">each may refer back to the data before it</span>
+        </div>
+        <div class="diagram-node" data-node="workers" data-tone="accent" style="--col:4;--row:1">
+          <span class="diagram-node-eyebrow">compressor.wasm</span>
+          <span class="diagram-node-name" data-i18n-target="t92">One core per part</span>
+          <span class="diagram-node-meta" data-i18n-target="t93">each with its own encoder</span>
+        </div>
+        <div class="diagram-node" data-node="stream" data-shape="store" style="--col:5;--row:1">
+          <span class="diagram-node-name" data-i18n-target="t94">One .br file</span>
+          <span class="diagram-node-meta" data-i18n-target="t95">standard Brotli, RFC 7932</span>
+        </div>
+        <div class="diagram-node" data-node="fetch" data-shape="pill" style="--col:2;--row:2">
+          <span class="diagram-node-name">fetch()</span>
+          <span class="diagram-node-meta" data-i18n-target="t96">or a file</span>
+        </div>
+        <div class="diagram-node" data-node="decoder" style="--col:3;--row:2">
+          <span class="diagram-node-eyebrow">decompressor.wasm</span>
+          <span class="diagram-node-name" data-i18n-target="t97">51 KB decoder</span>
+          <span class="diagram-node-meta" data-i18n-target="t98">1 MiB at a time, little memory</span>
+        </div>
+        <div class="diagram-node" data-node="output" data-shape="pill" style="--col:4;--row:2">
+          <span class="diagram-node-name" data-i18n-target="t99">Bytes or text</span>
+          <span class="diagram-node-meta">Uint8Array, string</span>
+        </div>
+      </div>
+      <ol class="diagram-edges">
+        <li class="diagram-edge" data-from="input" data-to="split" data-flow="2400" data-flow-delay="0"></li>
+        <li class="diagram-edge" data-from="split" data-to="workers" data-flow="2400" data-flow-delay="600" data-flow-tokens="3"></li>
+        <li class="diagram-edge" data-from="workers" data-to="stream" data-tone="accent" data-flow="2400" data-flow-delay="1200"></li>
+        <li class="diagram-edge" data-from="stream" data-to="fetch" data-line="dashed"><span data-i18n-target="t100">sent by your server</span></li>
+        <li class="diagram-edge" data-from="fetch" data-to="decoder" data-flow="2400" data-flow-delay="0"></li>
+        <li class="diagram-edge" data-from="decoder" data-to="output" data-flow="2400" data-flow-delay="700"></li>
+      </ol>
+    </figure>
+    <ul class="facts">
+      <li class="fact">
+        <h3 class="fact-title"><svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg><span data-i18n-target="t101">Separate downloads</span></h3>
+        <p data-i18n-target="t102">The decoder is a 51 KB download, the encoder 397 KB. Build tools leave the encoder out of apps that only decompress.</p>
+      </li>
+      <li class="fact">
+        <h3 class="fact-title"><svg class="icon" aria-hidden="true"><use href="#i-gauge"/></svg><span data-i18n-target="t103">Memory stays flat</span></h3>
+        <p data-i18n-target="t104">Data passes through 1 MiB at a time, so memory does not grow with the input: unpacking 100 MiB takes 19.6 MiB.</p>
+      </li>
+      <li class="fact">
+        <h3 class="fact-title"><svg class="icon" aria-hidden="true"><use href="#i-cpu"/></svg><span data-i18n-target="t105">Same bytes on any machine</span></h3>
+        <p data-i18n-target="t106">Where the input is split depends only on its length, so 1 or 8 cores produce the same file, byte for byte.</p>
+      </li>
+    </ul>
+  </section>
+
+  <section id="services" class="section section-inner parallax-reveal" aria-labelledby="services-title">
+    <div class="corner-leaf-reverse pattern-mesh consult">
+      <div class="consult-head">
+        <div class="aura aura-glow aura-gold consult-portrait" style="--shape-round:1.25rem"><img class="shape-squircle" src="assets/aron-homberg.jpg" width="400" height="400" alt="Portrait of Aron Homberg" data-i18n-alt-en="Portrait of Aron Homberg" data-i18n-alt-de="Porträt von Aron Homberg" loading="lazy"></div>
+        <div>
+          <p class="consult-eyebrow" data-i18n-target="t107">For teams and companies</p>
+          <h2 class="consult-title" id="services-title"><span data-i18n-target="t108">Need it adapted to your stack?</span></h2>
+          <p class="consult-desc" data-i18n-target="t109">I build what your project needs on top of defuss-brotli, for example custom dictionaries for your payloads, a streaming API, or Brotli inside an edge runtime.</p>
+        </div>
+      </div>
+      <div class="consult-actions">
+        <a class="btn" data-size="lg" href="https://www.linkedin.com/in/aronhomberg/" target="_blank" rel="noopener"><svg class="icon icon-fill" aria-hidden="true"><use href="#i-linkedin"/></svg><span data-i18n-target="t110">Talk to Aron on LinkedIn</span><svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only" data-i18n-target="t111"> (opens in a new tab)</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section id="perf" class="section section-inner parallax-reveal" aria-labelledby="perf-title">
+    <header class="mk-section-header">
+      <div class="mk-section-header-copy">
+        <span class="mk-section-header-eyebrow" data-i18n-target="t112">Performance</span>
+        <h2 class="mk-section-header-title" id="perf-title"><a class="heading-anchor" href="#/perf" data-router-link data-route="perf" aria-label="Link to section: Measured, with the method attached" data-i18n-aria-label-en="Link to section: Measured, with the method attached" data-i18n-aria-label-de="Link zum Abschnitt: Gemessen, mit Methode">§</a><span data-i18n-target="t113">Measured, with the method attached</span></h2>
+        <p class="mk-section-header-desc" id="perf-method" data-i18n-target="t114">Measured on <span data-perf="cpu">Apple M5 Max</span> with Node.js <span data-perf="node">26</span> on <span data-perf="date">2026-11-09</span>; each time is the middle value of 3 runs after a warm-up run. The table under the chart has every value.</p>
+      </div>
+    </header>
+    <div class="perf-card">
+      <div class="toggle-group perf-views" role="group" data-type="single" data-variant="outline" aria-label="Chart view" data-i18n-aria-label-en="Chart view" data-i18n-aria-label-de="Ansicht des Diagramms" id="perf-view">
+        <button class="toggle" aria-pressed="true" value="quality"><svg class="icon" aria-hidden="true"><use href="#i-sliders"/></svg><span data-i18n-target="t115">Quality</span></button>
+        <button class="toggle" aria-pressed="false" value="workers"><svg class="icon" aria-hidden="true"><use href="#i-cpu"/></svg><span data-i18n-target="t116">Multicore</span></button>
+        <button class="toggle" aria-pressed="false" value="window"><svg class="icon" aria-hidden="true"><use href="#i-window"/></svg><span data-i18n-target="t117">Look-back</span></button>
+        <button class="toggle" aria-pressed="false" value="cli"><svg class="icon" aria-hidden="true"><use href="#i-terminal"/></svg><span data-i18n-target="t118">Command line</span></button>
+        <button class="toggle" aria-pressed="false" value="download"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><span data-i18n-target="t119">Download size</span></button>
+      </div>
+      <div class="perf-controls" data-for-view="quality">
+        <div class="toggle-group" role="group" data-type="single" data-variant="outline" data-size="sm" aria-label="Input" data-i18n-aria-label-en="Input" data-i18n-aria-label-de="Eingabe" id="perf-input">
+          <button class="toggle" aria-pressed="true" value="html">HTML</button>
+          <button class="toggle" aria-pressed="false" value="json">JSON</button>
+          <button class="toggle" aria-pressed="false" value="svg">SVG</button>
+          <button class="toggle" aria-pressed="false" value="png">PNG</button>
+        </div>
+        <div class="toggle-group" role="group" data-type="single" data-variant="outline" data-size="sm" aria-label="Measure" data-i18n-aria-label-en="Measure" data-i18n-aria-label-de="Messgröße" id="perf-metric">
+          <button class="toggle" aria-pressed="true" value="size"><span data-i18n-target="t120">Size</span></button>
+          <button class="toggle" aria-pressed="false" value="time"><span data-i18n-target="t121">Time</span></button>
+        </div>
+        <button type="button" class="btn" data-variant="secondary" data-size="sm" id="perf-device"><svg class="icon" aria-hidden="true"><use href="#i-gauge"/></svg><span data-i18n-target="t122">Measure on this device</span></button>
+      </div>
+      <p class="perf-lead" id="perf-lead" aria-live="polite"></p>
+      <p class="chart-fallback" id="perf-fallback" data-i18n-target="t123">The chart needs JavaScript. The table below has the same numbers.</p>
+      <div class="chart perf-chart" id="perf-chart" role="img" aria-label="Performance chart; the table below lists the values" data-i18n-aria-label-en="Performance chart; the table below lists the values" data-i18n-aria-label-de="Leistungsdiagramm; die Tabelle darunter listet die Werte"></div>
+      <details class="collapsible perf-table-wrap" data-variant="ghost" data-marker="arrow">
+        <summary class="collapsible-trigger"><span data-i18n-target="t124">Values as a table</span></summary>
+        <div class="collapsible-content"><div class="table-scroll" id="perf-table"><table class="table perf-table"><thead><tr><th scope="col">Quality</th><th scope="col">Size</th><th scope="col">compress, 1 core</th><th scope="col">compressParallel, 8 cores</th><th scope="col">Node.js built-in (C)</th></tr></thead><tbody><tr><th scope="row">0</th><td>1.66 KB (5.7 %)</td><td>0.18 ms</td><td>0.13 ms</td><td>1.66 KB, 0.04 ms</td></tr><tr><th scope="row">1</th><td>1.27 KB (4.4 %)</td><td>0.11 ms</td><td>0.09 ms</td><td>1.34 KB, 0.04 ms</td></tr><tr><th scope="row">2</th><td>1.01 KB (3.5 %)</td><td>0.13 ms</td><td>0.13 ms</td><td>1.01 KB, 0.05 ms</td></tr><tr><th scope="row">3</th><td>971 B (3.3 %)</td><td>0.15 ms</td><td>0.15 ms</td><td>955 B, 0.05 ms</td></tr><tr><th scope="row">4</th><td>891 B (3.1 %)</td><td>0.16 ms</td><td>0.14 ms</td><td>892 B, 0.06 ms</td></tr><tr><th scope="row">5</th><td>834 B (2.9 %)</td><td>0.22 ms</td><td>0.21 ms</td><td>834 B, 0.13 ms</td></tr><tr><th scope="row">6</th><td>834 B (2.9 %)</td><td>0.21 ms</td><td>0.20 ms</td><td>834 B, 0.09 ms</td></tr><tr><th scope="row">7</th><td>841 B (2.9 %)</td><td>0.27 ms</td><td>0.31 ms</td><td>841 B, 0.10 ms</td></tr><tr><th scope="row">8</th><td>841 B (2.9 %)</td><td>0.27 ms</td><td>0.26 ms</td><td>841 B, 0.11 ms</td></tr><tr><th scope="row">9</th><td>842 B (2.9 %)</td><td>0.60 ms</td><td>0.47 ms</td><td>842 B, 0.14 ms</td></tr><tr><th scope="row">10</th><td>773 B (2.6 %)</td><td>9.1 ms</td><td>7.7 ms</td><td>773 B, 5.3 ms</td></tr><tr><th scope="row">11</th><td>764 B (2.6 %)</td><td>66 ms</td><td>66 ms</td><td>764 B, 47 ms</td></tr><tr><th scope="row">gzip, highest level</th><td>1.23 KB (4.2 %)</td><td>0.10 ms</td><td>-</td><td>-</td></tr></tbody></table></div></div>
+      </details>
+    </div>
+  </section>
+
+  <section id="use" class="section section-inner parallax-reveal" aria-labelledby="use-title">
+    <div class="corner-leaf use-panel">
+      <header class="mk-section-header">
+        <div class="mk-section-header-copy">
+          <span class="mk-section-header-eyebrow" data-i18n-target="t125">Use it</span>
+          <h2 class="mk-section-header-title" id="use-title"><a class="heading-anchor" href="#/use" data-router-link data-route="use" aria-label="Link to section: A few lines in your app, or one command" data-i18n-aria-label-en="Link to section: A few lines in your app, or one command" data-i18n-aria-label-de="Link zum Abschnitt: Ein paar Zeilen in deiner App oder ein Befehl">§</a><span data-i18n-target="t126">A few lines in your app, or one command</span></h2>
+        </div>
+      </header>
+      <div class="ways">
+        <div class="way">
+          <h3 class="way-title"><svg class="icon" aria-hidden="true"><use href="#i-code"/></svg><span data-i18n-target="t127">In code</span></h3>
+          <div class="tabs code-tabs">
+            <div class="tab-list" role="tablist" aria-label="Code examples" data-i18n-aria-label-en="Code examples" data-i18n-aria-label-de="Codebeispiele" data-size="sm">
+              <button class="tab-trigger" role="tab" aria-selected="true" aria-controls="code-browser" id="code-tab-browser"><svg class="icon" aria-hidden="true"><use href="#i-globe"/></svg><span data-i18n-target="t128">Browser</span></button>
+              <button class="tab-trigger" role="tab" aria-selected="false" aria-controls="code-server" id="code-tab-server" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#i-package"/></svg>Node.js, Bun</button>
+              <button class="tab-trigger" role="tab" aria-selected="false" aria-controls="code-cdn" id="code-tab-cdn" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#i-file"/></svg><span data-i18n-target="t129">No bundler</span></button>
+            </div>
+            <div class="tab-content" role="tabpanel" id="code-browser" aria-labelledby="code-tab-browser" tabindex="0">
+              <p class="way-desc" data-i18n-target="t130">Loads only the decoder, then decodes a file your server stored as Brotli.</p>
+              <div class="copy-wrap"><div class="mockup-code hl" data-variant="outline" data-wrap data-title="app.ts" data-numbers data-source="import { init, decompressText } from &quot;defuss-brotli/decompressor/slim&quot;;
+
+await init(); // fetches decompressor.wasm
+const response = await fetch(&quot;/data/catalog.json.br&quot;);
+const bytes = new Uint8Array(await response.arrayBuffer());
+const catalog = JSON.parse(decompressText(bytes));"><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">import</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> { init, decompressText } </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">from</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">"defuss-brotli/decompressor/slim"</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">;</span></code></pre><pre><code> </code></pre><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">await</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">init</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">(); </span><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3">// fetches decompressor.wasm</span></code></pre><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">const</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">response</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">=</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">await</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">fetch</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">(</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">"/data/catalog.json.br"</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">);</span></code></pre><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">const</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">bytes</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">=</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">new</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">Uint8Array</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">(</span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">await</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> response.</span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">arrayBuffer</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">());</span></code></pre><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">const</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">catalog</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">=</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">JSON</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">.</span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">parse</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">(</span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">decompressText</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">(bytes));</span></code></pre></div><button type="button" class="btn copy-btn" data-variant="ghost" data-size="icon" data-copy aria-label="Copy code" data-i18n-aria-label-en="Copy code" data-i18n-aria-label-de="Code kopieren"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg></button></div>
+            </div>
+            <div class="tab-content" role="tabpanel" id="code-server" aria-labelledby="code-tab-server" tabindex="0" hidden>
+              <p class="way-desc" data-i18n-target="t131">Precompresses build output at quality 11 on all cores.</p>
+              <div class="copy-wrap"><div class="mockup-code hl" data-variant="outline" data-wrap data-title="precompress.ts" data-numbers data-source="import { readFile, writeFile } from &quot;node:fs/promises&quot;;
+import { init, compressParallel } from &quot;defuss-brotli/compressor&quot;;
+
+await init();
+const input = await readFile(&quot;dist/app.js&quot;);
+await writeFile(&quot;dist/app.js.br&quot;, await compressParallel(input));"><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">import</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> { readFile, writeFile } </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">from</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">"node:fs/promises"</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">;</span></code></pre><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">import</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> { init, compressParallel } </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">from</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">"defuss-brotli/compressor"</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">;</span></code></pre><pre><code> </code></pre><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">await</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">init</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">();</span></code></pre><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">const</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">input</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">=</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">await</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">readFile</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">(</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">"dist/app.js"</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">);</span></code></pre><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">await</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">writeFile</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">(</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">"dist/app.js.br"</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">, </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">await</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">compressParallel</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">(input));</span></code></pre></div><button type="button" class="btn copy-btn" data-variant="ghost" data-size="icon" data-copy aria-label="Copy code" data-i18n-aria-label-en="Copy code" data-i18n-aria-label-de="Code kopieren"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg></button></div>
+            </div>
+            <div class="tab-content" role="tabpanel" id="code-cdn" aria-labelledby="code-tab-cdn" tabindex="0" hidden>
+              <p class="way-desc" data-i18n-target="t132">An import map from jsDelivr; the decoder fetches its .wasm from the same folder.</p>
+              <div class="copy-wrap"><div class="mockup-code hl" data-variant="outline" data-wrap data-title="index.html" data-numbers data-source="&lt;script type=&quot;importmap&quot;&gt;
+  { &quot;imports&quot;: { &quot;defuss-brotli/decompressor/slim&quot;:
+    &quot;https://cdn.jsdelivr.net/npm/defuss-brotli@0.3.1/dist/decompressor-slim.js&quot; } }
+&lt;/script&gt;
+&lt;script type=&quot;module&quot;&gt;
+  import { init, decompress } from &quot;defuss-brotli/decompressor/slim&quot;;
+  await init();
+&lt;/script&gt;"><pre><code><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">&lt;</span><span style="--code-example-light:#22863A;--code-example-dark:#85E89D">script</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">type</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">=</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">"importmap"</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">&gt;</span></code></pre><pre><code><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">  { "imports": { "defuss-brotli/decompressor/slim":</span></code></pre><pre><code><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">    "https://cdn.jsdelivr.net/npm/defuss-brotli@0.3.1/dist/decompressor-slim.js" } }</span></code></pre><pre><code><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">&lt;/</span><span style="--code-example-light:#22863A;--code-example-dark:#85E89D">script</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">&gt;</span></code></pre><pre><code><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">&lt;</span><span style="--code-example-light:#22863A;--code-example-dark:#85E89D">script</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">type</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">=</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">"module"</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">&gt;</span></code></pre><pre><code><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">  </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">import</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> { init, decompress } </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">from</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">"defuss-brotli/decompressor/slim"</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">;</span></code></pre><pre><code><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">  </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">await</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">init</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">();</span></code></pre><pre><code><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">&lt;/</span><span style="--code-example-light:#22863A;--code-example-dark:#85E89D">script</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">&gt;</span></code></pre></div><button type="button" class="btn copy-btn" data-variant="ghost" data-size="icon" data-copy aria-label="Copy code" data-i18n-aria-label-en="Copy code" data-i18n-aria-label-de="Code kopieren"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg></button></div>
+            </div>
+          </div>
+        </div>
+        <div class="way">
+          <h3 class="way-title"><svg class="icon" aria-hidden="true"><use href="#i-terminal"/></svg><span data-i18n-target="t133">On the command line</span></h3>
+          <p class="way-desc" data-i18n-target="t134">Same options, defaults and output names as brotli 1.2.0, so build scripts can swap it in.</p>
+          <div class="toggle-group pm-switch" role="group" data-type="single" data-variant="outline" data-size="sm" aria-label="Package manager" data-i18n-aria-label-en="Package manager" data-i18n-aria-label-de="Paketmanager">
+            <button class="toggle" aria-pressed="true" value="bun">bun</button>
+            <button class="toggle" aria-pressed="false" value="pnpm">pnpm</button>
+            <button class="toggle" aria-pressed="false" value="npm">npm</button>
+            <button class="toggle" aria-pressed="false" value="yarn">yarn</button>
+          </div>
+          <div class="copy-wrap"><div class="mockup-code hl" data-variant="outline" data-wrap data-title="terminal" data-pm="bun" data-source="bunx defuss-brotli compress dist/app.js
+bunx defuss-brotli -v dist/*.html dist/*.css
+bunx defuss-brotli -d -c data.json.br | head"><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># writes dist/app.js.br and keeps dist/app.js</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">bunx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">compress</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/app.js</span></code></pre><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># several files, quality 11 by default</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">bunx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">-v</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/</span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">*</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">.html</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/</span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">*</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">.css</span></code></pre><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># decompress to standard output</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">bunx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">-d</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">-c</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">data.json.br</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">|</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">head</span></code></pre></div><div class="mockup-code hl" data-variant="outline" data-wrap data-title="terminal" data-pm="pnpm" hidden data-source="pnpm dlx defuss-brotli compress dist/app.js
+pnpm dlx defuss-brotli -v dist/*.html dist/*.css
+pnpm dlx defuss-brotli -d -c data.json.br | head"><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># writes dist/app.js.br and keeps dist/app.js</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">pnpm</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dlx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">compress</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/app.js</span></code></pre><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># several files, quality 11 by default</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">pnpm</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dlx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">-v</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/</span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">*</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">.html</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/</span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">*</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">.css</span></code></pre><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># decompress to standard output</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">pnpm</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dlx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">-d</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">-c</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">data.json.br</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">|</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">head</span></code></pre></div><div class="mockup-code hl" data-variant="outline" data-wrap data-title="terminal" data-pm="npm" hidden data-source="npx defuss-brotli compress dist/app.js
+npx defuss-brotli -v dist/*.html dist/*.css
+npx defuss-brotli -d -c data.json.br | head"><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># writes dist/app.js.br and keeps dist/app.js</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">npx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">compress</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/app.js</span></code></pre><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># several files, quality 11 by default</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">npx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">-v</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/</span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">*</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">.html</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/</span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">*</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">.css</span></code></pre><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># decompress to standard output</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">npx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">-d</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">-c</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">data.json.br</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">|</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">head</span></code></pre></div><div class="mockup-code hl" data-variant="outline" data-wrap data-title="terminal" data-pm="yarn" hidden data-source="yarn dlx defuss-brotli compress dist/app.js
+yarn dlx defuss-brotli -v dist/*.html dist/*.css
+yarn dlx defuss-brotli -d -c data.json.br | head"><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># writes dist/app.js.br and keeps dist/app.js</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">yarn</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dlx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">compress</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/app.js</span></code></pre><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># several files, quality 11 by default</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">yarn</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dlx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">-v</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/</span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">*</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">.html</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/</span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">*</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">.css</span></code></pre><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># decompress to standard output</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">yarn</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dlx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">-d</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">-c</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">data.json.br</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">|</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">head</span></code></pre></div><button type="button" class="btn copy-btn" data-variant="ghost" data-size="icon" data-copy aria-label="Copy commands" data-i18n-aria-label-en="Copy commands" data-i18n-aria-label-de="Befehle kopieren"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg></button></div>
+          <p class="agent-note"><svg class="icon" aria-hidden="true"><use href="#i-bot"/></svg><span data-i18n-target="t135">Coding agents: <a href="llms.txt">llms.txt</a> has the API, limits and numbers in one file.</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-inner parallax-reveal" data-reveal="zoom" aria-labelledby="cta-title">
+    <div class="cta-band">
+      <div class="shader" data-variant="background" data-effect="mesh-gradient" data-colors="#3a1d0e #8a3b14 #c2562a #f2b94b" data-distortion="0.7" data-swirl="0.3" aria-hidden="true"></div>
+      <div class="cta-copy">
+        <h2 class="cta-title" id="cta-title" data-i18n-target="t136">Brotli for browsers, Node.js and Bun</h2>
+        <p class="cta-desc" data-i18n-target="t137">Open source under the MIT license. Pure Rust compiled to WebAssembly, no native addons.</p>
+      </div>
+      <div class="cta-actions">
+        <a class="btn cta-btn" data-size="lg" href="https://github.com/kyr0/defuss-brotli"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg><span data-i18n-target="t138">Source on GitHub</span></a>
+        <a class="btn cta-btn-outline" data-variant="outline" data-size="lg" href="https://www.npmjs.com/package/defuss-brotli"><svg class="icon icon-fill" aria-hidden="true"><use href="#i-npm"/></svg><span data-i18n-target="t139">Package on npm</span></a>
+      </div>
+    </div>
+  </section>
+
+  </main>
+
+  <footer class="mk-footer site-footer">
+    <div class="mk-footer-inner">
+      <nav class="mk-footer-nav footer-nav" aria-label="Footer" data-i18n-aria-label-en="Footer" data-i18n-aria-label-de="Fußzeile">
+        <div class="mk-footer-col">
+          <h2 class="mk-footer-heading" data-i18n-target="t140">Project</h2>
+          <ul class="mk-footer-list">
+            <li><a href="https://github.com/kyr0/defuss-brotli#readme" data-i18n-target="t141">Documentation</a></li>
+            <li><a href="https://github.com/kyr0/defuss-brotli/blob/main/ARCH.md" data-i18n-target="t142">Architecture</a></li>
+            <li><a href="https://github.com/kyr0/defuss-brotli/blob/main/CHANGELOG.md" data-i18n-target="t143">Changelog</a></li>
+            <li><a href="llms.txt">llms.txt</a></li>
+          </ul>
+        </div>
+        <div class="mk-footer-col">
+          <h2 class="mk-footer-heading" data-i18n-target="t144">Built with</h2>
+          <ul class="mk-footer-list">
+            <li><a href="https://github.com/dropbox/rust-brotli">rust-brotli (Dropbox)</a></li>
+            <li><a href="https://github.com/kyr0/defuss-shadcn">defuss-shadcn</a></li>
+            <li><a href="https://github.com/kyr0/defuss-dom-router">defuss-dom-router</a></li>
+            <li><a href="https://github.com/kyr0/defuss-i18n">defuss-i18n</a></li>
+            <li><a href="https://echarts.apache.org/">Apache ECharts</a></li>
+            <li><a href="https://shiki.style/">Shiki</a></li>
+          </ul>
+        </div>
+        <div class="mk-footer-col footer-ad-col">
+          <h2 class="mk-footer-heading" data-i18n-target="t145">Professional services</h2>
+          <aside class="corner-leaf footer-ad" aria-label="Services by Aron Homberg" data-i18n-aria-label-en="Services by Aron Homberg" data-i18n-aria-label-de="Leistungen von Aron Homberg">
+            <div class="footer-ad-head">
+              <div class="aura aura-glow aura-gold footer-ad-portrait" style="--shape-round:1.5rem"><img class="shape-squircle" src="assets/aron-homberg.jpg" width="400" height="400" alt="Portrait of Aron Homberg" data-i18n-alt-en="Portrait of Aron Homberg" data-i18n-alt-de="Porträt von Aron Homberg" loading="lazy"></div>
+              <div>
+                <p class="footer-ad-name">Aron Homberg</p>
+                <p class="footer-ad-role" data-i18n-target="t146">Freelance expert and independent AI researcher: compression, WebAssembly and on-device AI.</p>
+              </div>
+            </div>
+            <a class="btn" data-size="sm" href="https://www.linkedin.com/in/aronhomberg/" target="_blank" rel="noopener"><svg class="icon icon-fill" aria-hidden="true"><use href="#i-linkedin"/></svg><span data-i18n-target="t147">Connect on LinkedIn</span><svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only" data-i18n-target="t148"> (opens in a new tab)</span></a>
+          </aside>
+        </div>
+      </nav>
+      <hr class="separator mk-footer-rule">
+      <div class="mk-footer-bottom">
+        <a href="#/" data-router-link class="mk-footer-brand"><svg class="icon brand-icon" aria-hidden="true"><use href="#i-logo"/></svg><span class="mk-footer-brand-name">defuss-brotli</span></a>
+        <p class="mk-footer-copy" data-i18n-target="t149">2026 Aron Homberg (kyr0). MIT license. Brotli is specified in RFC 7932.</p>
+      </div>
+    </div>
+  </footer>
+
+  <div hidden data-messages>
+    <span data-i18n-target="t150" data-msg="compress-idle">Press Compress to start.</span>
+    <span data-i18n-target="t151" data-msg="decompress-idle">Press Decompress to start.</span>
+    <span data-i18n-target="t152" data-msg="race-idle">Press Start to compare.</span>
+    <span data-i18n-target="t153" data-msg="loading-encoder">Loading the encoder (compressor.wasm)...</span>
+    <span data-i18n-target="t154" data-msg="loading-decoder">Loading the decoder (decompressor.wasm)...</span>
+    <span data-i18n-target="t155" data-msg="loading-input">Preparing the input...</span>
+    <span data-i18n-target="t156" data-msg="compressing">Compressing {size}...</span>
+    <span data-i18n-target="t157" data-msg="decompressing">Decompressing...</span>
+    <span data-i18n-target="t158" data-msg="smaller">{times} times smaller</span>
+    <span data-i18n-target="t159" data-msg="compress-done">{output} from {input} in {time}, at quality {quality}.</span>
+    <span data-i18n-target="t160" data-msg="gzip-unavailable">not available</span>
+    <span data-i18n-target="t161" data-msg="decompress-done">Decoded {input} in {time}.</span>
+    <span data-i18n-target="t162" data-msg="decoder-bytes">{bytes} transferred</span>
+    <span data-i18n-target="t163" data-msg="decoder-cached">from the browser cache</span>
+    <span data-i18n-target="t164" data-msg="faster">{times} times faster</span>
+    <span data-i18n-target="t165" data-msg="race-running-parallel">compressParallel is running on {threads} cores...</span>
+    <span data-i18n-target="t166" data-msg="race-running-single">compress is running on one core; the page freezes until it is done...</span>
+    <span data-i18n-target="t167" data-msg="race-done">{input}: {parallel} on {threads} cores against {single} on one core.</span>
+    <span data-i18n-target="t168" data-msg="race-check">Both results unpack to the input. The multicore one is {delta} larger.</span>
+    <span data-i18n-target="t169" data-msg="bar-quality">quality {quality}</span>
+    <span data-i18n-target="t170" data-msg="bar-quality-idle">quality 11</span>
+    <span data-i18n-target="t171" data-msg="workers">{n} cores</span>
+    <span data-i18n-target="t172" data-msg="binary-preview">Binary data. First bytes in hex:</span>
+    <span data-i18n-target="t173" data-msg="error">It did not work: {message}</span>
+    <span data-i18n-target="t174" data-msg="offline">Open this page over http(s) to run the demos: browsers do not load WebAssembly from a local file.</span>
+    <span data-i18n-target="t175" data-msg="check-native">Built-in Brotli support in this browser (CompressionStream): {native}. defuss-brotli works either way.</span>
+    <span data-i18n-target="t176" data-msg="yes">yes</span>
+    <span data-i18n-target="t177" data-msg="no">no</span>
+    <span data-i18n-target="t178" data-msg="measuring">Measuring quality {quality} of 11...</span>
+    <span data-i18n-target="t179" data-msg="this-device">This device</span>
+    <span data-i18n-target="t180" data-msg="copied">Copied</span>
+    <span data-i18n-target="t181" data-msg="lead-quality-size">{input} ({size}): at quality 11 the result is {saving} smaller than gzip at its highest level.</span>
+    <span data-i18n-target="t182" data-msg="lead-quality-time">How long one compression takes. Several cores are only used at quality 10 and 11, the slowest levels.</span>
+    <span data-i18n-target="t183" data-msg="lead-workers">Time at quality 11 for each sample: on 1 core, on 8 cores, and with the C library built into Node.js.</span>
+    <span data-i18n-target="t184" data-msg="lead-window">Brotli saves space by pointing back to data it has already seen. The look-back distance limits how far back: further finds more repeats, and unpacking needs that much memory. Sizes at quality 11, against 64 KiB.</span>
+    <span data-i18n-target="t185" data-msg="lead-cli">Total time of the whole command at quality 11, startup included, middle value of 5 runs, against Google's brotli 1.2.0 on an Apple M5 Max.</span>
+    <span data-i18n-target="t186" data-msg="lead-download">What a browser downloads for each part of the package, depending on how the server compresses the files.</span>
+  </div>
+  <template data-i18n-for="t1" data-i18n-locale="en">Skip to content</template>
+<template data-i18n-for="t1" data-i18n-locale="de">Zum Inhalt springen</template>
+<template data-i18n-for="t2" data-i18n-locale="en">Demo</template>
+<template data-i18n-for="t2" data-i18n-locale="de">Demo</template>
+<template data-i18n-for="t3" data-i18n-locale="en">How it works</template>
+<template data-i18n-for="t3" data-i18n-locale="de">So funktioniert es</template>
+<template data-i18n-for="t4" data-i18n-locale="en">Performance</template>
+<template data-i18n-for="t4" data-i18n-locale="de">Leistung</template>
+<template data-i18n-for="t5" data-i18n-locale="en">Use it</template>
+<template data-i18n-for="t5" data-i18n-locale="de">Einbinden</template>
+<template data-i18n-for="t6" data-i18n-locale="en">Demo</template>
+<template data-i18n-for="t6" data-i18n-locale="de">Demo</template>
+<template data-i18n-for="t7" data-i18n-locale="en">How it works</template>
+<template data-i18n-for="t7" data-i18n-locale="de">So funktioniert es</template>
+<template data-i18n-for="t8" data-i18n-locale="en">Performance</template>
+<template data-i18n-for="t8" data-i18n-locale="de">Leistung</template>
+<template data-i18n-for="t9" data-i18n-locale="en">Use it</template>
+<template data-i18n-for="t9" data-i18n-locale="de">Einbinden</template>
+<template data-i18n-for="t10" data-i18n-locale="en">Rust compiled to WebAssembly, MIT licensed</template>
+<template data-i18n-for="t10" data-i18n-locale="de">Rust als WebAssembly, MIT-lizenziert</template>
+<template data-i18n-for="hero-title" data-i18n-locale="en">Brotli compression <span class="text-rotate hero-rotate" style="--text-rotate-duration:12s"><span><span class="accent">in your browser</span><span class="accent">on up to 8 cores</span><span class="accent">with a 51 KB decoder</span><span class="accent">in Node.js and Bun</span></span></span></template>
+<template data-i18n-for="hero-title" data-i18n-locale="de">Brotli-Kompression <span class="text-rotate hero-rotate" style="--text-rotate-duration:12s"><span><span class="accent">im Browser</span><span class="accent">auf bis zu 8 Kernen</span><span class="accent">mit 51-KB-Decoder</span><span class="accent">in Node.js und Bun</span></span></span></template>
+<template data-i18n-for="t12" data-i18n-locale="en">Compress and decompress Brotli in browsers, Node.js and Bun. The decoder is tiny, and the command line compresses at least twice as fast as the official brotli CLI.*</template>
+<template data-i18n-for="t12" data-i18n-locale="de">Brotli komprimieren und entpacken, in Browsern, Node.js und Bun. Der Decoder ist winzig, und die Kommandozeile komprimiert mindestens doppelt so schnell wie die offizielle brotli-CLI.*</template>
+<template data-i18n-for="t13" data-i18n-locale="en">Try now (in-browser)</template>
+<template data-i18n-for="t13" data-i18n-locale="de">Jetzt testen (im Browser)</template>
+<template data-i18n-for="t14" data-i18n-locale="en">See the numbers</template>
+<template data-i18n-for="t14" data-i18n-locale="de">Zu den Messwerten</template>
+<template data-i18n-for="t15" data-i18n-locale="en">* Files from 1 MiB at quality 11, the default. Measured on an Apple M5 Max with 48 GB of RAM.</template>
+<template data-i18n-for="t15" data-i18n-locale="de">* Dateien ab 1 MiB mit Qualität 11, dem Standard. Gemessen auf einem Apple M5 Max mit 48 GB RAM.</template>
+<template data-i18n-for="t16" data-i18n-locale="en">Or run it without installing</template>
+<template data-i18n-for="t16" data-i18n-locale="de">Oder ohne Installation ausführen</template>
+<template data-i18n-for="t17" data-i18n-locale="en">Brotli in the browser</template>
+<template data-i18n-for="t17" data-i18n-locale="de">Brotli im Browser</template>
+<template data-i18n-for="t18" data-i18n-locale="en">Chromium's built-in CompressionStream and DecompressionStream reject Brotli. defuss-brotli does both inside the page.</template>
+<template data-i18n-for="t18" data-i18n-locale="de">Chromiums eingebaute CompressionStream und DecompressionStream lehnen Brotli ab. defuss-brotli erledigt beides in der Seite.</template>
+<template data-i18n-for="t19" data-i18n-locale="en">51 KB to decompress</template>
+<template data-i18n-for="t19" data-i18n-locale="de">51 KB zum Entpacken</template>
+<template data-i18n-for="t20" data-i18n-locale="en">Pages that only decompress load just the decoder: <strong>51 KB</strong>, or 85 KB from jsDelivr. The compression code is never loaded.</template>
+<template data-i18n-for="t20" data-i18n-locale="de">Seiten, die nur entpacken, laden nur den Decoder: <strong>51 KB</strong>, über jsDelivr 85 KB. Der Code zum Komprimieren wird nie geladen.</template>
+<template data-i18n-for="t21" data-i18n-locale="en">Smaller than gzip</template>
+<template data-i18n-for="t21" data-i18n-locale="de">Kleiner als gzip</template>
+<template data-i18n-for="t22" data-i18n-locale="en">Quality 11 is the default: <strong>38 % smaller</strong> than gzip at its highest level on an HTML page, 27 % on JSON.</template>
+<template data-i18n-for="t22" data-i18n-locale="de">Qualität 11 ist Standard: <strong>38 % kleiner</strong> als gzip auf höchster Stufe bei einer HTML-Seite, 27 % bei JSON.</template>
+<template data-i18n-for="t23" data-i18n-locale="en">Multicore Brotli</template>
+<template data-i18n-for="t23" data-i18n-locale="de">Mehrkern-Brotli</template>
+<template data-i18n-for="t24" data-i18n-locale="en"><code>compressParallel</code> spreads large inputs over up to 8 cores: <strong>2.3 to 4.3 times faster</strong> from 256 KiB, at most 0.1 % larger.</template>
+<template data-i18n-for="t24" data-i18n-locale="de"><code>compressParallel</code> verteilt große Eingaben auf bis zu 8 Kerne: ab 256 KiB <strong>2,3- bis 4,3-mal schneller</strong>, höchstens 0,1 % größer.</template>
+<template data-i18n-for="t25" data-i18n-locale="en">Little memory</template>
+<template data-i18n-for="t25" data-i18n-locale="de">Wenig Arbeitsspeicher</template>
+<template data-i18n-for="t26" data-i18n-locale="en">Data passes through in 1 MiB pieces. Unpacking 100 MiB, the decoder uses <strong>19.6 MiB</strong> of RAM.</template>
+<template data-i18n-for="t26" data-i18n-locale="de">Die Daten laufen in 1-MiB-Stücken durch. Beim Entpacken von 100 MiB belegt der Decoder <strong>19,6 MiB</strong> RAM.</template>
+<template data-i18n-for="t27" data-i18n-locale="en">Faster than the brotli CLI</template>
+<template data-i18n-for="t27" data-i18n-locale="de">Schneller als die brotli-CLI</template>
+<template data-i18n-for="t28" data-i18n-locale="en"><code>bunx defuss-brotli</code> accepts the options of the brotli command and is <strong>1.2 to 5.3 times faster</strong> than brotli 1.2.0 on files from 256 KiB.</template>
+<template data-i18n-for="t28" data-i18n-locale="de"><code>bunx defuss-brotli</code> versteht die Optionen des brotli-Befehls und ist bei Dateien ab 256 KiB <strong>1,2- bis 5,3-mal schneller</strong> als brotli 1.2.0.</template>
+<template data-i18n-for="t29" data-i18n-locale="en">Split.</template>
+<template data-i18n-for="t29" data-i18n-locale="de">Teilen.</template>
+<template data-i18n-for="t30" data-i18n-locale="en">Compress.</template>
+<template data-i18n-for="t30" data-i18n-locale="de">Komprimieren.</template>
+<template data-i18n-for="t31" data-i18n-locale="en">Join.</template>
+<template data-i18n-for="t31" data-i18n-locale="de">Zusammenfügen.</template>
+<template data-i18n-for="t32" data-i18n-locale="en">Live demo</template>
+<template data-i18n-for="t32" data-i18n-locale="de">Live-Demo</template>
+<template data-i18n-for="t33" data-i18n-locale="en">Try it on your own data</template>
+<template data-i18n-for="t33" data-i18n-locale="de">Probier es mit deinen Daten</template>
+<template data-i18n-for="t34" data-i18n-locale="en">Everything runs in this tab; nothing is uploaded. Start with <kbd class="kbd-group"><kbd class="kbd" data-mod>Ctrl</kbd><kbd class="kbd">Enter</kbd></kbd>.</template>
+<template data-i18n-for="t34" data-i18n-locale="de">Alles läuft in diesem Tab; nichts wird hochgeladen. Starten mit <kbd class="kbd-group"><kbd class="kbd" data-mod>Ctrl</kbd><kbd class="kbd">Enter</kbd></kbd>.</template>
+<template data-i18n-for="t35" data-i18n-locale="en">Compress</template>
+<template data-i18n-for="t35" data-i18n-locale="de">Komprimieren</template>
+<template data-i18n-for="t36" data-i18n-locale="en">Any input, any quality</template>
+<template data-i18n-for="t36" data-i18n-locale="de">Beliebige Daten und Qualität</template>
+<template data-i18n-for="t37" data-i18n-locale="en">Decompress</template>
+<template data-i18n-for="t37" data-i18n-locale="de">Entpacken</template>
+<template data-i18n-for="t38" data-i18n-locale="en">With the 51 KB decoder</template>
+<template data-i18n-for="t38" data-i18n-locale="de">Mit dem 51-KB-Decoder</template>
+<template data-i18n-for="t39" data-i18n-locale="en">Single vs. Multicore</template>
+<template data-i18n-for="t39" data-i18n-locale="de">Einzel- vs. Mehrkern</template>
+<template data-i18n-for="t40" data-i18n-locale="en">Same data, 1 core against up to 8</template>
+<template data-i18n-for="t40" data-i18n-locale="de">Gleiche Daten, 1 Kern gegen bis zu 8</template>
+<template data-i18n-for="t41" data-i18n-locale="en">Input</template>
+<template data-i18n-for="t41" data-i18n-locale="de">Eingabe</template>
+<template data-i18n-for="t42" data-i18n-locale="en">Sample</template>
+<template data-i18n-for="t42" data-i18n-locale="de">Beispiel</template>
+<template data-i18n-for="t43" data-i18n-locale="en">Text</template>
+<template data-i18n-for="t43" data-i18n-locale="de">Text</template>
+<template data-i18n-for="t44" data-i18n-locale="en">File</template>
+<template data-i18n-for="t44" data-i18n-locale="de">Datei</template>
+<template data-i18n-for="t45" data-i18n-locale="en">Sample input</template>
+<template data-i18n-for="t45" data-i18n-locale="de">Beispieldaten</template>
+<template data-i18n-for="t46" data-i18n-locale="en">HTML page, 29 KB</template>
+<template data-i18n-for="t46" data-i18n-locale="de">HTML-Seite, 29 KB</template>
+<template data-i18n-for="t47" data-i18n-locale="en">JSON document, 21 KB</template>
+<template data-i18n-for="t47" data-i18n-locale="de">JSON-Dokument, 21 KB</template>
+<template data-i18n-for="t48" data-i18n-locale="en">Log lines, 2 MiB, generated here</template>
+<template data-i18n-for="t48" data-i18n-locale="de">Logzeilen, 2 MiB, hier erzeugt</template>
+<template data-i18n-for="t49" data-i18n-locale="en">SVG drawing, 1 MiB</template>
+<template data-i18n-for="t49" data-i18n-locale="de">SVG-Zeichnung, 1 MiB</template>
+<template data-i18n-for="t50" data-i18n-locale="en">Text to compress</template>
+<template data-i18n-for="t50" data-i18n-locale="de">Zu komprimierender Text</template>
+<template data-i18n-for="t51" data-i18n-locale="en">Choose a file or drop it here. It stays on this device.</template>
+<template data-i18n-for="t51" data-i18n-locale="de">Datei wählen oder hier ablegen. Sie bleibt auf diesem Gerät.</template>
+<template data-i18n-for="t52" data-i18n-locale="en">Quality</template>
+<template data-i18n-for="t52" data-i18n-locale="de">Qualität</template>
+<template data-i18n-for="t53" data-i18n-locale="en">0 is fastest, 11 (the default) is smallest.</template>
+<template data-i18n-for="t53" data-i18n-locale="de">0 ist am schnellsten, 11 (Standard) am kleinsten.</template>
+<template data-i18n-for="t54" data-i18n-locale="en">Look-back distance</template>
+<template data-i18n-for="t54" data-i18n-locale="de">Suchweite</template>
+<template data-i18n-for="t55" data-i18n-locale="en">How far back Brotli looks for repeated data. Further finds more, and unpacking needs that much memory.</template>
+<template data-i18n-for="t55" data-i18n-locale="de">Wie weit Brotli nach wiederholten Daten zurückschaut. Weiter findet mehr, und das Entpacken braucht so viel Speicher.</template>
+<template data-i18n-for="t56" data-i18n-locale="en">CPU cores</template>
+<template data-i18n-for="t56" data-i18n-locale="de">CPU-Kerne</template>
+<template data-i18n-for="t57" data-i18n-locale="en">Shares the work at quality 10 and 11 for inputs above 32 KiB.</template>
+<template data-i18n-for="t57" data-i18n-locale="de">Teilt die Arbeit bei Qualität 10 und 11 für Eingaben über 32 KiB auf.</template>
+<template data-i18n-for="t58" data-i18n-locale="en">Compress</template>
+<template data-i18n-for="t58" data-i18n-locale="de">Komprimieren</template>
+<template data-i18n-for="t59" data-i18n-locale="en">Original</template>
+<template data-i18n-for="t59" data-i18n-locale="de">Original</template>
+<template data-i18n-for="t60" data-i18n-locale="en">(built-in)</template>
+<template data-i18n-for="t60" data-i18n-locale="de">(eingebaut)</template>
+<template data-i18n-for="t61" data-i18n-locale="en">Decompressed again and compared: identical to the input.</template>
+<template data-i18n-for="t61" data-i18n-locale="de">Wieder entpackt und verglichen: identisch mit der Eingabe.</template>
+<template data-i18n-for="t62" data-i18n-locale="en">Download .br</template>
+<template data-i18n-for="t62" data-i18n-locale="de">.br herunterladen</template>
+<template data-i18n-for="t63" data-i18n-locale="en">Decompress this</template>
+<template data-i18n-for="t63" data-i18n-locale="de">Das hier entpacken</template>
+<template data-i18n-for="t64" data-i18n-locale="en">Brotli data</template>
+<template data-i18n-for="t64" data-i18n-locale="de">Brotli-Daten</template>
+<template data-i18n-for="t65" data-i18n-locale="en">Precompressed page</template>
+<template data-i18n-for="t65" data-i18n-locale="de">Vorab komprimierte Seite</template>
+<template data-i18n-for="t66" data-i18n-locale="en">page.html.br from this website, made at quality 11</template>
+<template data-i18n-for="t66" data-i18n-locale="de">page.html.br von dieser Website, mit Qualität 11 erzeugt</template>
+<template data-i18n-for="t67" data-i18n-locale="en">Your last result</template>
+<template data-i18n-for="t67" data-i18n-locale="de">Dein letztes Ergebnis</template>
+<template data-i18n-for="t68" data-i18n-locale="en">From the Compress tab</template>
+<template data-i18n-for="t68" data-i18n-locale="de">Aus dem Tab Komprimieren</template>
+<template data-i18n-for="t69" data-i18n-locale="en">A .br file</template>
+<template data-i18n-for="t69" data-i18n-locale="de">Eine .br-Datei</template>
+<template data-i18n-for="t70" data-i18n-locale="en">Made by any Brotli encoder</template>
+<template data-i18n-for="t70" data-i18n-locale="de">Von einem beliebigen Brotli-Encoder</template>
+<template data-i18n-for="t71" data-i18n-locale="en">Choose a .br file or drop it here.</template>
+<template data-i18n-for="t71" data-i18n-locale="de">.br-Datei wählen oder hier ablegen.</template>
+<template data-i18n-for="t72" data-i18n-locale="en">Decoder download</template>
+<template data-i18n-for="t72" data-i18n-locale="de">Download des Decoders</template>
+<template data-i18n-for="t73" data-i18n-locale="en">decompressor-slim.js and decompressor.wasm, as this server sent them</template>
+<template data-i18n-for="t73" data-i18n-locale="de">decompressor-slim.js und decompressor.wasm, so wie dieser Server sie sendet</template>
+<template data-i18n-for="t74" data-i18n-locale="en">Decompress</template>
+<template data-i18n-for="t74" data-i18n-locale="de">Entpacken</template>
+<template data-i18n-for="t75" data-i18n-locale="en">Input</template>
+<template data-i18n-for="t75" data-i18n-locale="de">Eingabe</template>
+<template data-i18n-for="t76" data-i18n-locale="en">Log lines, 2 MiB, generated here</template>
+<template data-i18n-for="t76" data-i18n-locale="de">Logzeilen, 2 MiB, hier erzeugt</template>
+<template data-i18n-for="t77" data-i18n-locale="en">SVG drawing, 1 MiB</template>
+<template data-i18n-for="t77" data-i18n-locale="de">SVG-Zeichnung, 1 MiB</template>
+<template data-i18n-for="t78" data-i18n-locale="en">CPU cores</template>
+<template data-i18n-for="t78" data-i18n-locale="de">CPU-Kerne</template>
+<template data-i18n-for="t79" data-i18n-locale="en">Both run at quality 11. The single-core run uses this page's own thread, so the page freezes until it is done.</template>
+<template data-i18n-for="t79" data-i18n-locale="de">Beide laufen mit Qualität 11. Der Lauf auf einem Kern nutzt den Thread dieser Seite, die Seite steht also, bis er fertig ist.</template>
+<template data-i18n-for="t80" data-i18n-locale="en">Start</template>
+<template data-i18n-for="t80" data-i18n-locale="de">Starten</template>
+<template data-i18n-for="t81" data-i18n-locale="en">1 core</template>
+<template data-i18n-for="t81" data-i18n-locale="de">1 Kern</template>
+<template data-i18n-for="t82" data-i18n-locale="en">How it works</template>
+<template data-i18n-for="t82" data-i18n-locale="de">So funktioniert es</template>
+<template data-i18n-for="t83" data-i18n-locale="en">Two packages in one, split where it pays</template>
+<template data-i18n-for="t83" data-i18n-locale="de">Zwei Pakete in einem, geteilt, wo es sich lohnt</template>
+<template data-i18n-for="t84" data-i18n-locale="en">The encoder and the decoder are separate Rust libraries compiled to separate WebAssembly files. Pages that only decompress load only the decoder.</template>
+<template data-i18n-for="t84" data-i18n-locale="de">Encoder und Decoder sind getrennte Rust-Bibliotheken in getrennten WebAssembly-Dateien. Seiten, die nur entpacken, laden nur den Decoder.</template>
+<template data-i18n-for="t85" data-i18n-locale="en">Compress</template>
+<template data-i18n-for="t85" data-i18n-locale="de">Komprimieren</template>
+<template data-i18n-for="t86" data-i18n-locale="en">Decompress</template>
+<template data-i18n-for="t86" data-i18n-locale="de">Entpacken</template>
+<template data-i18n-for="t87" data-i18n-locale="en">Your data</template>
+<template data-i18n-for="t87" data-i18n-locale="de">Deine Daten</template>
+<template data-i18n-for="t88" data-i18n-locale="en">bytes or text</template>
+<template data-i18n-for="t88" data-i18n-locale="de">Bytes oder Text</template>
+<template data-i18n-for="t89" data-i18n-locale="en">Quality 10 and 11</template>
+<template data-i18n-for="t89" data-i18n-locale="de">Qualität 10 und 11</template>
+<template data-i18n-for="t90" data-i18n-locale="en">Up to 8 parts</template>
+<template data-i18n-for="t90" data-i18n-locale="de">Bis zu 8 Teile</template>
+<template data-i18n-for="t91" data-i18n-locale="en">each may refer back to the data before it</template>
+<template data-i18n-for="t91" data-i18n-locale="de">jeder darf auf die Daten davor verweisen</template>
+<template data-i18n-for="t92" data-i18n-locale="en">One core per part</template>
+<template data-i18n-for="t92" data-i18n-locale="de">Ein Kern pro Teil</template>
+<template data-i18n-for="t93" data-i18n-locale="en">each with its own encoder</template>
+<template data-i18n-for="t93" data-i18n-locale="de">jeder mit eigenem Encoder</template>
+<template data-i18n-for="t94" data-i18n-locale="en">One .br file</template>
+<template data-i18n-for="t94" data-i18n-locale="de">Eine .br-Datei</template>
+<template data-i18n-for="t95" data-i18n-locale="en">standard Brotli, RFC 7932</template>
+<template data-i18n-for="t95" data-i18n-locale="de">Standard-Brotli, RFC 7932</template>
+<template data-i18n-for="t96" data-i18n-locale="en">or a file</template>
+<template data-i18n-for="t96" data-i18n-locale="de">oder eine Datei</template>
+<template data-i18n-for="t97" data-i18n-locale="en">51 KB decoder</template>
+<template data-i18n-for="t97" data-i18n-locale="de">51-KB-Decoder</template>
+<template data-i18n-for="t98" data-i18n-locale="en">1 MiB at a time, little memory</template>
+<template data-i18n-for="t98" data-i18n-locale="de">1 MiB pro Schritt, wenig Speicher</template>
+<template data-i18n-for="t99" data-i18n-locale="en">Bytes or text</template>
+<template data-i18n-for="t99" data-i18n-locale="de">Bytes oder Text</template>
+<template data-i18n-for="t100" data-i18n-locale="en">sent by your server</template>
+<template data-i18n-for="t100" data-i18n-locale="de">von deinem Server gesendet</template>
+<template data-i18n-for="t101" data-i18n-locale="en">Separate downloads</template>
+<template data-i18n-for="t101" data-i18n-locale="de">Getrennte Downloads</template>
+<template data-i18n-for="t102" data-i18n-locale="en">The decoder is a 51 KB download, the encoder 397 KB. Build tools leave the encoder out of apps that only decompress.</template>
+<template data-i18n-for="t102" data-i18n-locale="de">Der Decoder ist ein Download von 51 KB, der Encoder von 397 KB. Build-Tools lassen den Encoder aus Apps heraus, die nur entpacken.</template>
+<template data-i18n-for="t103" data-i18n-locale="en">Memory stays flat</template>
+<template data-i18n-for="t103" data-i18n-locale="de">Speicher bleibt flach</template>
+<template data-i18n-for="t104" data-i18n-locale="en">Data passes through 1 MiB at a time, so memory does not grow with the input: unpacking 100 MiB takes 19.6 MiB.</template>
+<template data-i18n-for="t104" data-i18n-locale="de">Die Daten laufen in Schritten von 1 MiB durch, der Speicher wächst also nicht mit der Eingabe: 100 MiB entpacken braucht 19,6 MiB.</template>
+<template data-i18n-for="t105" data-i18n-locale="en">Same bytes on any machine</template>
+<template data-i18n-for="t105" data-i18n-locale="de">Gleiche Bytes auf jeder Maschine</template>
+<template data-i18n-for="t106" data-i18n-locale="en">Where the input is split depends only on its length, so 1 or 8 cores produce the same file, byte for byte.</template>
+<template data-i18n-for="t106" data-i18n-locale="de">Wo die Eingabe geteilt wird, hängt nur von ihrer Länge ab, also erzeugen 1 oder 8 Kerne dieselbe Datei, Byte für Byte.</template>
+<template data-i18n-for="t107" data-i18n-locale="en">For teams and companies</template>
+<template data-i18n-for="t107" data-i18n-locale="de">Für Teams und Unternehmen</template>
+<template data-i18n-for="t108" data-i18n-locale="en">Need it adapted to your stack?</template>
+<template data-i18n-for="t108" data-i18n-locale="de">Soll es zu deinem Stack passen?</template>
+<template data-i18n-for="t109" data-i18n-locale="en">I build what your project needs on top of defuss-brotli, for example custom dictionaries for your payloads, a streaming API, or Brotli inside an edge runtime.</template>
+<template data-i18n-for="t109" data-i18n-locale="de">Ich baue auf defuss-brotli auf, was dein Projekt braucht, etwa eigene Wörterbücher für deine Daten, eine Streaming-API oder Brotli in einer Edge-Runtime.</template>
+<template data-i18n-for="t110" data-i18n-locale="en">Talk to Aron on LinkedIn</template>
+<template data-i18n-for="t110" data-i18n-locale="de">Schreib Aron auf LinkedIn</template>
+<template data-i18n-for="t111" data-i18n-locale="en"> (opens in a new tab)</template>
+<template data-i18n-for="t111" data-i18n-locale="de"> (öffnet in neuem Tab)</template>
+<template data-i18n-for="t112" data-i18n-locale="en">Performance</template>
+<template data-i18n-for="t112" data-i18n-locale="de">Leistung</template>
+<template data-i18n-for="t113" data-i18n-locale="en">Measured, with the method attached</template>
+<template data-i18n-for="t113" data-i18n-locale="de">Gemessen, mit Methode</template>
+<template data-i18n-for="t114" data-i18n-locale="en">Measured on <span data-perf="cpu">Apple M5 Max</span> with Node.js <span data-perf="node">26</span> on <span data-perf="date">2026-11-09</span>; each time is the middle value of 3 runs after a warm-up run. The table under the chart has every value.</template>
+<template data-i18n-for="t114" data-i18n-locale="de">Gemessen auf <span data-perf="cpu">Apple M5 Max</span> mit Node.js <span data-perf="node">26</span> am <span data-perf="date">2026-11-09</span>; jede Zeit ist der mittlere Wert aus 3 Läufen nach einem Aufwärmlauf. Die Tabelle unter dem Diagramm enthält jeden Wert.</template>
+<template data-i18n-for="t115" data-i18n-locale="en">Quality</template>
+<template data-i18n-for="t115" data-i18n-locale="de">Qualität</template>
+<template data-i18n-for="t116" data-i18n-locale="en">Multicore</template>
+<template data-i18n-for="t116" data-i18n-locale="de">Mehrkern</template>
+<template data-i18n-for="t117" data-i18n-locale="en">Look-back</template>
+<template data-i18n-for="t117" data-i18n-locale="de">Suchweite</template>
+<template data-i18n-for="t118" data-i18n-locale="en">Command line</template>
+<template data-i18n-for="t118" data-i18n-locale="de">Kommandozeile</template>
+<template data-i18n-for="t119" data-i18n-locale="en">Download size</template>
+<template data-i18n-for="t119" data-i18n-locale="de">Download-Größe</template>
+<template data-i18n-for="t120" data-i18n-locale="en">Size</template>
+<template data-i18n-for="t120" data-i18n-locale="de">Größe</template>
+<template data-i18n-for="t121" data-i18n-locale="en">Time</template>
+<template data-i18n-for="t121" data-i18n-locale="de">Zeit</template>
+<template data-i18n-for="t122" data-i18n-locale="en">Measure on this device</template>
+<template data-i18n-for="t122" data-i18n-locale="de">Auf diesem Gerät messen</template>
+<template data-i18n-for="t123" data-i18n-locale="en">The chart needs JavaScript. The table below has the same numbers.</template>
+<template data-i18n-for="t123" data-i18n-locale="de">Das Diagramm braucht JavaScript. Die Tabelle darunter enthält dieselben Zahlen.</template>
+<template data-i18n-for="t124" data-i18n-locale="en">Values as a table</template>
+<template data-i18n-for="t124" data-i18n-locale="de">Werte als Tabelle</template>
+<template data-i18n-for="t125" data-i18n-locale="en">Use it</template>
+<template data-i18n-for="t125" data-i18n-locale="de">Einbinden</template>
+<template data-i18n-for="t126" data-i18n-locale="en">A few lines in your app, or one command</template>
+<template data-i18n-for="t126" data-i18n-locale="de">Ein paar Zeilen in deiner App oder ein Befehl</template>
+<template data-i18n-for="t127" data-i18n-locale="en">In code</template>
+<template data-i18n-for="t127" data-i18n-locale="de">Im Code</template>
+<template data-i18n-for="t128" data-i18n-locale="en">Browser</template>
+<template data-i18n-for="t128" data-i18n-locale="de">Browser</template>
+<template data-i18n-for="t129" data-i18n-locale="en">No bundler</template>
+<template data-i18n-for="t129" data-i18n-locale="de">Ohne Bundler</template>
+<template data-i18n-for="t130" data-i18n-locale="en">Loads only the decoder, then decodes a file your server stored as Brotli.</template>
+<template data-i18n-for="t130" data-i18n-locale="de">Lädt nur den Decoder und entpackt dann eine Datei, die dein Server als Brotli abgelegt hat.</template>
+<template data-i18n-for="t131" data-i18n-locale="en">Precompresses build output at quality 11 on all cores.</template>
+<template data-i18n-for="t131" data-i18n-locale="de">Komprimiert Build-Ausgaben vorab mit Qualität 11 auf allen Kernen.</template>
+<template data-i18n-for="t132" data-i18n-locale="en">An import map from jsDelivr; the decoder fetches its .wasm from the same folder.</template>
+<template data-i18n-for="t132" data-i18n-locale="de">Eine Import-Map von jsDelivr; der Decoder lädt seine .wasm aus demselben Ordner.</template>
+<template data-i18n-for="t133" data-i18n-locale="en">On the command line</template>
+<template data-i18n-for="t133" data-i18n-locale="de">Auf der Kommandozeile</template>
+<template data-i18n-for="t134" data-i18n-locale="en">Same options, defaults and output names as brotli 1.2.0, so build scripts can swap it in.</template>
+<template data-i18n-for="t134" data-i18n-locale="de">Gleiche Optionen, Standards und Dateinamen wie brotli 1.2.0, Build-Skripte können also einfach wechseln.</template>
+<template data-i18n-for="t135" data-i18n-locale="en">Coding agents: <a href="llms.txt">llms.txt</a> has the API, limits and numbers in one file.</template>
+<template data-i18n-for="t135" data-i18n-locale="de">Coding-Agenten: <a href="llms.txt">llms.txt</a> enthält API, Grenzen und Zahlen in einer Datei.</template>
+<template data-i18n-for="t136" data-i18n-locale="en">Brotli for browsers, Node.js and Bun</template>
+<template data-i18n-for="t136" data-i18n-locale="de">Brotli für Browser, Node.js und Bun</template>
+<template data-i18n-for="t137" data-i18n-locale="en">Open source under the MIT license. Pure Rust compiled to WebAssembly, no native addons.</template>
+<template data-i18n-for="t137" data-i18n-locale="de">Open Source unter MIT-Lizenz. Reines Rust als WebAssembly, ohne native Addons.</template>
+<template data-i18n-for="t138" data-i18n-locale="en">Source on GitHub</template>
+<template data-i18n-for="t138" data-i18n-locale="de">Quellcode auf GitHub</template>
+<template data-i18n-for="t139" data-i18n-locale="en">Package on npm</template>
+<template data-i18n-for="t139" data-i18n-locale="de">Paket auf npm</template>
+<template data-i18n-for="t140" data-i18n-locale="en">Project</template>
+<template data-i18n-for="t140" data-i18n-locale="de">Projekt</template>
+<template data-i18n-for="t141" data-i18n-locale="en">Documentation</template>
+<template data-i18n-for="t141" data-i18n-locale="de">Dokumentation</template>
+<template data-i18n-for="t142" data-i18n-locale="en">Architecture</template>
+<template data-i18n-for="t142" data-i18n-locale="de">Architektur</template>
+<template data-i18n-for="t143" data-i18n-locale="en">Changelog</template>
+<template data-i18n-for="t143" data-i18n-locale="de">Änderungen</template>
+<template data-i18n-for="t144" data-i18n-locale="en">Built with</template>
+<template data-i18n-for="t144" data-i18n-locale="de">Gebaut mit</template>
+<template data-i18n-for="t145" data-i18n-locale="en">Professional services</template>
+<template data-i18n-for="t145" data-i18n-locale="de">Professionelle Unterstützung</template>
+<template data-i18n-for="t146" data-i18n-locale="en">Freelance expert and independent AI researcher: compression, WebAssembly and on-device AI.</template>
+<template data-i18n-for="t146" data-i18n-locale="de">Freiberuflicher Experte und unabhängiger KI-Forscher: Kompression, WebAssembly und KI auf dem Gerät.</template>
+<template data-i18n-for="t147" data-i18n-locale="en">Connect on LinkedIn</template>
+<template data-i18n-for="t147" data-i18n-locale="de">Auf LinkedIn vernetzen</template>
+<template data-i18n-for="t148" data-i18n-locale="en"> (opens in a new tab)</template>
+<template data-i18n-for="t148" data-i18n-locale="de"> (öffnet in neuem Tab)</template>
+<template data-i18n-for="t149" data-i18n-locale="en">2026 Aron Homberg (kyr0). MIT license. Brotli is specified in RFC 7932.</template>
+<template data-i18n-for="t149" data-i18n-locale="de">2026 Aron Homberg (kyr0). MIT-Lizenz. Brotli ist in RFC 7932 spezifiziert.</template>
+<template data-i18n-for="t150" data-i18n-locale="en">Press Compress to start.</template>
+<template data-i18n-for="t150" data-i18n-locale="de">Mit Komprimieren geht es los.</template>
+<template data-i18n-for="t151" data-i18n-locale="en">Press Decompress to start.</template>
+<template data-i18n-for="t151" data-i18n-locale="de">Mit Entpacken geht es los.</template>
+<template data-i18n-for="t152" data-i18n-locale="en">Press Start to compare.</template>
+<template data-i18n-for="t152" data-i18n-locale="de">Mit Starten beginnt der Vergleich.</template>
+<template data-i18n-for="t153" data-i18n-locale="en">Loading the encoder (compressor.wasm)...</template>
+<template data-i18n-for="t153" data-i18n-locale="de">Lade den Encoder (compressor.wasm) ...</template>
+<template data-i18n-for="t154" data-i18n-locale="en">Loading the decoder (decompressor.wasm)...</template>
+<template data-i18n-for="t154" data-i18n-locale="de">Lade den Decoder (decompressor.wasm) ...</template>
+<template data-i18n-for="t155" data-i18n-locale="en">Preparing the input...</template>
+<template data-i18n-for="t155" data-i18n-locale="de">Bereite die Eingabe vor ...</template>
+<template data-i18n-for="t156" data-i18n-locale="en">Compressing {size}...</template>
+<template data-i18n-for="t156" data-i18n-locale="de">Komprimiere {size} ...</template>
+<template data-i18n-for="t157" data-i18n-locale="en">Decompressing...</template>
+<template data-i18n-for="t157" data-i18n-locale="de">Entpacke ...</template>
+<template data-i18n-for="t158" data-i18n-locale="en">{times} times smaller</template>
+<template data-i18n-for="t158" data-i18n-locale="de">{times}-mal kleiner</template>
+<template data-i18n-for="t159" data-i18n-locale="en">{output} from {input} in {time}, at quality {quality}.</template>
+<template data-i18n-for="t159" data-i18n-locale="de">{output} aus {input} in {time}, mit Qualität {quality}.</template>
+<template data-i18n-for="t160" data-i18n-locale="en">not available</template>
+<template data-i18n-for="t160" data-i18n-locale="de">nicht verfügbar</template>
+<template data-i18n-for="t161" data-i18n-locale="en">Decoded {input} in {time}.</template>
+<template data-i18n-for="t161" data-i18n-locale="de">{input} in {time} entpackt.</template>
+<template data-i18n-for="t162" data-i18n-locale="en">{bytes} transferred</template>
+<template data-i18n-for="t162" data-i18n-locale="de">{bytes} übertragen</template>
+<template data-i18n-for="t163" data-i18n-locale="en">from the browser cache</template>
+<template data-i18n-for="t163" data-i18n-locale="de">aus dem Browser-Cache</template>
+<template data-i18n-for="t164" data-i18n-locale="en">{times} times faster</template>
+<template data-i18n-for="t164" data-i18n-locale="de">{times}-mal schneller</template>
+<template data-i18n-for="t165" data-i18n-locale="en">compressParallel is running on {threads} cores...</template>
+<template data-i18n-for="t165" data-i18n-locale="de">compressParallel läuft auf {threads} Kernen ...</template>
+<template data-i18n-for="t166" data-i18n-locale="en">compress is running on one core; the page freezes until it is done...</template>
+<template data-i18n-for="t166" data-i18n-locale="de">compress läuft auf einem Kern; die Seite steht, bis es fertig ist ...</template>
+<template data-i18n-for="t167" data-i18n-locale="en">{input}: {parallel} on {threads} cores against {single} on one core.</template>
+<template data-i18n-for="t167" data-i18n-locale="de">{input}: {parallel} auf {threads} Kernen gegen {single} auf einem Kern.</template>
+<template data-i18n-for="t168" data-i18n-locale="en">Both results unpack to the input. The multicore one is {delta} larger.</template>
+<template data-i18n-for="t168" data-i18n-locale="de">Beide Ergebnisse ergeben entpackt die Eingabe. Das Mehrkern-Ergebnis ist {delta} größer.</template>
+<template data-i18n-for="t169" data-i18n-locale="en">quality {quality}</template>
+<template data-i18n-for="t169" data-i18n-locale="de">Qualität {quality}</template>
+<template data-i18n-for="t170" data-i18n-locale="en">quality 11</template>
+<template data-i18n-for="t170" data-i18n-locale="de">Qualität 11</template>
+<template data-i18n-for="t171" data-i18n-locale="en">{n} cores</template>
+<template data-i18n-for="t171" data-i18n-locale="de">{n} Kerne</template>
+<template data-i18n-for="t172" data-i18n-locale="en">Binary data. First bytes in hex:</template>
+<template data-i18n-for="t172" data-i18n-locale="de">Binärdaten. Erste Bytes als Hex:</template>
+<template data-i18n-for="t173" data-i18n-locale="en">It did not work: {message}</template>
+<template data-i18n-for="t173" data-i18n-locale="de">Das hat nicht geklappt: {message}</template>
+<template data-i18n-for="t174" data-i18n-locale="en">Open this page over http(s) to run the demos: browsers do not load WebAssembly from a local file.</template>
+<template data-i18n-for="t174" data-i18n-locale="de">Öffne die Seite über http(s), um die Demos zu starten: Browser laden WebAssembly nicht aus einer lokalen Datei.</template>
+<template data-i18n-for="t175" data-i18n-locale="en">Built-in Brotli support in this browser (CompressionStream): {native}. defuss-brotli works either way.</template>
+<template data-i18n-for="t175" data-i18n-locale="de">Eingebautes Brotli in diesem Browser (CompressionStream): {native}. defuss-brotli funktioniert in beiden Fällen.</template>
+<template data-i18n-for="t176" data-i18n-locale="en">yes</template>
+<template data-i18n-for="t176" data-i18n-locale="de">ja</template>
+<template data-i18n-for="t177" data-i18n-locale="en">no</template>
+<template data-i18n-for="t177" data-i18n-locale="de">nein</template>
+<template data-i18n-for="t178" data-i18n-locale="en">Measuring quality {quality} of 11...</template>
+<template data-i18n-for="t178" data-i18n-locale="de">Messe Qualität {quality} von 11 ...</template>
+<template data-i18n-for="t179" data-i18n-locale="en">This device</template>
+<template data-i18n-for="t179" data-i18n-locale="de">Dieses Gerät</template>
+<template data-i18n-for="t180" data-i18n-locale="en">Copied</template>
+<template data-i18n-for="t180" data-i18n-locale="de">Kopiert</template>
+<template data-i18n-for="t181" data-i18n-locale="en">{input} ({size}): at quality 11 the result is {saving} smaller than gzip at its highest level.</template>
+<template data-i18n-for="t181" data-i18n-locale="de">{input} ({size}): Bei Qualität 11 ist das Ergebnis {saving} kleiner als mit gzip auf höchster Stufe.</template>
+<template data-i18n-for="t182" data-i18n-locale="en">How long one compression takes. Several cores are only used at quality 10 and 11, the slowest levels.</template>
+<template data-i18n-for="t182" data-i18n-locale="de">Wie lange eine Kompression dauert. Mehrere Kerne kommen nur bei Qualität 10 und 11 zum Einsatz, den langsamsten Stufen.</template>
+<template data-i18n-for="t183" data-i18n-locale="en">Time at quality 11 for each sample: on 1 core, on 8 cores, and with the C library built into Node.js.</template>
+<template data-i18n-for="t183" data-i18n-locale="de">Zeit bei Qualität 11 für jedes Beispiel: auf 1 Kern, auf 8 Kernen und mit der in Node.js eingebauten C-Bibliothek.</template>
+<template data-i18n-for="t184" data-i18n-locale="en">Brotli saves space by pointing back to data it has already seen. The look-back distance limits how far back: further finds more repeats, and unpacking needs that much memory. Sizes at quality 11, against 64 KiB.</template>
+<template data-i18n-for="t184" data-i18n-locale="de">Brotli spart Platz, indem es auf schon gesehene Daten zurückverweist. Die Suchweite begrenzt, wie weit zurück: Weiter findet mehr Wiederholungen, und das Entpacken braucht so viel Speicher. Größen bei Qualität 11, im Vergleich zu 64 KiB.</template>
+<template data-i18n-for="t185" data-i18n-locale="en">Total time of the whole command at quality 11, startup included, middle value of 5 runs, against Google's brotli 1.2.0 on an Apple M5 Max.</template>
+<template data-i18n-for="t185" data-i18n-locale="de">Gesamtzeit des Befehls bei Qualität 11 samt Start, mittlerer Wert aus 5 Läufen, gegen Googles brotli 1.2.0 auf einem Apple M5 Max.</template>
+<template data-i18n-for="t186" data-i18n-locale="en">What a browser downloads for each part of the package, depending on how the server compresses the files.</template>
+<template data-i18n-for="t186" data-i18n-locale="de">Was ein Browser für jeden Teil des Pakets lädt, je nachdem, wie der Server die Dateien komprimiert.</template>
+</div>
+<div class="fab" data-scroll-top>
+  <a class="btn fab-trigger" href="#/" data-router-link aria-label="Back to top" data-i18n-aria-label-en="Back to top" data-i18n-aria-label-de="Nach oben"><span class="fab-icon" aria-hidden="true"><svg class="icon"><use href="#i-arrow-up"/></svg></span></a>
+</div>
+<script type="application/json" id="perf-data">{"bench":{"measured":"2026-11-09","node":"v26.11.1","cpu":"Apple M5 Max","threads":8,"inputs":{"html":{"label":"HTML page","file":"input/page.html","bytes":29175},"json":{"label":"JSON","file":"input/data.json","bytes":20678},"svg":{"label":"SVG drawing, first 1 MiB","file":"huge.svg","bytes":1048576},"png":{"label":"PNG image","file":"huge.png","bytes":2152244}},"quality":{"html":[{"quality":0,"size":1658,"ms":0.18,"parallel":{"size":1658,"ms":0.13},"native":{"size":1658,"ms":0.04}},{"quality":1,"size":1270,"ms":0.11,"parallel":{"size":1270,"ms":0.09},"native":{"size":1337,"ms":0.04}},{"quality":2,"size":1008,"ms":0.13,"parallel":{"size":1008,"ms":0.13},"native":{"size":1008,"ms":0.05}},{"quality":3,"size":971,"ms":0.15,"parallel":{"size":971,"ms":0.15},"native":{"size":955,"ms":0.05}},{"quality":4,"size":891,"ms":0.16,"parallel":{"size":891,"ms":0.14},"native":{"size":892,"ms":0.06}},{"quality":5,"size":834,"ms":0.22,"parallel":{"size":834,"ms":0.21},"native":{"size":834,"ms":0.13}},{"quality":6,"size":834,"ms":0.21,"parallel":{"size":834,"ms":0.2},"native":{"size":834,"ms":0.09}},{"quality":7,"size":841,"ms":0.27,"parallel":{"size":841,"ms":0.31},"native":{"size":841,"ms":0.1}},{"quality":8,"size":841,"ms":0.27,"parallel":{"size":841,"ms":0.26},"native":{"size":841,"ms":0.11}},{"quality":9,"size":842,"ms":0.6,"parallel":{"size":842,"ms":0.47},"native":{"size":842,"ms":0.14}},{"quality":10,"size":773,"ms":9.11,"parallel":{"size":773,"ms":7.74},"native":{"size":773,"ms":5.28}},{"quality":11,"size":764,"ms":65.79,"parallel":{"size":764,"ms":66.35},"native":{"size":764,"ms":47.07}}],"json":[{"quality":0,"size":2041,"ms":0.05,"parallel":{"size":2041,"ms":0.05},"native":{"size":2041,"ms":0.03}},{"quality":1,"size":1451,"ms":0.05,"parallel":{"size":1451,"ms":0.05},"native":{"size":1565,"ms":0.03}},{"quality":2,"size":1304,"ms":0.1,"parallel":{"size":1304,"ms":0.12},"native":{"size":1302,"ms":0.04}},{"quality":3,"size":1291,"ms":0.11,"parallel":{"size":1291,"ms":0.1},"native":{"size":1282,"ms":0.05}},{"quality":4,"size":1257,"ms":0.08,"parallel":{"size":1257,"ms":0.08},"native":{"size":1258,"ms":0.07}},{"quality":5,"size":1086,"ms":0.1,"parallel":{"size":1086,"ms":0.15},"native":{"size":1086,"ms":0.11}},{"quality":6,"size":1093,"ms":0.2,"parallel":{"size":1093,"ms":0.14},"native":{"size":1093,"ms":0.12}},{"quality":7,"size":1055,"ms":0.2,"parallel":{"size":1055,"ms":0.18},"native":{"size":1055,"ms":0.11}},{"quality":8,"size":1055,"ms":0.26,"parallel":{"size":1055,"ms":0.25},"native":{"size":1055,"ms":0.12}},{"quality":9,"size":997,"ms":0.42,"parallel":{"size":997,"ms":0.41},"native":{"size":997,"ms":0.24}},{"quality":10,"size":967,"ms":10.71,"parallel":{"size":967,"ms":10.22},"native":{"size":967,"ms":6.95}},{"quality":11,"size":935,"ms":26.02,"parallel":{"size":935,"ms":26.29},"native":{"size":935,"ms":19.83}}],"svg":[{"quality":0,"size":803875,"ms":5.55,"parallel":{"size":803875,"ms":5.02},"native":{"size":803875,"ms":2.93}},{"quality":1,"size":772461,"ms":7.44,"parallel":{"size":772461,"ms":7.86},"native":{"size":772461,"ms":3.62}},{"quality":2,"size":789980,"ms":7.69,"parallel":{"size":789980,"ms":7.49},"native":{"size":790158,"ms":4.46}},{"quality":3,"size":784561,"ms":9.25,"parallel":{"size":784561,"ms":9.17},"native":{"size":784288,"ms":6.41}},{"quality":4,"size":770838,"ms":26.72,"parallel":{"size":770838,"ms":30.27},"native":{"size":770326,"ms":13.18}},{"quality":5,"size":773207,"ms":38.1,"parallel":{"size":773207,"ms":39.72},"native":{"size":770367,"ms":14.87}},{"quality":6,"size":775105,"ms":56.4,"parallel":{"size":775105,"ms":58.4},"native":{"size":770832,"ms":24.27}},{"quality":7,"size":775531,"ms":77.52,"parallel":{"size":775531,"ms":80.15},"native":{"size":770994,"ms":49.99}},{"quality":8,"size":775540,"ms":85.81,"parallel":{"size":775540,"ms":78.47},"native":{"size":770997,"ms":65.39}},{"quality":9,"size":759133,"ms":180.78,"parallel":{"size":759133,"ms":291.5},"native":{"size":757247,"ms":133.62}},{"quality":10,"size":747081,"ms":551.33,"parallel":{"size":747576,"ms":243.25},"native":{"size":747201,"ms":536.34}},{"quality":11,"size":746179,"ms":904.18,"parallel":{"size":746536,"ms":288},"native":{"size":746179,"ms":1100.82}}],"png":[{"quality":0,"size":2152249,"ms":7.98,"parallel":{"size":2152249,"ms":8.79},"native":{"size":2152249,"ms":6.24}},{"quality":1,"size":2152249,"ms":0.83,"parallel":{"size":2152249,"ms":0.73},"native":{"size":2152249,"ms":0.65}},{"quality":2,"size":2151966,"ms":21.89,"parallel":{"size":2151966,"ms":6.7},"native":{"size":2151965,"ms":5.13}},{"quality":3,"size":2151943,"ms":7.97,"parallel":{"size":2151943,"ms":8.21},"native":{"size":2151943,"ms":10.28}},{"quality":4,"size":2152252,"ms":4.44,"parallel":{"size":2152252,"ms":5.67},"native":{"size":2152252,"ms":2.94}},{"quality":5,"size":2152252,"ms":15.07,"parallel":{"size":2152252,"ms":13.94},"native":{"size":2152252,"ms":4.95}},{"quality":6,"size":2152252,"ms":18.52,"parallel":{"size":2152252,"ms":20.31},"native":{"size":2152252,"ms":5.38}},{"quality":7,"size":2152252,"ms":24.66,"parallel":{"size":2152252,"ms":21.26},"native":{"size":2152252,"ms":9.36}},{"quality":8,"size":2152252,"ms":31.65,"parallel":{"size":2152252,"ms":29.01},"native":{"size":2152252,"ms":11.66}},{"quality":9,"size":2129872,"ms":451.15,"parallel":{"size":2129872,"ms":436.4},"native":{"size":2141290,"ms":185.58}},{"quality":10,"size":2108001,"ms":2605.52,"parallel":{"size":2110678,"ms":1057.62},"native":{"size":2108044,"ms":2048.83}},{"quality":11,"size":2069788,"ms":2664.63,"parallel":{"size":2071807,"ms":992.47},"native":{"size":2070197,"ms":4950.75}}]},"gzip":{"html":{"size":1232,"ms":0.1},"json":{"size":1282,"ms":0.21},"svg":{"size":767489,"ms":45.07},"png":{"size":2139237,"ms":70.78}},"window":{"svg":[{"lgwin":16,"size":746636,"ms":662.59},{"lgwin":18,"size":746527,"ms":811.24},{"lgwin":20,"size":746310,"ms":925.26},{"lgwin":22,"size":746179,"ms":891.89},{"lgwin":24,"size":746179,"ms":841.49}],"png":[{"lgwin":16,"size":2127617,"ms":1771.44},{"lgwin":18,"size":2099355,"ms":1640.38},{"lgwin":20,"size":2073902,"ms":2165.35},{"lgwin":22,"size":2069788,"ms":2371.34},{"lgwin":24,"size":2068586,"ms":2877.72}]},"sizes":[{"variant":"defuss-brotli/decompressor/slim","raw":190289,"gzip":85633,"br4":85090,"br11":50828,"zstd":78609},{"variant":"defuss-brotli/decompressor","raw":252213,"gzip":110006,"br4":111536,"br11":92996,"zstd":101435},{"variant":"defuss-brotli/compressor/slim","raw":960085,"gzip":453599,"br4":510593,"br11":396955,"zstd":405510},{"variant":"defuss-brotli/compressor","raw":1275103,"gzip":608231,"br4":663856,"br11":499050,"zstd":524585}]},"cli":{"source":"README.md, command line: median of 5 interleaved runs, startup included, quality 11, Apple Silicon (18 cores), Node.js 26, Bun 1.4, brotli 1.2.0, 2026-11-09","rows":[{"input":"29 KB HTML","node":164,"bun":89,"brotli":55},{"input":"64 KiB SVG","node":174,"bun":68,"brotli":69},{"input":"256 KiB SVG","node":178,"bun":89,"brotli":219},{"input":"1 MiB SVG","node":320,"bun":301,"brotli":879},{"input":"2.1 MB PNG","node":740,"bun":714,"brotli":3790},{"input":"5.1 MB SVG","node":1890,"bun":1710,"brotli":4000}]},"echarts":["https://cdn.jsdelivr.net/npm/echarts@6.1.0/dist/echarts.min.js","sha384-C2iskrW/uPW46KzOjrvJIQo4YkV8lkD+QS0CrDN18IIPIpT/g2USu8bTP3nvmIAD"]}</script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/kyr0/defuss-shadcn@0.9.13/dist/components/all.min.js" integrity="sha384-TmkH79IpYKAuexQw5i80JoentBsM0UsBg74rGr0zKEj2iNQwuCmWWRulohr0Z0as" crossorigin="anonymous"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/kyr0/defuss-shadcn@0.9.13/dist/components/shaders.min.js" integrity="sha384-dPWu1F8nFNKt5r6WTNrSYJWS+EdP+0D/lSBqFkKnli8b68mvzXjcr50YfXDGk7LA" crossorigin="anonymous"></script>
+<script defer src="assets/site.js"></script>
+</body>
+</html>

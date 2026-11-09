@@ -1,0 +1,11 @@
+{
+ "source": "README.md, command line: median of 5 interleaved runs, startup included, quality 11, Apple Silicon (18 cores), Node.js 26, Bun 1.4, brotli 1.2.0, 2026-11-09",
+ "rows": [
+  {"input": "29 KB HTML", "node": 164, "bun": 89, "brotli": 55},
+  {"input": "64 KiB SVG", "node": 174, "bun": 68, "brotli": 69},
+  {"input": "256 KiB SVG", "node": 178, "bun": 89, "brotli": 219},
+  {"input": "1 MiB SVG", "node": 320, "bun": 301, "brotli": 879},
+  {"input": "2.1 MB PNG", "node": 740, "bun": 714, "brotli": 3790},
+  {"input": "5.1 MB SVG", "node": 1890, "bun": 1710, "brotli": 4000}
+ ]
+}

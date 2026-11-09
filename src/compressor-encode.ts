@@ -39,8 +39,17 @@ export function encodeWith(wasm: WebAssembly.Memory, encoder: ChunkEncoder, inpu
       if (written > 0) parts.push(new Uint8Array(wasm.buffer, outputPtr, written).slice());
       size += written;
     } while (!encoder.finished());
-    return concat(parts, size);
-  } finally {
     encoder.free();
+    return concat(parts, size);
+  } catch (error) {
+    // VERIFIED: a Rust panic traps without releasing the encoder's borrow, and freeing it then throws "attempted to
+    // take ownership of Rust value while it was borrowed" (quality 5 parts of huge.svg, 2026-11-09), which replaced
+    // the error that explains the failure. Rethrowing the original beats a `finally` that frees unconditionally.
+    try {
+      encoder.free();
+    } catch {
+      // the encoder stays allocated; its instance is unusable after a trap anyway
+    }
+    throw error;
   }
 }

@@ -1,0 +1,97 @@
+# defuss-brotli
+
+> Brotli compression and decompression (RFC 7932) for browsers, Node.js and Bun, compiled from the Rust `brotli` crates to WebAssembly. The decoder is a separate 51 KB download; `compressParallel` runs quality 11 on up to 8 workers; a `defuss-brotli` command takes the options of the `brotli` CLI. MIT licensed, no native addons, version 0.3.1.
+
+Every number below was measured on Apple Silicon (M5 Max) on 2026-11-09 and comes with its method in the repository's README.md and ARCH.md. Sizes are exact; timings depend on the machine.
+
+## When to choose it
+
+- You need Brotli in a browser from JavaScript. Browsers apply Brotli as an HTTP `Content-Encoding`, but Chromium 158 rejects `"brotli"` in both `CompressionStream` and `DecompressionStream`.
+- You ship precompressed data (JSON, catalogs, game assets, offline bundles) and want to decode it in the client with a small decoder: `defuss-brotli/decompressor/slim` is 50,828 B as Brotli quality 11 and 85,090 B as served by jsDelivr (Brotli quality 4). The encoder is never downloaded with it.
+- You compress at quality 11 in a build step or on a server and want all cores: `compressParallel` is 2.3 to 4.3 times faster than `compress` from 256 KiB (Node.js 26), output at most 0.10 % larger.
+- You need a `brotli` command where only Node.js or Bun is installed, for example in CI images: `bunx defuss-brotli` is 1.2 to 5.3 times faster than `brotli` 1.2.0 from 256 KiB at the default quality 11.
+- You want the same code and the same output in every runtime: one WebAssembly build, tested in Node.js, Bun, Chromium, Vite 8.3.6 (build and dev), `bun build`, and unbundled from a CDN with an import map.
+
+Node.js also has Brotli in `node:zlib` (native C), which is faster on one thread at most qualities below 10. defuss-brotli is the choice when the same code must run in browsers too, when quality 10 and 11 should use several cores, or when you want the CLI.
+
+## Install
+
+- `bun add defuss-brotli` (or `npm install`, `pnpm add`, `yarn add`)
+- CLI without installing: `bunx defuss-brotli`, `npx defuss-brotli`, `pnpm dlx defuss-brotli`
+
+## API
+
+Four entry points, two per direction. The default ones embed the WebAssembly as base64 (one file, simplest for bundlers); the `/slim` ones load a separate `.wasm` file (21 to 45 % fewer bytes on the wire, cached separately, compiled while it downloads).
+
+- `defuss-brotli/compressor`, `defuss-brotli/compressor/slim`: `init()`, `compress(bytes, options)`, `compressText(string, options)`, `compressParallel(bytes, options)`, `isReady()`, `normalizeOptions(options)`
+- `defuss-brotli/decompressor`, `defuss-brotli/decompressor/slim`: `init()`, `decompress(bytes, options)`, `decompressText(bytes, options)`, `isReady()`
+- `defuss-brotli/compressor.wasm`, `defuss-brotli/decompressor.wasm`: the binaries, for bundler asset imports
+
+```ts
+import { init, decompressText } from "defuss-brotli/decompressor/slim";
+
+await init(); // fetches decompressor.wasm from next to the module
+const packed = await (await fetch("/data/catalog.json.br")).arrayBuffer();
+const catalog = JSON.parse(decompressText(new Uint8Array(packed)));
+```
+
+```ts
+import { readFile, writeFile } from "node:fs/promises";
+import { init, compressParallel } from "defuss-brotli/compressor";
+
+await init();
+await writeFile("dist/app.js.br", await compressParallel(await readFile("dist/app.js")));
+```
+
+Rules that matter when you write code with it:
+
+- Call `init()` once before any other function; it returns the same Promise on every call. A slim `init()` also takes a URL, a `Response`, bytes or a compiled `WebAssembly.Module`.
+- `compress`, `compressText`, `decompress` and `decompressText` are synchronous; `compressParallel` returns a Promise.
+- Options: `quality` 0 to 11 (default 11), `lgwin` 10 to 24 (default 22), `threads` for `compressParallel` (default: logical CPUs, at most 8), `maxOutputSize` for decompression (default 64 MiB; raise it for larger outputs).
+- `compressParallel` splits at quality 10 and 11 only, into at most 8 parts of at least 32 KiB. Its output depends only on the input, `quality` and `lgwin`, never on `threads`. Below quality 10 or for one part it returns exactly what `compress` returns.
+- Workers start from a Blob URL (browsers, Bun) or `worker_threads` (Node.js). A Content Security Policy must allow `worker-src blob:`; where workers cannot start, the parts run on the calling thread with the same output.
+- Serve `.br` files you decode yourself as `application/octet-stream` without `Content-Encoding: br`; with that header the browser decodes them before your code sees them.
+- Vite resolves the slim `.wasm` by itself. With `bun build`, copy `compressor.wasm` / `decompressor.wasm` next to the bundle or pass their URL to `init()`.
+
+## CLI
+
+```bash
+bunx defuss-brotli compress dist/app.js          # writes dist/app.js.br, keeps dist/app.js
+bunx defuss-brotli -v dist/*.html dist/*.css     # quality 11 by default
+bunx defuss-brotli -d -c data.json.br | head     # decompress to stdout
+bunx defuss-brotli -t data.json.br               # check integrity, write nothing
+cat data.json | bunx defuss-brotli > data.json.br
+```
+
+Options, defaults, output names and refusals follow `brotli` 1.2.0: `-0` to `-9`, `-q`, `-Z`, `-w` (0 picks the smallest window that holds the input), `-c`, `-o`, `-d`, `-t`, `-f`, `-k`, `-j`, `-s`, `-n`, `-S`, `-v`, `-h`, `-V`; plus `--threads=NUM`. For `input/page.html` and `input/data.json` the default output is byte-identical to `brotli`'s. Not supported: `--large_window`, `--comment`, `--dictionary`, `--concatenated`.
+
+## Numbers
+
+| What | Value |
+|---|---|
+| Download of `decompressor/slim` (js + wasm) | 50,828 B Brotli q11, 85,090 B jsDelivr (q4), 85,633 B gzip -9 |
+| Download of `compressor/slim` (js + wasm) | 396,955 B Brotli q11, 510,593 B jsDelivr (q4) |
+| `compress` against `compressParallel`, quality 11, Node.js 26 | 256 KiB SVG 187 ms / 44 ms; 1 MiB SVG 617 ms / 189 ms; 2.1 MB PNG 1.79 s / 0.60 s; 5.1 MB SVG 3.82 s / 1.67 s |
+| Size cost of the parts | +0.01 to +0.10 % |
+| CLI against brotli 1.2.0, quality 11, Bun | 1 MiB SVG 301 ms / 879 ms; 2.1 MB PNG 714 ms / 3.79 s; 5.1 MB SVG 1.71 s / 4.00 s |
+| Decoding 100 MiB of JSON log text (warm) | 190 ms Node.js, 226 ms Bun, 200 ms Chromium 158 |
+| WebAssembly memory after decoding 100 MiB | 19.6 MiB (streams through 1 MiB chunks) |
+| HTML page (29 KB) at quality 11 against gzip -9 | 764 B against 1,232 B |
+
+## Limits
+
+- Brotli as in RFC 7932: no large-window streams, no custom dictionaries, one stream per input.
+- `decompress` stops at `maxOutputSize` (default 64 MiB) to guard against decompression bombs; truncated or corrupt input throws.
+- Each call holds its input and output in JavaScript memory; WebAssembly memory stays fixed (codec state and two chunks of at most 1 MiB).
+
+## Links
+
+- [Website with live demos](https://brotli.defuss.org/)
+- [README: API, sizes, benchmarks](https://github.com/kyr0/defuss-brotli#readme)
+- [ARCH.md: design and measurements](https://github.com/kyr0/defuss-brotli/blob/main/ARCH.md)
+- [CHANGELOG.md](https://github.com/kyr0/defuss-brotli/blob/main/CHANGELOG.md)
+- [npm package](https://www.npmjs.com/package/defuss-brotli)
+
+## Help for larger projects
+
+Aron Homberg (kyr0), the author, adapts defuss-brotli for companies, for example custom dictionaries, a streaming API or Brotli in an edge runtime: https://www.linkedin.com/in/aronhomberg/

@@ -1,6 +1,6 @@
 # `defuss-brotli`
 
-A split pure-Rust Brotli package for Node.js + browsers.
+A split pure-Rust Brotli package for Node.js + browsers. Live demos and charts: [brotli.defuss.org](https://brotli.defuss.org/); for coding agents: [llms.txt](https://brotli.defuss.org/llms.txt).
 
 - **Small browser decoder** - `defuss-brotli/decompressor/slim` loads only the decoder: about 51 KB precompressed with Brotli quality 11 and 85 KB from jsDelivr (quality 4), most of it the Brotli dictionary every decoder carries
 - **Separate heavier encoder bundle** - used server-side or at build time
@@ -157,7 +157,7 @@ const compressed = await compressParallel(bytes, { quality: 11, threads: 4 });
 
 `compressParallel` splits the input into at most 8 parts of at least 32 KiB, compresses each part on a worker with its own instance of the compressor, and joins the parts into one standard Brotli stream on the calling thread. Each part gets the window of input before it as a dictionary, so matches still reach back across parts. This is the multithreaded mode of the `brotli` crate, run on workers instead of threads.
 
-- **Output:** it depends only on the input, `quality` and `lgwin`, never on `threads` or the number of CPUs; `threads: 1` compresses the parts one after another on the calling thread and returns the same bytes. Below quality 2, or when the input fits in one part, it returns exactly what `compress` returns. Otherwise the output differs from `compress`'s and is slightly larger.
+- **Output:** it depends only on the input, `quality` and `lgwin`, never on `threads` or the number of CPUs; `threads: 1` compresses the parts one after another on the calling thread and returns the same bytes. Below quality 10, or when the input fits in one part, it returns exactly what `compress` returns. Otherwise the output differs from `compress`'s and is slightly larger. Qualities 2 to 9 stay on one thread because the `brotli` crate's matcher for them can panic when a part has a dictionary (see [ARCH.md](ARCH.md)), and one thread suffices there: the 2.1 MB PNG takes 0.45 s at quality 9 and 2.66 s at quality 11 (Node.js 26, `site/data/bench.json`).
 - **Workers:** Web Workers from a Blob URL in browsers and Bun, and `worker_threads` in Node.js. Pages with a Content Security Policy must allow `worker-src blob:`. No extra file is needed, because the worker script is embedded in the module. The workers are terminated before the Promise settles. A runtime that cannot start such a worker compresses the parts on the calling thread.
 - **`threads`:** how many workers run at once, default the number of logical CPUs, at most 8. Each worker allocates its own encoder state, as a `compress` call does.
 
@@ -417,8 +417,12 @@ make e2e        # packs the tarball into clean projects: Node.js, Bun, the CLI v
 make lint       # oxlint, tsc, clippy, rustfmt
 make verify     # all of the above, as CI runs it
 make bench      # Vitest bench and the 100 MB benchmark in Node, Bun and Chromium, against the perf budgets
+make site       # builds the website (site/) into docs/, which GitHub Pages serves
+make site-data  # measures the website's chart data again (machine-dependent, like make bench)
 bun run example # quality comparison table
 ```
+
+`make e2e` also runs `make e2e-site`: the built website in Chromium, in English and German, light and dark, every demo and chart view, axe-core (WCAG 2.1 AA) and the page opened from disk. It needs network access to jsDelivr, which serves the page's components and charts.
 
 `make e2e` writes one result file per consumer to `output/` (`e2e-node.json`, `e2e-bun.json`, `e2e-cli.json`, `e2e-bun-bundle.json`, `e2e-vite-build.json`, `e2e-vite-dev.json`); `make e2e-runtime`, `make e2e-cli`, `make e2e-bun` and `make e2e-vite` run one group.
 

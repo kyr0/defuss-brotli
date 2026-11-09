@@ -14,7 +14,7 @@ BUILD_INPUTS := $(shell find rust/compressor rust/decompressor src scripts -type
 	rust/Cargo.toml rust/Cargo.lock package.json tsconfig.json tsconfig.build.json
 STAMP := tmp/build.stamp
 
-.PHONY: help setup build start stop restart status log metrics bench test coverage lint e2e e2e-sizes e2e-runtime e2e-cli e2e-bun e2e-vite e2e-cdn verify clean
+.PHONY: help setup build start stop restart status log metrics bench test coverage lint e2e e2e-sizes e2e-runtime e2e-cli e2e-bun e2e-vite e2e-cdn e2e-site site site-data verify clean
 .DEFAULT_GOAL := help
 
 help: ## list the verbs with their usage (default goal)
@@ -55,7 +55,7 @@ coverage: $(STAMP) ## Rust line coverage (floor 60 %), then the TS `All files` t
 	bunx vitest run --coverage
 
 lint: ## oxlint, tsc, clippy and rustfmt; warnings fail
-	bunx oxlint --deny-warnings
+	bunx oxlint --deny-warnings --ignore-pattern "docs/assets/**"
 	bunx tsc --noEmit --project tsconfig.json
 	$(CARGO) clippy --all-targets --locked -- -D warnings
 	$(CARGO) clippy --locked -p defuss_brotli_decompressor --target wasm32-unknown-unknown -- -D warnings
@@ -70,7 +70,7 @@ define e2e_project
 	cd $(E2E)/$(1) && echo '{"name":"e2e-$(1)","private":true,"type":"module"}' >package.json && bun add --silent ../defuss-brotli.tgz $(2)
 endef
 
-e2e: e2e-sizes e2e-runtime e2e-cli e2e-bun e2e-vite e2e-cdn ## pack → clean consumers (Node, Bun, CLI, Bun bundler, Vite build + dev, CDN) → input/ → output/
+e2e: e2e-sizes e2e-runtime e2e-cli e2e-bun e2e-vite e2e-cdn e2e-site ## pack → clean consumers (Node, Bun, CLI, Bun bundler, Vite build + dev, CDN), the website → output/
 
 $(E2E)/defuss-brotli.tgz: $(STAMP)
 	rm -rf $(E2E) && mkdir -p $(E2E) output
@@ -127,6 +127,19 @@ e2e-cdn: $(E2E)/defuss-brotli.tgz ## unbundled apps importing the package from a
 	cp e2e/web/roundtrip.mjs e2e/web/decompress.mjs e2e/web/cdn*.mjs e2e/web/cdn*.html $(E2E)/cdn/app/
 	node e2e/browser.mjs $(E2E)/cdn/app input output/e2e-cdn.json --page cdn.html --cdn $(E2E)/cdn/node_modules/defuss-brotli
 	node e2e/browser.mjs $(E2E)/cdn/app input output/e2e-cdn-decompress.json --page cdn-decompress.html --cdn $(E2E)/cdn/node_modules/defuss-brotli --decompress-only
+
+# The website (GitHub Pages serves docs/ on main): built from site/ and dist/, committed, so a changed source shows
+# as a diff in docs/ after `make site`.
+site: $(STAMP) ## build the website into docs/ from site/ and dist/
+	bun site/build.ts
+
+# Machine-dependent like `bench`, so not part of verify: rewrites site/data/bench.json and sizes.json.
+site-data: $(STAMP) ## measure the website's chart data again (about 2.5 minutes)
+	node site/measure.mjs
+
+e2e-site: site ## the website in Chromium: every section, route and demo, EN/DE, light/dark, axe-core, from disk
+	@mkdir -p output
+	node site/e2e.mjs docs output/e2e-site.json
 
 verify: lint test coverage e2e ## what CI runs: every gate verb, cheapest first
 

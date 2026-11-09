@@ -1,0 +1,130 @@
+{
+  "files": {
+    "dist/decompressor-slim.js": {
+      "raw": 4758,
+      "gzip": 2070,
+      "br4": 2072,
+      "br11": 1855,
+      "zstd": 2048
+    },
+    "dist/decompressor.wasm": {
+      "raw": 185531,
+      "gzip": 83563,
+      "br4": 83018,
+      "br11": 48973,
+      "zstd": 76561
+    },
+    "dist/decompressor.js": {
+      "raw": 252213,
+      "gzip": 110006,
+      "br4": 111536,
+      "br11": 92996,
+      "zstd": 101435
+    },
+    "dist/compressor-slim.js": {
+      "raw": 15282,
+      "gzip": 4487,
+      "br4": 4312,
+      "br11": 3817,
+      "zstd": 4160
+    },
+    "dist/compressor.wasm": {
+      "raw": 944803,
+      "gzip": 449112,
+      "br4": 506281,
+      "br11": 393138,
+      "zstd": 401350
+    },
+    "dist/compressor.js": {
+      "raw": 1275103,
+      "gzip": 608231,
+      "br4": 663856,
+      "br11": 499050,
+      "zstd": 524585
+    }
+  },
+  "report": [
+    {
+      "variant": "defuss-brotli/decompressor/slim",
+      "files": [
+        "dist/decompressor-slim.js",
+        "dist/decompressor.wasm"
+      ],
+      "total": {
+        "raw": 190289,
+        "gzip": 85633,
+        "br4": 85090,
+        "br11": 50828,
+        "zstd": 78609
+      },
+      "max": {
+        "raw": 192000,
+        "gzip": 86500,
+        "br4": 86500,
+        "br11": 51500,
+        "zstd": 79500
+      }
+    },
+    {
+      "variant": "defuss-brotli/decompressor",
+      "files": [
+        "dist/decompressor.js"
+      ],
+      "total": {
+        "raw": 252213,
+        "gzip": 110006,
+        "br4": 111536,
+        "br11": 92996,
+        "zstd": 101435
+      },
+      "max": {
+        "raw": 254500,
+        "gzip": 111000,
+        "br4": 113000,
+        "br11": 94000,
+        "zstd": 102500
+      }
+    },
+    {
+      "variant": "defuss-brotli/compressor/slim",
+      "files": [
+        "dist/compressor-slim.js",
+        "dist/compressor.wasm"
+      ],
+      "total": {
+        "raw": 960085,
+        "gzip": 453599,
+        "br4": 510593,
+        "br11": 396955,
+        "zstd": 405510
+      },
+      "max": {
+        "raw": 979500,
+        "gzip": 463000,
+        "br4": 521000,
+        "br11": 404500,
+        "zstd": 414000
+      }
+    },
+    {
+      "variant": "defuss-brotli/compressor",
+      "files": [
+        "dist/compressor.js"
+      ],
+      "total": {
+        "raw": 1275103,
+        "gzip": 608231,
+        "br4": 663856,
+        "br11": 499050,
+        "zstd": 524585
+      },
+      "max": {
+        "raw": 1301000,
+        "gzip": 620500,
+        "br4": 677500,
+        "br11": 521500,
+        "zstd": 535500
+      }
+    }
+  ]
+}

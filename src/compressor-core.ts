@@ -83,12 +83,21 @@ let memory: WebAssembly.Memory | null = null;
 let compiled: WebAssembly.Module | null = null;
 
 /**
- * The byte ranges of a parallel compression: one range below quality 2, whose encoders use no dictionary, or when
- * the input fits in one part; otherwise at most {@link PARALLEL_PARTS} of at least {@link MIN_PART_SIZE} bytes.
+ * The lowest quality that compresses in parts. VERIFIED: (brotli 8.0.2 to 9.1.1, 2026-11-09) with a custom
+ * dictionary, the matcher of qualities 2 to 9 can emit a copy shorter than 2 bytes and panics, which traps in WASM
+ * (parts of huge.svg at quality 5 and 6, window 18 to 24, and at quality 2, window 16). Qualities 10 and 11 search
+ * with Zopfli and compressed every part of the same inputs at windows 10 to 24. They are also the ones that take
+ * seconds, so below them one thread is fast enough.
+ */
+const MIN_PARALLEL_QUALITY = 10;
+
+/**
+ * The byte ranges of a parallel compression: one range below {@link MIN_PARALLEL_QUALITY} or when the input fits in
+ * one part; otherwise at most {@link PARALLEL_PARTS} of at least {@link MIN_PART_SIZE} bytes.
  */
 export function partRanges(length: number, quality: number): Array<[number, number]> {
   const size = Math.max(Math.ceil(length / PARALLEL_PARTS), MIN_PART_SIZE);
-  if (quality < 2 || length <= size) return [[0, length]];
+  if (quality < MIN_PARALLEL_QUALITY || length <= size) return [[0, length]];
   const ranges: Array<[number, number]> = [];
   for (let start = 0; start < length; start += size) ranges.push([start, Math.min(start + size, length)]);
   return ranges;
@@ -233,7 +242,7 @@ export function compress(input: Uint8Array, options: BrotliCompressOptions = {})
  * runs its own instance of the compressor and compresses one part with the window before it as dictionary, so
  * matches still reach across parts; the calling thread joins the parts into one standard Brotli stream. The output
  * depends only on the input and the options other than `threads`, and differs slightly from {@link compress}'s
- * when there is more than one part. Below quality 2, or when the input fits in one part, it equals `compress`.
+ * when there is more than one part. Below quality 10, or when the input fits in one part, it equals `compress`.
  * Workers start from a Blob URL (browsers, Bun; a Content Security Policy must allow `worker-src blob:`) or, in
  * Node.js, with `worker_threads`, and are terminated before the Promise settles. Where no such worker starts, the
  * parts run one after another on the calling thread, with the same output.

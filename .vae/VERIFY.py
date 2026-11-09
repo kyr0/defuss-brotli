@@ -37,7 +37,9 @@ CONFIG = {
     # geschuetzte_begriffe: terms a replacement must keep) and "edit" (max_part_chars, heading_depth, attempts, the
     # budgets, tool_scope, trace, max_tokens_total); unset keys keep pro-edit's defaults.
     # AGENTS.md's managed block is written in VAE-DIALECT, which defines `→` as its sequence|result operator.
-    "prose": {"allow": {"AGENTS.md": "\u2192"}, "phrases": [], "html": []},
+    # docs/index.html is the website (built from site/page.html); its German templates are checked by site/e2e.mjs,
+    # which scans the rendered text in both languages.
+    "prose": {"allow": {"AGENTS.md": "\u2192"}, "phrases": [], "html": ["docs/index.html"]},
 }
 
 # Deterministic invariants only; no semantic guesses.

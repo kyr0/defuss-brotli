@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { brotliDecompressSync } from "node:zlib";
 import { beforeAll, describe, expect, test } from "vitest";
 import { FIXTURE_BINARY, FIXTURE_TEXT } from "./fixtures";
@@ -106,12 +107,13 @@ function webText(bytes: number): Uint8Array {
 }
 
 describe("compressParallel", () => {
-  test("splits into at most 8 parts of at least 32 KiB, and not below quality 2", () => {
+  test("splits into at most 8 parts of at least 32 KiB, and not below quality 10", () => {
     expect(partRanges(32 * 1024, 11)).toEqual([[0, 32 * 1024]]);
     expect(partRanges(32 * 1024 + 1, 11)).toEqual([[0, 32 * 1024], [32 * 1024, 32 * 1024 + 1]]);
     expect(partRanges(800_000, 11)).toHaveLength(8);
     expect(partRanges(800_000, 11).at(-1)).toEqual([700_000, 800_000]);
-    expect(partRanges(800_000, 1)).toEqual([[0, 800_000]]);
+    expect(partRanges(800_000, 9)).toEqual([[0, 800_000]]);
+    expect(partRanges(800_000, 10)).toHaveLength(8);
     expect(partRanges(0, 11)).toEqual([[0, 0]]);
   });
 
@@ -124,10 +126,20 @@ describe("compressParallel", () => {
     }
   });
 
-  test("equals compress() for one part and below quality 2", async () => {
+  test("equals compress() for one part and below quality 10", async () => {
     const input = webText(300_000);
     expect(await compressor.compressParallel(FIXTURE_TEXT_BYTES)).toEqual(compressor.compress(FIXTURE_TEXT_BYTES));
-    expect(await compressor.compressParallel(input, { quality: 1 })).toEqual(compressor.compress(input, { quality: 1 }));
+    expect(await compressor.compressParallel(input, { quality: 9 })).toEqual(compressor.compress(input, { quality: 9 }));
+  });
+
+  // Regression: parts of this SVG at quality 5 and 6 trapped in the encoder (a brotli crate bug with dictionaries),
+  // and freeing the trapped encoder replaced the error with "attempted to take ownership of Rust value".
+  test("compresses the SVG fixture at every quality", async () => {
+    const svg = new Uint8Array(readFileSync(new URL("../huge.svg", import.meta.url))).subarray(0, 1024 * 1024);
+    for (let quality = 0; quality <= 11; quality++) {
+      const packed = await compressor.compressParallel(svg, { quality });
+      expect(brotliDecompressSync(packed).equals(svg), `quality ${quality}`).toBe(true);
+    }
   });
 
   // Regression: Buffer#slice shares memory, so transferring parts made with it detached the caller's Buffer.
