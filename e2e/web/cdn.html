@@ -1,0 +1,12 @@
+<!doctype html>
+<title>defuss-brotli e2e: CDN</title>
+<!-- The package's exports, mapped to its files on the CDN origin, as `https://cdn.jsdelivr.net/npm/defuss-brotli@VERSION/dist/...` would be. -->
+<script type="importmap">{
+ "imports": {
+  "defuss-brotli/compressor": "http://cdn.test/npm/defuss-brotli/dist/compressor.js",
+  "defuss-brotli/compressor/slim": "http://cdn.test/npm/defuss-brotli/dist/compressor-slim.js",
+  "defuss-brotli/decompressor": "http://cdn.test/npm/defuss-brotli/dist/decompressor.js",
+  "defuss-brotli/decompressor/slim": "http://cdn.test/npm/defuss-brotli/dist/decompressor-slim.js"
+ }
+}</script>
+<script type="module" src="cdn-entry.mjs"></script>

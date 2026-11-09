@@ -1,0 +1,6 @@
+# Pinned build tools; `make setup` runs `mise install`. Rust itself is pinned by rust-toolchain.toml (rustup).
+[tools]
+bun = "1.3.9"
+"github:wasm-bindgen/wasm-pack" = "0.15.1"
+"github:WebAssembly/binaryen" = "version_133"
+node = "26.11.1"

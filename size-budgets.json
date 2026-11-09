@@ -1,0 +1,56 @@
+{
+  "comment": "Per-import download budgets in bytes: current sizes + 2 %, rounded up to 500 B. `make e2e` checks the packed tarball against them; raise a limit only for a measured, intended change.",
+  "variants": {
+    "defuss-brotli/decompressor/slim": {
+      "files": [
+        "dist/decompressor-slim.js",
+        "dist/decompressor.wasm"
+      ],
+      "max": {
+        "raw": 192000,
+        "gzip": 86500,
+        "br4": 86500,
+        "br11": 51500,
+        "zstd": 79500
+      }
+    },
+    "defuss-brotli/decompressor": {
+      "files": [
+        "dist/decompressor.js"
+      ],
+      "max": {
+        "raw": 254500,
+        "gzip": 111000,
+        "br4": 113000,
+        "br11": 94000,
+        "zstd": 102500
+      }
+    },
+    "defuss-brotli/compressor/slim": {
+      "files": [
+        "dist/compressor-slim.js",
+        "dist/compressor.wasm"
+      ],
+      "max": {
+        "raw": 954500,
+        "gzip": 454500,
+        "br4": 512000,
+        "br11": 402500,
+        "zstd": 407000
+      },
+      "note": "VERIFIED (2026-11-09): brotli q11 of compressor.wasm swings between 340,693 and 392,638 B under wasm-opt passes that change raw size by 0.2 % and br4 by 0.2 % (an encoder heuristic), so br11 is budgeted at the upper value."
+    },
+    "defuss-brotli/compressor": {
+      "files": [
+        "dist/compressor.js"
+      ],
+      "max": {
+        "raw": 1271000,
+        "gzip": 609500,
+        "br4": 668000,
+        "br11": 521500,
+        "zstd": 526500
+      }
+    }
+  }
+}

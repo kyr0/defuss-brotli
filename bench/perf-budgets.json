@@ -1,0 +1,45 @@
+{
+  "comment": "Calibrated 2026-11-09 on an Apple M5 Max (48 GiB) with Node.js 26.11.1, Bun 1.4.3 and Chromium 158 (make bench). Time limits (ms) are 2x the measured median, at least +5 ms; memory limits (MiB) are +10 %; both rounded up to two significant digits. Timings depend on the machine: recalibrate on other hardware.",
+  "runtimes": {
+    "node": {
+      "init:decompressor": 8,
+      "init:decompressor-slim": 7,
+      "init:compressor": 16,
+      "init:compressor-slim": 7,
+      "decompress-cold:text-100mib": 390,
+      "wasm-memory-mib:text-100mib": 22,
+      "decompress:text-100mib": 380,
+      "decompress-cold:binary-100mb": 99,
+      "wasm-memory-mib:binary-100mb": 22,
+      "decompress:binary-100mb": 99,
+      "compress-q6:text-100mib": 4200,
+      "wasm-memory-mib:compress-q6": 77
+    },
+    "chromium": {
+      "init:decompressor": 8,
+      "init:decompressor-slim": 8,
+      "init:compressor": 11,
+      "init:compressor-slim": 8,
+      "decompress-cold:text-100mib": 450,
+      "wasm-memory-mib:text-100mib": 22,
+      "decompress:text-100mib": 400,
+      "decompress-cold:binary-100mb": 130,
+      "wasm-memory-mib:binary-100mb": 22,
+      "decompress:binary-100mb": 120
+    },
+    "bun": {
+      "init:decompressor": 8,
+      "init:decompressor-slim": 7,
+      "init:compressor": 10,
+      "init:compressor-slim": 9,
+      "decompress-cold:text-100mib": 550,
+      "wasm-memory-mib:text-100mib": 22,
+      "decompress:text-100mib": 460,
+      "decompress-cold:binary-100mb": 170,
+      "wasm-memory-mib:binary-100mb": 22,
+      "decompress:binary-100mb": 140,
+      "compress-q6:text-100mib": 4500,
+      "wasm-memory-mib:compress-q6": 77
+    }
+  }
+}
