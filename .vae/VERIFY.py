@@ -49,6 +49,18 @@ CONFIG = {
 # changed doc page matching, e.g. {"id": "docs.arch.diagram", "kind": "contains", "path": "docs/ARCHITECTURE.md",
 # "text": "```mermaid", "claim": "architecture page keeps its diagram"}.
 RULES = [{
+    "id": "package.files-exist",
+    "kind": "command",
+    # npm pack silently skips missing `files` entries; dist/ is build output and checked by e2e instead.
+    "command": "python3 -c \"import json,os,sys; m=[f for f in json.load(open('package.json'))['files'] if f != 'dist' and not os.path.exists(f)]; print('package.json files entries missing:', m) if m else None; sys.exit(1 if m else 0)\"",
+    "claim": "every package.json files entry ships (license notices included)",
+}, {
+    "id": "build.tools-without-mise-activation",
+    "kind": "contains",
+    "path": "scripts/build.ts",
+    "text": ".local/share/mise/shims",
+    "claim": "bun run build (npm prepublishOnly) finds the mise-pinned wasm-pack and wasm-opt without an activated mise",
+}, {
     "id": "tests.no-mocks",
     "kind": "not_regex",
     "glob": "*",

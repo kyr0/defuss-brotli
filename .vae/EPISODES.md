@@ -46,3 +46,8 @@ Wrap: EVERY lead becomes a test | .vae/VERIFY.py rule | one MEMORY line with BC,
 2026-11-09T04:19:01Z s=698894d0 FINDING README.md:5 'about 50 KB over Brotli HTTP' learn=none: both figures stated
 2026-11-09T04:19:01Z s=698894d0 FINDING ARCH.md Security and privacy learn=none: documented with evidence
 2026-11-09T04:19:01Z s=698894d0 FINDING src/memory.test.ts first draft learn=memory: MEMORY line [vitest toEqual on large typed arrays]
+2026-11-09T09:08:49Z s=698894d0 DONE fp=ae9da35c5f82 cov=100.0% paths=scripts/build.ts
+2026-11-09T09:08:49Z s=698894d0 FINDING scripts/build.ts:run (child process PATH) learn=verifier: .vae/VERIFY.py rule build.tools-without-mise-activation
+2026-11-09T10:38:51Z s=698894d0 DONE fp=aca1737d4967 cov=100.0% paths=ARCH.md,README.md,package.json,scripts/build.ts
+2026-11-09T10:38:51Z s=698894d0 FINDING package.json:files THIRD_PARTY_NOTICES.md learn=verifier: .vae/VERIFY.py rule package.files-exist (fails on the old entry)
+2026-11-09T10:38:51Z s=698894d0 FINDING package.json:version 0.1.3 learn=none: release decision, not a recurring defect

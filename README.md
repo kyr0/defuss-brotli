@@ -340,4 +340,4 @@ bun run example # quality comparison table
 
 ## License
 
-MIT
+MIT. The `.wasm` files and the inline modules contain compiled third-party code under BSD-3-Clause and MIT terms (brotli, brotli-decompressor, wasm-bindgen, the Rust standard library); [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt) lists each component with its license text.

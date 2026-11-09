@@ -1,13 +1,25 @@
 import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { execSync } from "node:child_process";
-import { dirname, join } from "node:path";
+import { homedir } from "node:os";
+import { delimiter, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
+// The pinned tools (wasm-pack, wasm-opt via mise.toml; cargo via rustup) as the Makefile finds them; tools already on
+// PATH keep precedence. VERIFIED: without this, `npm publish` from a shell that does not activate mise failed in
+// `prepublishOnly` with "wasm-pack: command not found"; with it, the build passes on a PATH holding only system dirs
+// and bun.
+const env = {
+  ...process.env,
+  PATH: [process.env.PATH, ...[".local/share/mise/shims", ".bun/bin", ".cargo/bin"].map((d) => join(homedir(), d))]
+    .filter(Boolean)
+    .join(delimiter),
+};
+
 const run = (command: string, cwd: string = root) => {
   console.log(`\n> ${command}`);
-  execSync(command, { cwd, stdio: "inherit" });
+  execSync(command, { cwd, env, stdio: "inherit" });
 };
 
 // rustc's default wasm32-unknown-unknown features. VERIFIED: `strip = true` drops the target_features section,

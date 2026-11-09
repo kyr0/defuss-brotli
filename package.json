@@ -1,6 +1,6 @@
 {
   "name": "defuss-brotli",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "type": "module",
   "license": "MIT",
   "description": "A pure-Rust Brotli WebAssembly package with split compressor/decompressor exports for small build sizes.",
@@ -29,7 +29,7 @@
     "dist",
     "README.md",
     "LICENSE",
-    "THIRD_PARTY_NOTICES.md"
+    "THIRD_PARTY_NOTICES.txt"
   ],
   "exports": {
     "./compressor": {
