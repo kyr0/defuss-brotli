@@ -1,6 +1,6 @@
 # defuss-brotli
 
-> Brotli compression and decompression (RFC 7932) for browsers, Node.js and Bun, compiled from the Rust `brotli` crates to WebAssembly. The decoder is a separate 51 KB download; `compressParallel` runs quality 11 on up to 8 workers; a `defuss-brotli` command takes the options of the `brotli` CLI. MIT licensed, no native addons, version 0.3.1.
+> Brotli compression and decompression (RFC 7932) for browsers, Node.js and Bun, compiled from the Rust `brotli` crates to WebAssembly. The decoder is a separate 51 KB download; `compressParallel` runs quality 11 on one worker per CPU core; a `defuss-brotli` command takes the options of the `brotli` CLI. MIT licensed, no native addons, version 0.4.0.
 
 Every number below was measured on Apple Silicon (M5 Max) on 2026-11-09 and comes with its method in the repository's README.md and ARCH.md. Sizes are exact; timings depend on the machine.
 
@@ -8,11 +8,13 @@ Every number below was measured on Apple Silicon (M5 Max) on 2026-11-09 and come
 
 - You need Brotli in a browser from JavaScript. Browsers apply Brotli as an HTTP `Content-Encoding`, but Chromium 158 rejects `"brotli"` in both `CompressionStream` and `DecompressionStream`.
 - You ship precompressed data (JSON, catalogs, game assets, offline bundles) and want to decode it in the client with a small decoder: `defuss-brotli/decompressor/slim` is 50,828 B as Brotli quality 11 and 85,090 B as served by jsDelivr (Brotli quality 4). The encoder is never downloaded with it.
-- You compress at quality 11 in a build step or on a server and want all cores: `compressParallel` is 2.3 to 4.3 times faster than `compress` from 256 KiB (Node.js 26), output at most 0.10 % larger.
+- You compress at quality 11 in a build step or on a server and want all cores: `compressParallel` is 2.3 to 4.3 times faster than `compress` from 256 KiB (Node.js 26), output at most 0.10 % larger. On 100 MiB of log lines it took 16.6 s on 13 cores against 138.6 s for `compress` and 113.7 s for `node:zlib` (one run each, 18-core Apple M5 Max).
 - You need a `brotli` command where only Node.js or Bun is installed, for example in CI images: `bunx defuss-brotli` is 1.2 to 5.3 times faster than `brotli` 1.2.0 from 256 KiB at the default quality 11.
 - You want the same code and the same output in every runtime: one WebAssembly build, tested in Node.js, Bun, Chromium, Vite 8.3.6 (build and dev), `bun build`, and unbundled from a CDN with an import map.
 
 Node.js also has Brotli in `node:zlib` (native C), which is faster on one thread at most qualities below 10. defuss-brotli is the choice when the same code must run in browsers too, when quality 10 and 11 should use several cores, or when you want the CLI.
+
+defuss-brotli has no streaming API and no custom dictionaries. For streaming compression, streaming decompression or custom dictionaries, use the author's [brotli-compress](https://github.com/kyr0/brotli-compress) (Apache-2.0), which is much bigger in code size.
 
 ## Install
 
@@ -47,8 +49,8 @@ Rules that matter when you write code with it:
 
 - Call `init()` once before any other function; it returns the same Promise on every call. A slim `init()` also takes a URL, a `Response`, bytes or a compiled `WebAssembly.Module`.
 - `compress`, `compressText`, `decompress` and `decompressText` are synchronous; `compressParallel` returns a Promise.
-- Options: `quality` 0 to 11 (default 11), `lgwin` 10 to 24 (default 22), `threads` for `compressParallel` (default: logical CPUs, at most 8), `maxOutputSize` for decompression (default 64 MiB; raise it for larger outputs).
-- `compressParallel` splits at quality 10 and 11 only, into at most 8 parts of at least 32 KiB. Its output depends only on the input, `quality` and `lgwin`, never on `threads`. Below quality 10 or for one part it returns exactly what `compress` returns.
+- Options: `quality` 0 to 11 (default 11), `lgwin` 10 to 24 (default 22), `threads` for `compressParallel` (default: logical CPUs), `maxOutputSize` for decompression (default 64 MiB; raise it for larger outputs).
+- `compressParallel` splits at quality 10 and 11 only, into 8 parts of at least 32 KiB; above 64 MiB (window 22) into parts of 8 MiB, so 128 MiB uses 16 cores (18.4 s instead of 25.7 s with 8 parts on an 18-core Apple M5 Max). Its output depends only on the input, `quality` and `lgwin`, never on `threads`. Below quality 10 or for one part it returns exactly what `compress` returns.
 - Workers start from a Blob URL (browsers, Bun) or `worker_threads` (Node.js). A Content Security Policy must allow `worker-src blob:`; where workers cannot start, the parts run on the calling thread with the same output.
 - Serve `.br` files you decode yourself as `application/octet-stream` without `Content-Encoding: br`; with that header the browser decodes them before your code sees them.
 - Vite resolves the slim `.wasm` by itself. With `bun build`, copy `compressor.wasm` / `decompressor.wasm` next to the bundle or pass their URL to `init()`.

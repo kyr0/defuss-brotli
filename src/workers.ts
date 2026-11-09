@@ -62,15 +62,17 @@ function spawn(source: string, onReply: (reply: WorkerReply) => void, onError: (
 }
 
 /**
- * Compresses `tasks` on `threads` workers started from `source`, each given `module` once, and resolves to the
- * outputs in task order; workers are terminated when the last part arrives or the first one fails. Resolves to
- * `null` when the runtime cannot start workers, so the caller can run the parts itself. Each task's buffers are
- * transferred to its worker and are detached afterwards.
+ * Compresses `count` parts on `threads` workers started from `source`, each given `module` once, and resolves to
+ * the outputs in part order; workers are terminated when the last part arrives or the first one fails. Resolves to
+ * `null` when the runtime cannot start workers, so the caller can run the parts itself. `task(id)` builds a part
+ * when a worker takes it, so only the parts in flight hold copies of the input; its buffers are transferred to the
+ * worker and are detached afterwards.
  */
 export function runParts(
   source: string,
   module: WebAssembly.Module,
-  tasks: PartTask[],
+  count: number,
+  task: (id: number) => PartTask,
   threads: number,
 ): Promise<Uint8Array[] | null> {
   return new Promise((resolve, reject) => {
@@ -87,10 +89,16 @@ export function runParts(
       else resolve(outputs);
     };
     const dispatch = (port: Port) => {
-      if (next === tasks.length) return;
+      if (next === count) return;
       const id = next++;
-      const task = tasks[id]!;
-      port.post({ id, ...task }, [task.part.buffer, task.dictionary.buffer]);
+      let part: PartTask;
+      try {
+        part = task(id);
+      } catch (error) {
+        // a copy that fails (out of memory) ends the call instead of leaving it pending with live workers
+        return settle(error instanceof Error ? error : new Error(String(error)));
+      }
+      port.post({ id, ...part }, [part.part.buffer, part.dictionary.buffer]);
     };
     for (let i = 0; i < threads && !settled; i++) {
       let port: Port | null = null;
@@ -100,7 +108,7 @@ export function runParts(
           (reply) => {
             if ("error" in reply) return settle(new Error(reply.error));
             outputs[reply.id] = reply.output;
-            if (++done === tasks.length) settle();
+            if (++done === count) settle();
             else dispatch(port!);
           },
           settle,

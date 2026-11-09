@@ -236,18 +236,19 @@ try {
 
     // performance views, ECharts through defuss-shadcn's chart
     await page.waitForSelector("#perf-chart svg", { timeout: 30_000 });
-    assert.match(await page.textContent("#perf-lead"), /smaller than gzip at its highest level/);
-    for (const [view, head] of [["workers", "Node.js built-in"], ["window", "Look-back distance"], ["cli", "brotli 1.2.0"], ["download", "jsDelivr"], ["quality", "Quality"]]) {
+    assert.match(await page.textContent("#perf-lead"), /Log lines \(.+\): how long one compression takes at each quality, with compressParallel\(\) on \d+ cores/);
+    assert.equal(await page.locator("#perf-view .toggle").count(), 4, "Speed, Look-back, Command line, Download size");
+    for (const [view, head] of [["window", "Look-back distance"], ["cli", "brotli 1.2.0"], ["download", "jsDelivr"], ["speed", "Quality"]]) {
       await page.click(`#perf-view .toggle[value="${view}"]`);
       await page.waitForFunction((head) => document.querySelector("#perf-table thead").textContent.includes(head), head);
     }
     await page.click('#perf-input .toggle[value="json"]');
-    await page.click('#perf-metric .toggle[value="time"]');
-    await page.waitForFunction(() => document.querySelector("#perf-lead").textContent.startsWith("How long one compression takes"));
+    await page.click('#perf-metric .toggle[value="single"]');
+    await page.waitForFunction(() => document.querySelector("#perf-lead").textContent.includes("on 1 core, against the C library built into Node.js"));
     await page.click("#perf-device");
     await page.waitForFunction(() => document.querySelector("#perf-table thead").textContent.includes("This device")
       && [...document.querySelectorAll("#perf-table tbody tr")].slice(0, 12).every((r) => r.lastElementChild.textContent.includes("ms")), null, { timeout: 60_000 });
-    check("performance chart: every view, an input, time, measured on this device");
+    check("performance chart: every view, an input, Multicore and Singlecore, measured on this device");
 
     // the diagram draws its wires
     await page.locator("#how").scrollIntoViewIfNeeded();
@@ -275,6 +276,9 @@ try {
     assert.equal(await page.evaluate(() => document.documentElement.classList.contains("dark")), true);
     assert.match(await page.textContent("#hero-title"), /Brotli-Kompression/);
     assert.match(await page.textContent("#perf-title"), /Gemessen/);
+    const views = await page.textContent("#perf-view");
+    assert.ok(views.includes("Geschwindigkeit") && views.includes("Look-back") && !/Suchweite|Mehrkern|Qualität/.test(views), views);
+    assert.equal((await page.textContent("#perf-metric")).replace(/\s+/g, ""), "MulticoreSinglecore");
     await page.waitForFunction(() => Math.abs(document.getElementById("perf").getBoundingClientRect().top) < 200);
     check("German deep link #/de/perf, dark mode from the preferences");
     await page.locator("#demo").scrollIntoViewIfNeeded();
@@ -315,11 +319,15 @@ try {
     await page.goto(pathToFileURL(resolve(docs, "index.html")).href, { waitUntil: "load" });
     assert.match(await page.locator("#hero-title").innerText(), /Brotli compression/);
     assert.ok(await page.locator(".mockup-code span[style*='--code-example-light']").count() > 20, "code highlighted in the static HTML");
+    // The demos cannot run from disk, so the "what ran" boxes show the build's Shiki colours: compressParallel purple.
+    const call = page.locator("#compress-code span", { hasText: "compressParallel" });
+    assert.equal(await call.evaluate((el) => getComputedStyle(el).color), "rgb(111, 66, 193)", "call line coloured before a run");
+    assert.ok(await page.locator("#decompress-code span[style*='--code-example-light']").count() >= 2, "decompress line coloured");
     assert.ok(await page.locator("#perf-table tbody tr").count() >= 12, "static table");
     const width = await page.evaluate(() => getComputedStyle(document.querySelector(".demo-window")).borderTopWidth);
     assert.equal(width, "1px", "site.css applied from disk");
     await context.close();
-    check("page opened from disk renders text, code colours, table and styles");
+    check("page opened from disk renders text, code colours (also the demo call lines), table and styles");
   }
 
   // -------------------------------------------------- files next to the page

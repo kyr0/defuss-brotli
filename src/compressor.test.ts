@@ -107,14 +107,21 @@ function webText(bytes: number): Uint8Array {
 }
 
 describe("compressParallel", () => {
-  test("splits into at most 8 parts of at least 32 KiB, and not below quality 10", () => {
-    expect(partRanges(32 * 1024, 11)).toEqual([[0, 32 * 1024]]);
-    expect(partRanges(32 * 1024 + 1, 11)).toEqual([[0, 32 * 1024], [32 * 1024, 32 * 1024 + 1]]);
-    expect(partRanges(800_000, 11)).toHaveLength(8);
-    expect(partRanges(800_000, 11).at(-1)).toEqual([700_000, 800_000]);
-    expect(partRanges(800_000, 9)).toEqual([[0, 800_000]]);
-    expect(partRanges(800_000, 10)).toHaveLength(8);
-    expect(partRanges(0, 11)).toEqual([[0, 0]]);
+  test("splits into 8 parts of at least 32 KiB, longer inputs into parts of 2 windows, and not below quality 10", () => {
+    const MiB = 2 ** 20;
+    expect(partRanges(32 * 1024, 11, 22)).toEqual([[0, 32 * 1024]]);
+    expect(partRanges(32 * 1024 + 1, 11, 22)).toEqual([[0, 32 * 1024], [32 * 1024, 32 * 1024 + 1]]);
+    expect(partRanges(800_000, 11, 22)).toHaveLength(8);
+    expect(partRanges(800_000, 11, 22).at(-1)).toEqual([700_000, 800_000]);
+    expect(partRanges(800_000, 9, 22)).toEqual([[0, 800_000]]);
+    expect(partRanges(800_000, 10, 22)).toHaveLength(8);
+    expect(partRanges(0, 11, 22)).toEqual([[0, 0]]);
+    // From 64 MiB at window 22, parts of 8 MiB: one more part, and so one more busy core, per 8 MiB.
+    expect(partRanges(64 * MiB, 11, 22)).toHaveLength(8);
+    expect(partRanges(64 * MiB + 1, 11, 22)).toHaveLength(9);
+    expect(partRanges(128 * MiB, 11, 22)).toEqual(Array.from({ length: 16 }, (_, i) => [i * 8 * MiB, (i + 1) * 8 * MiB]));
+    // A small window shortens the parts down to 32 KiB.
+    expect(partRanges(MiB, 11, 10)).toHaveLength(32);
   });
 
   test("joins parts into one stream that node:zlib decodes, the same for every thread count", async () => {

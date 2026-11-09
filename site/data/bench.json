@@ -2,27 +2,42 @@
  "measured": "2026-11-09",
  "node": "v26.11.1",
  "cpu": "Apple M5 Max",
- "threads": 8,
+ "threads": 18,
  "inputs": {
   "html": {
    "label": "HTML page",
    "file": "input/page.html",
-   "bytes": 29175
+   "bytes": 29175,
+   "runs": 3,
+   "cores": 1
   },
   "json": {
    "label": "JSON",
    "file": "input/data.json",
-   "bytes": 20678
+   "bytes": 20678,
+   "runs": 3,
+   "cores": 1
   },
   "svg": {
    "label": "SVG drawing, first 1 MiB",
    "file": "huge.svg",
-   "bytes": 1048576
+   "bytes": 1048576,
+   "runs": 3,
+   "cores": 8
   },
   "png": {
    "label": "PNG image",
    "file": "huge.png",
-   "bytes": 2152244
+   "bytes": 2152244,
+   "runs": 3,
+   "cores": 8
+  },
+  "logs": {
+   "label": "Log lines, 100 MiB",
+   "file": "site/lib/logs.ts",
+   "bytes": 104857515,
+   "runs": 1,
+   "cores": 13
   }
  },
  "quality": {
@@ -30,10 +45,10 @@
    {
     "quality": 0,
     "size": 1658,
-    "ms": 0.18,
+    "ms": 0.14,
     "parallel": {
      "size": 1658,
-     "ms": 0.13
+     "ms": 0.12
     },
     "native": {
      "size": 1658,
@@ -43,27 +58,27 @@
    {
     "quality": 1,
     "size": 1270,
-    "ms": 0.11,
+    "ms": 0.09,
     "parallel": {
      "size": 1270,
-     "ms": 0.09
+     "ms": 0.07
     },
     "native": {
      "size": 1337,
-     "ms": 0.04
+     "ms": 0.03
     }
    },
    {
     "quality": 2,
     "size": 1008,
-    "ms": 0.13,
+    "ms": 0.3,
     "parallel": {
      "size": 1008,
-     "ms": 0.13
+     "ms": 0.16
     },
     "native": {
      "size": 1008,
-     "ms": 0.05
+     "ms": 0.06
     }
    },
    {
@@ -76,29 +91,42 @@
     },
     "native": {
      "size": 955,
-     "ms": 0.05
+     "ms": 0.09
     }
    },
    {
     "quality": 4,
     "size": 891,
-    "ms": 0.16,
+    "ms": 0.14,
     "parallel": {
      "size": 891,
-     "ms": 0.14
+     "ms": 0.11
     },
     "native": {
      "size": 892,
-     "ms": 0.06
+     "ms": 0.12
     }
    },
    {
     "quality": 5,
     "size": 834,
-    "ms": 0.22,
+    "ms": 0.17,
     "parallel": {
      "size": 834,
-     "ms": 0.21
+     "ms": 0.47
+    },
+    "native": {
+     "size": 834,
+     "ms": 0.14
+    }
+   },
+   {
+    "quality": 6,
+    "size": 834,
+    "ms": 0.32,
+    "parallel": {
+     "size": 834,
+     "ms": 0.25
     },
     "native": {
      "size": 834,
@@ -106,38 +134,25 @@
     }
    },
    {
-    "quality": 6,
-    "size": 834,
-    "ms": 0.21,
-    "parallel": {
-     "size": 834,
-     "ms": 0.2
-    },
-    "native": {
-     "size": 834,
-     "ms": 0.09
-    }
-   },
-   {
     "quality": 7,
     "size": 841,
-    "ms": 0.27,
+    "ms": 0.3,
     "parallel": {
      "size": 841,
-     "ms": 0.31
+     "ms": 0.3
     },
     "native": {
      "size": 841,
-     "ms": 0.1
+     "ms": 0.16
     }
    },
    {
     "quality": 8,
     "size": 841,
-    "ms": 0.27,
+    "ms": 0.34,
     "parallel": {
      "size": 841,
-     "ms": 0.26
+     "ms": 0.29
     },
     "native": {
      "size": 841,
@@ -147,40 +162,40 @@
    {
     "quality": 9,
     "size": 842,
-    "ms": 0.6,
+    "ms": 0.53,
     "parallel": {
      "size": 842,
-     "ms": 0.47
+     "ms": 0.65
     },
     "native": {
      "size": 842,
-     "ms": 0.14
+     "ms": 0.18
     }
    },
    {
     "quality": 10,
     "size": 773,
-    "ms": 9.11,
+    "ms": 8.98,
     "parallel": {
      "size": 773,
-     "ms": 7.74
+     "ms": 9.93
     },
     "native": {
      "size": 773,
-     "ms": 5.28
+     "ms": 5.43
     }
    },
    {
     "quality": 11,
     "size": 764,
-    "ms": 65.79,
+    "ms": 60.83,
     "parallel": {
      "size": 764,
-     "ms": 66.35
+     "ms": 59.91
     },
     "native": {
      "size": 764,
-     "ms": 47.07
+     "ms": 40.95
     }
    }
   ],
@@ -195,7 +210,7 @@
     },
     "native": {
      "size": 2041,
-     "ms": 0.03
+     "ms": 0.06
     }
    },
    {
@@ -204,11 +219,11 @@
     "ms": 0.05,
     "parallel": {
      "size": 1451,
-     "ms": 0.05
+     "ms": 0.04
     },
     "native": {
      "size": 1565,
-     "ms": 0.03
+     "ms": 0.02
     }
    },
    {
@@ -217,11 +232,11 @@
     "ms": 0.1,
     "parallel": {
      "size": 1304,
-     "ms": 0.12
+     "ms": 0.17
     },
     "native": {
      "size": 1302,
-     "ms": 0.04
+     "ms": 0.06
     }
    },
    {
@@ -240,105 +255,105 @@
    {
     "quality": 4,
     "size": 1257,
-    "ms": 0.08,
+    "ms": 0.12,
     "parallel": {
      "size": 1257,
-     "ms": 0.08
+     "ms": 0.07
     },
     "native": {
      "size": 1258,
-     "ms": 0.07
+     "ms": 0.05
     }
    },
    {
     "quality": 5,
     "size": 1086,
-    "ms": 0.1,
+    "ms": 0.12,
     "parallel": {
      "size": 1086,
-     "ms": 0.15
+     "ms": 0.2
     },
     "native": {
      "size": 1086,
-     "ms": 0.11
+     "ms": 0.1
     }
    },
    {
     "quality": 6,
     "size": 1093,
-    "ms": 0.2,
+    "ms": 0.12,
     "parallel": {
      "size": 1093,
-     "ms": 0.14
+     "ms": 0.09
     },
     "native": {
      "size": 1093,
-     "ms": 0.12
+     "ms": 0.08
     }
    },
    {
     "quality": 7,
     "size": 1055,
-    "ms": 0.2,
+    "ms": 0.13,
     "parallel": {
      "size": 1055,
-     "ms": 0.18
+     "ms": 0.13
     },
     "native": {
      "size": 1055,
-     "ms": 0.11
+     "ms": 0.08
     }
    },
    {
     "quality": 8,
     "size": 1055,
-    "ms": 0.26,
+    "ms": 0.43,
     "parallel": {
      "size": 1055,
-     "ms": 0.25
+     "ms": 0.3
     },
     "native": {
      "size": 1055,
-     "ms": 0.12
+     "ms": 0.1
     }
    },
    {
     "quality": 9,
     "size": 997,
-    "ms": 0.42,
+    "ms": 0.3,
     "parallel": {
      "size": 997,
-     "ms": 0.41
+     "ms": 0.29
     },
     "native": {
      "size": 997,
-     "ms": 0.24
+     "ms": 0.12
     }
    },
    {
     "quality": 10,
     "size": 967,
-    "ms": 10.71,
+    "ms": 9.35,
     "parallel": {
      "size": 967,
-     "ms": 10.22
+     "ms": 8.38
     },
     "native": {
      "size": 967,
-     "ms": 6.95
+     "ms": 6.84
     }
    },
    {
     "quality": 11,
     "size": 935,
-    "ms": 26.02,
+    "ms": 22.37,
     "parallel": {
      "size": 935,
-     "ms": 26.29
+     "ms": 23.03
     },
     "native": {
      "size": 935,
-     "ms": 19.83
+     "ms": 18.2
     }
    }
   ],
@@ -346,157 +361,157 @@
    {
     "quality": 0,
     "size": 803875,
-    "ms": 5.55,
+    "ms": 3.92,
     "parallel": {
      "size": 803875,
-     "ms": 5.02
+     "ms": 4.85
     },
     "native": {
      "size": 803875,
-     "ms": 2.93
+     "ms": 2.55
     }
    },
    {
     "quality": 1,
     "size": 772461,
-    "ms": 7.44,
+    "ms": 12.23,
     "parallel": {
      "size": 772461,
-     "ms": 7.86
+     "ms": 8.6
     },
     "native": {
      "size": 772461,
-     "ms": 3.62
+     "ms": 3.88
     }
    },
    {
     "quality": 2,
     "size": 789980,
-    "ms": 7.69,
+    "ms": 6.24,
     "parallel": {
      "size": 789980,
-     "ms": 7.49
+     "ms": 6.87
     },
     "native": {
      "size": 790158,
-     "ms": 4.46
+     "ms": 4.4
     }
    },
    {
     "quality": 3,
     "size": 784561,
-    "ms": 9.25,
+    "ms": 7.74,
     "parallel": {
      "size": 784561,
-     "ms": 9.17
+     "ms": 7.81
     },
     "native": {
      "size": 784288,
-     "ms": 6.41
+     "ms": 5.02
     }
    },
    {
     "quality": 4,
     "size": 770838,
-    "ms": 26.72,
+    "ms": 24.1,
     "parallel": {
      "size": 770838,
-     "ms": 30.27
+     "ms": 22.22
     },
     "native": {
      "size": 770326,
-     "ms": 13.18
+     "ms": 15.44
     }
    },
    {
     "quality": 5,
     "size": 773207,
-    "ms": 38.1,
+    "ms": 33.58,
     "parallel": {
      "size": 773207,
-     "ms": 39.72
+     "ms": 34
     },
     "native": {
      "size": 770367,
-     "ms": 14.87
+     "ms": 18.49
     }
    },
    {
     "quality": 6,
     "size": 775105,
-    "ms": 56.4,
+    "ms": 50.6,
     "parallel": {
      "size": 775105,
-     "ms": 58.4
+     "ms": 57.35
     },
     "native": {
      "size": 770832,
-     "ms": 24.27
+     "ms": 17.8
     }
    },
    {
     "quality": 7,
     "size": 775531,
-    "ms": 77.52,
+    "ms": 65.18,
     "parallel": {
      "size": 775531,
-     "ms": 80.15
+     "ms": 67.26
     },
     "native": {
      "size": 770994,
-     "ms": 49.99
+     "ms": 42.74
     }
    },
    {
     "quality": 8,
     "size": 775540,
-    "ms": 85.81,
+    "ms": 112.77,
     "parallel": {
      "size": 775540,
-     "ms": 78.47
+     "ms": 109.87
     },
     "native": {
      "size": 770997,
-     "ms": 65.39
+     "ms": 78.21
     }
    },
    {
     "quality": 9,
     "size": 759133,
-    "ms": 180.78,
+    "ms": 187.98,
     "parallel": {
      "size": 759133,
-     "ms": 291.5
+     "ms": 191.45
     },
     "native": {
      "size": 757247,
-     "ms": 133.62
+     "ms": 107.78
     }
    },
    {
     "quality": 10,
     "size": 747081,
-    "ms": 551.33,
+    "ms": 535.84,
     "parallel": {
      "size": 747576,
-     "ms": 243.25
+     "ms": 257.72
     },
     "native": {
      "size": 747201,
-     "ms": 536.34
+     "ms": 542.88
     }
    },
    {
     "quality": 11,
     "size": 746179,
-    "ms": 904.18,
+    "ms": 841.4,
     "parallel": {
      "size": 746536,
-     "ms": 288
+     "ms": 347.89
     },
     "native": {
      "size": 746179,
-     "ms": 1100.82
+     "ms": 1004.68
     }
    }
   ],
@@ -504,157 +519,315 @@
    {
     "quality": 0,
     "size": 2152249,
-    "ms": 7.98,
+    "ms": 8.13,
     "parallel": {
      "size": 2152249,
-     "ms": 8.79
+     "ms": 8.77
     },
     "native": {
      "size": 2152249,
-     "ms": 6.24
+     "ms": 5.3
     }
    },
    {
     "quality": 1,
     "size": 2152249,
-    "ms": 0.83,
+    "ms": 1.13,
     "parallel": {
      "size": 2152249,
-     "ms": 0.73
+     "ms": 0.7
     },
     "native": {
      "size": 2152249,
-     "ms": 0.65
+     "ms": 0.62
     }
    },
    {
     "quality": 2,
     "size": 2151966,
-    "ms": 21.89,
+    "ms": 7.99,
     "parallel": {
      "size": 2151966,
-     "ms": 6.7
+     "ms": 7.86
     },
     "native": {
      "size": 2151965,
-     "ms": 5.13
+     "ms": 6.23
     }
    },
    {
     "quality": 3,
     "size": 2151943,
-    "ms": 7.97,
+    "ms": 9.03,
     "parallel": {
      "size": 2151943,
-     "ms": 8.21
+     "ms": 10.1
     },
     "native": {
      "size": 2151943,
-     "ms": 10.28
+     "ms": 5.94
     }
    },
    {
     "quality": 4,
     "size": 2152252,
-    "ms": 4.44,
+    "ms": 6.13,
     "parallel": {
      "size": 2152252,
-     "ms": 5.67
+     "ms": 8.11
     },
     "native": {
      "size": 2152252,
-     "ms": 2.94
+     "ms": 5.26
     }
    },
    {
     "quality": 5,
     "size": 2152252,
-    "ms": 15.07,
+    "ms": 10.63,
     "parallel": {
      "size": 2152252,
-     "ms": 13.94
+     "ms": 13.23
     },
     "native": {
      "size": 2152252,
-     "ms": 4.95
+     "ms": 5.1
     }
    },
    {
     "quality": 6,
     "size": 2152252,
-    "ms": 18.52,
+    "ms": 13.67,
     "parallel": {
      "size": 2152252,
-     "ms": 20.31
+     "ms": 14.37
     },
     "native": {
      "size": 2152252,
-     "ms": 5.38
+     "ms": 3.71
     }
    },
    {
     "quality": 7,
     "size": 2152252,
-    "ms": 24.66,
+    "ms": 18.44,
     "parallel": {
      "size": 2152252,
-     "ms": 21.26
+     "ms": 18.85
     },
     "native": {
      "size": 2152252,
-     "ms": 9.36
+     "ms": 11.2
     }
    },
    {
     "quality": 8,
     "size": 2152252,
-    "ms": 31.65,
+    "ms": 19.22,
     "parallel": {
      "size": 2152252,
-     "ms": 29.01
+     "ms": 19.63
     },
     "native": {
      "size": 2152252,
-     "ms": 11.66
+     "ms": 15.96
     }
    },
    {
     "quality": 9,
     "size": 2129872,
-    "ms": 451.15,
+    "ms": 381.94,
     "parallel": {
      "size": 2129872,
-     "ms": 436.4
+     "ms": 395.33
     },
     "native": {
      "size": 2141290,
-     "ms": 185.58
+     "ms": 169.78
     }
    },
    {
     "quality": 10,
     "size": 2108001,
-    "ms": 2605.52,
+    "ms": 1886.67,
     "parallel": {
      "size": 2110678,
-     "ms": 1057.62
+     "ms": 961.06
     },
     "native": {
      "size": 2108044,
-     "ms": 2048.83
+     "ms": 2297.92
     }
    },
    {
     "quality": 11,
     "size": 2069788,
-    "ms": 2664.63,
+    "ms": 2383.21,
     "parallel": {
      "size": 2071807,
-     "ms": 992.47
+     "ms": 888.46
     },
     "native": {
      "size": 2070197,
-     "ms": 4950.75
+     "ms": 5009.59
+    }
+   }
+  ],
+  "logs": [
+   {
+    "quality": 0,
+    "size": 19218098,
+    "ms": 271.91,
+    "parallel": {
+     "size": 19218098,
+     "ms": 283.33
+    },
+    "native": {
+     "size": 19218098,
+     "ms": 124.8
+    }
+   },
+   {
+    "quality": 1,
+    "size": 17478916,
+    "ms": 366.9,
+    "parallel": {
+     "size": 17478916,
+     "ms": 380.35
+    },
+    "native": {
+     "size": 17478916,
+     "ms": 210.07
+    }
+   },
+   {
+    "quality": 2,
+    "size": 19295955,
+    "ms": 657.84,
+    "parallel": {
+     "size": 19295955,
+     "ms": 680.46
+    },
+    "native": {
+     "size": 16132495,
+     "ms": 387.4
+    }
+   },
+   {
+    "quality": 3,
+    "size": 17606472,
+    "ms": 792.98,
+    "parallel": {
+     "size": 17606472,
+     "ms": 811.21
+    },
+    "native": {
+     "size": 15929689,
+     "ms": 484.17
+    }
+   },
+   {
+    "quality": 4,
+    "size": 16280695,
+    "ms": 1206.6,
+    "parallel": {
+     "size": 16280695,
+     "ms": 1130.55
+    },
+    "native": {
+     "size": 15094451,
+     "ms": 702.43
+    }
+   },
+   {
+    "quality": 5,
+    "size": 13474653,
+    "ms": 1695.61,
+    "parallel": {
+     "size": 13474653,
+     "ms": 1589.86
+    },
+    "native": {
+     "size": 13487120,
+     "ms": 1115.56
+    }
+   },
+   {
+    "quality": 6,
+    "size": 13111338,
+    "ms": 2785.25,
+    "parallel": {
+     "size": 13111338,
+     "ms": 2615.39
+    },
+    "native": {
+     "size": 13115763,
+     "ms": 1699.14
+    }
+   },
+   {
+    "quality": 7,
+    "size": 12864721,
+    "ms": 4230.96,
+    "parallel": {
+     "size": 12864721,
+     "ms": 4253.7
+    },
+    "native": {
+     "size": 12861310,
+     "ms": 2651.6
+    }
+   },
+   {
+    "quality": 8,
+    "size": 12671508,
+    "ms": 5811.02,
+    "parallel": {
+     "size": 12671508,
+     "ms": 5227.4
+    },
+    "native": {
+     "size": 12669109,
+     "ms": 3186.52
+    }
+   },
+   {
+    "quality": 9,
+    "size": 12483471,
+    "ms": 9179.44,
+    "parallel": {
+     "size": 12483471,
+     "ms": 9555.36
+    },
+    "native": {
+     "size": 12504407,
+     "ms": 5903.28
+    }
+   },
+   {
+    "quality": 10,
+    "size": 10643738,
+    "ms": 72942.05,
+    "parallel": {
+     "size": 10642401,
+     "ms": 7072.1
+    },
+    "native": {
+     "size": 10621296,
+     "ms": 51753.29
+    }
+   },
+   {
+    "quality": 11,
+    "size": 10087915,
+    "ms": 138581.7,
+    "parallel": {
+     "size": 10089637,
+     "ms": 16573.13
+    },
+    "native": {
+     "size": 10077190,
+     "ms": 113739.43
     }
    }
   ]
@@ -662,19 +835,23 @@
  "gzip": {
   "html": {
    "size": 1232,
-   "ms": 0.1
+   "ms": 0.11
   },
   "json": {
    "size": 1282,
-   "ms": 0.21
+   "ms": 0.18
   },
   "svg": {
    "size": 767489,
-   "ms": 45.07
+   "ms": 37.25
   },
   "png": {
    "size": 2139237,
-   "ms": 70.78
+   "ms": 46.71
+  },
+  "logs": {
+   "size": 12978252,
+   "ms": 4057.2
   }
  },
  "window": {
@@ -682,54 +859,54 @@
    {
     "lgwin": 16,
     "size": 746636,
-    "ms": 662.59
+    "ms": 533.86
    },
    {
     "lgwin": 18,
     "size": 746527,
-    "ms": 811.24
+    "ms": 579.66
    },
    {
     "lgwin": 20,
     "size": 746310,
-    "ms": 925.26
+    "ms": 722.42
    },
    {
     "lgwin": 22,
     "size": 746179,
-    "ms": 891.89
+    "ms": 733.3
    },
    {
     "lgwin": 24,
     "size": 746179,
-    "ms": 841.49
+    "ms": 698.62
    }
   ],
   "png": [
    {
     "lgwin": 16,
     "size": 2127617,
-    "ms": 1771.44
+    "ms": 1641.58
    },
    {
     "lgwin": 18,
     "size": 2099355,
-    "ms": 1640.38
+    "ms": 1498.57
    },
    {
     "lgwin": 20,
     "size": 2073902,
-    "ms": 2165.35
+    "ms": 1966.82
    },
    {
     "lgwin": 22,
     "size": 2069788,
-    "ms": 2371.34
+    "ms": 2099.76
    },
    {
     "lgwin": 24,
     "size": 2068586,
-    "ms": 2877.72
+    "ms": 2119.94
    }
   ]
  },
@@ -752,19 +929,19 @@
   },
   {
    "variant": "defuss-brotli/compressor/slim",
-   "raw": 960085,
-   "gzip": 453599,
-   "br4": 510593,
-   "br11": 396955,
-   "zstd": 405510
+   "raw": 960125,
+   "gzip": 453661,
+   "br4": 510647,
+   "br11": 396989,
+   "zstd": 405566
   },
   {
    "variant": "defuss-brotli/compressor",
-   "raw": 1275103,
-   "gzip": 608231,
-   "br4": 663856,
-   "br11": 499050,
-   "zstd": 524585
+   "raw": 1275143,
+   "gzip": 608246,
+   "br4": 663685,
+   "br11": 499419,
+   "zstd": 525122
   }
  ]
 }

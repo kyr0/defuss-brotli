@@ -8,7 +8,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { expand, templates } from "./lib/catalog.js";
 import { chartTable, tableHtml, type Bench, type CliData } from "./lib/charts.js";
-import { renderSnippets } from "./code.js";
+import { createCodeHighlighter, highlightLine, renderSnippets } from "./code.js";
 import { compress, init } from "../dist/compressor.js";
 
 // Bun's bundler, the one Bun API this script uses (the repository's types are Node.js's).
@@ -51,14 +51,20 @@ const cli = JSON.parse(readFileSync(join(site, "data/cli.json"), "utf8")) as Cli
 
 // The page: catalog, code, data, CDN tags.
 let { html, entries } = expand(readFileSync(join(site, "page.html"), "utf8"));
-const snippets = await renderSnippets();
+const highlighter = await createCodeHighlighter();
+const snippets = renderSnippets(highlighter);
 html = html.replace(/<div data-code="([a-z]+)"><\/div>/g, (_m, name: string) => {
   const code = snippets[name];
   if (!code) throw new Error(`unknown code snippet ${name}`);
   return code;
 });
+// The demos' "what ran" lines, coloured by Shiki before the first run; site/lib/callcode.ts colours each later run.
+const CALL = /(<div class="mockup-code call-code"[^>]*><pre(?: [a-z-]+="[^"]*")*><code>)([^<]*)(<\/code>)/g;
+const calls = html.match(CALL)?.length ?? 0;
+if (calls !== 2) throw new Error(`expected 2 call-code boxes in site/page.html, found ${calls}`);
+html = html.replace(CALL, (_m, open: string, code: string, close: string) => open + highlightLine(highlighter, code) + close);
 html = replaceOnce(html, "<!--i18n-templates-->", templates(entries));
-html = replaceOnce(html, "<!--perf-table-->", tableHtml(chartTable(bench, cli, { view: "quality", input: "html", metric: "size" }, "en")));
+html = replaceOnce(html, "<!--perf-table-->", tableHtml(chartTable(bench, cli, { view: "speed", input: "logs", metric: "multi" }, "en")));
 // `<` escaped, so no value can end the script element early.
 html = replaceOnce(html, "<!--perf-data-->", JSON.stringify({ bench, cli, echarts: ECHARTS }).replace(/</g, "\\u003c"));
 html = replaceOnce(

@@ -53,26 +53,37 @@ export const DEFAULT_LGWIN = 22;
  *
  * @example
  * ```ts
- * await compressParallel(data);                 // quality 11, up to 8 workers
+ * await compressParallel(data);                 // quality 11, one worker per CPU core
  * await compressParallel(data, { threads: 2 }); // same bytes, two workers
  * ```
  */
 export interface BrotliParallelOptions extends BrotliCompressOptions {
   /**
-   * How many workers compress parts at once, at most {@link PARALLEL_PARTS}; 1 compresses the parts one after
-   * another on the calling thread. The output does not depend on it.
+   * How many workers compress parts at once; 1 compresses the parts one after another on the calling thread. More
+   * workers than parts add nothing. The output does not depend on it.
    *
-   * @default the number of logical CPUs, at most 8
+   * @default the number of logical CPUs
    */
   threads?: number;
 }
 
 /**
- * A parallel compression splits its input into at most this many parts of at least {@link MIN_PART_SIZE} bytes.
- * A constant rather than the number of CPUs, so the output is the same on every machine. VERIFIED (native, brotli
- * 8.0.2, quality 11): with 8 threads, 8 parts beat 4 and 16 on a 256 KiB SVG, the 5.1 MB SVG and a 20 MB mix.
+ * A parallel compression splits inputs up to {@link PARALLEL_PARTS} × {@link PART_WINDOWS} windows into this many
+ * parts of at least {@link MIN_PART_SIZE} bytes. A constant rather than the number of CPUs, so the output is the same
+ * on every machine. VERIFIED (native, brotli 8.0.2, quality 11): with 8 threads, 8 parts beat 4 and 16 on a 256 KiB
+ * SVG, the 5.1 MB SVG and a 20 MB mix.
  */
 export const PARALLEL_PARTS = 8;
+
+/**
+ * Longer inputs split into parts of this many windows, so they keep more cores busy. Every part after the first
+ * re-reads up to one window of input as its dictionary, which costs about as much as compressing a quarter of a
+ * window, so parts must be several windows long before an extra part pays off. VERIFIED (WASM, Node.js 26, Apple M5
+ * Max with 18 cores, quality 11, window 22, 128 MiB of log lines, median of 3): 16 parts of 2 windows took 18.4 s on
+ * 18 workers against 25.7 s for 8 parts, and 27.0 s against 26.2 s on 8 workers; 32 parts of 1 window took 19.5 s and
+ * 30.0 s. With parts of 2 windows, inputs up to 64 MiB keep their 8 parts.
+ */
+const PART_WINDOWS = 2;
 
 /** Smallest part. VERIFIED: 32 KiB parts cost a 256 KiB SVG 0.007 % in size, 16 KiB parts of a 29 KB page 1.6 %. */
 export const MIN_PART_SIZE = 32 * 1024;
@@ -93,10 +104,11 @@ const MIN_PARALLEL_QUALITY = 10;
 
 /**
  * The byte ranges of a parallel compression: one range below {@link MIN_PARALLEL_QUALITY} or when the input fits in
- * one part; otherwise at most {@link PARALLEL_PARTS} of at least {@link MIN_PART_SIZE} bytes.
+ * one part; otherwise {@link PARALLEL_PARTS} parts, or parts of {@link PART_WINDOWS} windows when those are shorter,
+ * never shorter than {@link MIN_PART_SIZE} bytes.
  */
-export function partRanges(length: number, quality: number): Array<[number, number]> {
-  const size = Math.max(Math.ceil(length / PARALLEL_PARTS), MIN_PART_SIZE);
+export function partRanges(length: number, quality: number, lgwin: number): Array<[number, number]> {
+  const size = Math.max(Math.min(Math.ceil(length / PARALLEL_PARTS), PART_WINDOWS * 2 ** lgwin), MIN_PART_SIZE);
   if (quality < MIN_PARALLEL_QUALITY || length <= size) return [[0, length]];
   const ranges: Array<[number, number]> = [];
   for (let start = 0; start < length; start += size) ranges.push([start, Math.min(start + size, length)]);
@@ -141,7 +153,7 @@ function defaultThreads(): number {
     process?: { getBuiltinModule?(id: string): { availableParallelism?(): number } | undefined };
   };
   const cpus = runtime.navigator?.hardwareConcurrency ?? runtime.process?.getBuiltinModule?.("node:os")?.availableParallelism?.();
-  return Math.min(PARALLEL_PARTS, cpus ?? 1);
+  return cpus ?? 1;
 }
 
 /**
@@ -238,7 +250,8 @@ export function compress(input: Uint8Array, options: BrotliCompressOptions = {})
 /**
  * Compress raw bytes with Brotli on several workers.
  *
- * The input is split into at most {@link PARALLEL_PARTS} parts of at least {@link MIN_PART_SIZE} bytes. Each worker
+ * The input is split into {@link PARALLEL_PARTS} parts, or into parts of two windows (8 MiB at the default window)
+ * when it is longer than 64 MiB, each at least {@link MIN_PART_SIZE} bytes. Each worker
  * runs its own instance of the compressor and compresses one part with the window before it as dictionary, so
  * matches still reach across parts; the calling thread joins the parts into one standard Brotli stream. The output
  * depends only on the input and the options other than `threads`, and differs slightly from {@link compress}'s
@@ -247,7 +260,8 @@ export function compress(input: Uint8Array, options: BrotliCompressOptions = {})
  * Node.js, with `worker_threads`, and are terminated before the Promise settles. Where no such worker starts, the
  * parts run one after another on the calling thread, with the same output.
  *
- * @param input   Raw bytes to compress. Not modified.
+ * @param input   Raw bytes to compress. Not modified; do not change it until the Promise settles, because parts are
+ *                copied when a worker takes them.
  * @param options Compression tuning and the number of workers — see {@link BrotliParallelOptions}.
  * @returns A Promise of a new `Uint8Array` with the Brotli-compressed output.
  *
@@ -264,24 +278,25 @@ export async function compressParallel(input: Uint8Array, options: BrotliParalle
   const { quality, lgwin } = normalizeOptions(options);
   const threads = options.threads ?? defaultThreads();
   if (!Number.isInteger(threads) || threads < 1) throw new Error("threads must be a positive integer");
-  const ranges = partRanges(input.length, quality);
+  const ranges = partRanges(input.length, quality, lgwin);
   if (ranges.length === 1) return compress(input, { quality, lgwin });
 
   const window = 2 ** lgwin - 16;
   // Copies with their own buffers, which are transferred to the workers: `Buffer#slice` would share (and detach)
-  // the caller's memory.
+  // the caller's memory. Made when a worker takes the part, so memory grows with the workers, not the parts.
   const copy = (start: number, end: number) => new Uint8Array(input.subarray(start, end));
-  const tasks: PartTask[] = ranges.map(([start, end]) => ({
-    total: input.length,
-    quality,
-    lgwin,
-    part: copy(start, end),
-    dictionary: copy(Math.max(0, start - window), start),
-  }));
+  const task = (id: number): PartTask => {
+    const [start, end] = ranges[id]!;
+    return { total: input.length, quality, lgwin, part: copy(start, end), dictionary: copy(Math.max(0, start - window), start) };
+  };
   const parts =
-    (threads > 1 ? await runParts(WORKER_SOURCE, compiled!, tasks, Math.min(threads, tasks.length)) : null) ??
-    tasks.map((task) =>
-      encodeWith(memory!, glue.Encoder.part(task.part.length, task.total, quality, lgwin, task.dictionary), task.part),
+    (threads > 1 ? await runParts(WORKER_SOURCE, compiled!, ranges.length, task, Math.min(threads, ranges.length)) : null) ??
+    ranges.map(([start, end]) =>
+      encodeWith(
+        memory!,
+        glue.Encoder.part(end - start, input.length, quality, lgwin, input.subarray(Math.max(0, start - window), start)),
+        input.subarray(start, end),
+      ),
     );
   return joinParts(memory!, parts);
 }

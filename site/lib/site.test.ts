@@ -1,9 +1,10 @@
 // The site's pure modules: the bilingual source format, routes, number formats, chart data and sample data.
 import { readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
+import { createCodeHighlighter, highlightLine } from "../code.js";
 import { highlightCall } from "./callcode.js";
 import { expand, plainText, templates } from "./catalog.js";
-import { chartOption, chartTable, savingOverGzip, tableHtml, type Bench, type CliData, type View } from "./charts.js";
+import { chartOption, chartTable, tableHtml, type Bench, type CliData, type Metric, type View } from "./charts.js";
 import { bytes, duration, factor, fill, percent, windowSize } from "./format.js";
 import { logLines } from "./logs.js";
 import { href, place, preferred } from "./routes.js";
@@ -103,31 +104,44 @@ describe("format", () => {
 });
 
 describe("charts", () => {
-  const views: View[] = ["quality", "workers", "window", "cli", "download"];
+  const views: View[] = ["speed", "window", "cli", "download"];
+  const metrics: Metric[] = ["multi", "single"];
 
   test("every view has series and a table with a value per column", () => {
     for (const view of views) {
-      for (const locale of ["en", "de"] as const) {
-        const state = { view, input: "html", metric: "size" as const };
-        const option = chartOption(bench, cli, state, locale);
-        expect((option.series as unknown[]).length, view).toBeGreaterThan(1);
-        const table = chartTable(bench, cli, state, locale);
-        for (const row of table.rows) expect(row, view).toHaveLength(table.head.length);
+      for (const metric of metrics) {
+        for (const locale of ["en", "de"] as const) {
+          const state = { view, input: "html", metric };
+          const option = chartOption(bench, cli, state, locale);
+          expect((option.series as unknown[]).length, view).toBeGreaterThan(1);
+          const table = chartTable(bench, cli, state, locale);
+          for (const row of table.rows) expect(row, view).toHaveLength(table.head.length);
+        }
       }
     }
   });
 
-  test("the quality view shows the input's 12 qualities, and this device's timings when measured", () => {
-    const device = Array.from({ length: 12 }, (_, q) => q + 1);
-    const table = chartTable(bench, cli, { view: "quality", input: "json", metric: "time", device }, "en");
-    expect(table.head.at(-1)).toBe("This device");
-    expect(table.rows).toHaveLength(13);
-    const option = chartOption(bench, cli, { view: "quality", input: "json", metric: "time", device }, "en");
-    expect((option.series as Array<{ name: string }>).map((s) => s.name)).toContain("This device");
+  test("the speed view draws lines over qualities 9 to 11: multicore against 1 core and Node.js, 1 core against Node.js", () => {
+    const names = (metric: Metric) =>
+      (chartOption(bench, cli, { view: "speed", input: "svg", metric }, "en").series as Array<{ name: string; type: string; data: number[] }>).map(
+        (s) => {
+          expect(s.type).toBe("line");
+          expect(s.data).toHaveLength(3);
+          return s.name;
+        },
+      );
+    expect(names("multi")).toEqual(["compressParallel(), 8 cores", "compress(), 1 core", "Node.js built-in (C), 1 core"]);
+    expect((chartOption(bench, cli, { view: "speed", input: "svg", metric: "multi" }, "en").xAxis as { data: string[] }).data).toEqual(["9", "10", "11"]);
+    expect(names("single")).toEqual(["compress(), 1 core", "Node.js built-in (C)"]);
   });
 
-  test("quality 11 against gzip -9 for the HTML page", () => {
-    expect(savingOverGzip(bench, "html")).toBeCloseTo((1 - 764 / 1232) * 100, 5);
+  test("the speed table lists the input's 12 qualities, and this device's timings when measured", () => {
+    const device = Array.from({ length: 12 }, (_, q) => q + 1);
+    const table = chartTable(bench, cli, { view: "speed", input: "json", metric: "single", device }, "en");
+    expect(table.head.at(-1)).toBe("This device");
+    expect(table.rows).toHaveLength(13);
+    const option = chartOption(bench, cli, { view: "speed", input: "json", metric: "single", device }, "en");
+    expect((option.series as Array<{ name: string }>).map((s) => s.name)).toContain("This device");
   });
 
   test("tables escape their cells", () => {
@@ -152,5 +166,25 @@ describe("samples and code", () => {
     expect(html.replace(/<[^>]+>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">")).toBe(code);
     expect(html).toContain('--code-example-light:#d73a49;--code-example-dark:#f97583">await</span>');
     expect(html).toContain('">11</span>');
+  });
+
+  test("the call lines the demos print get Shiki's colours on every character", async () => {
+    const highlighter = await createCodeHighlighter();
+    // Light and dark colour per character, read from the spans.
+    const colours = (html: string) =>
+      [...html.matchAll(/<span style="--code-example-light:([^;]+);--code-example-dark:([^"]+)">([^<]*)<\/span>/g)].flatMap(
+        ([, light, dark, text]) => [...text!.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&")].map(() => `${light}/${dark}`.toLowerCase()),
+      );
+    for (const code of [
+      "await compressParallel(input, { quality: 11 })",
+      "await compressParallel(input, { quality: 11, lgwin: 22, threads: 8 })",
+      "compress(input, { quality: 5, lgwin: 16 })",
+      "decompress(bytes) // sample.json.br",
+      "decompress(bytes)",
+    ]) {
+      const shiki = colours(highlightLine(highlighter, code));
+      expect(shiki.length).toBe(code.length);
+      expect(colours(highlightCall(code))).toEqual(shiki);
+    }
   });
 });

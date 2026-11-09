@@ -2,6 +2,13 @@
 
 All notable changes to `defuss-brotli`. Versions follow [Semantic Versioning](https://semver.org/); before 1.0.0, a minor version may change behavior.
 
+## 0.4.0 - 2026-11-09
+
+### Changed
+
+- `compressParallel`, and with it the `defuss-brotli` command, now uses every CPU core: `threads` defaults to the number of logical CPUs instead of at most 8. Inputs above 64 MiB (at the default window 22) split into parts of two windows (8 MiB) instead of 8 parts, one more part per 8 MiB, so they keep more cores busy: 128 MiB of log lines takes 18.4 s instead of 25.7 s on an 18-core Apple M5 Max and 27.0 s instead of 26.2 s with 8 workers (Node.js 26, quality 11). Their output differs from 0.3.1's and is still the same on every machine; inputs up to 64 MiB give the same bytes as before. More workers use more memory: 2.2 GiB resident for 16 workers on 128 MiB, against 1.4 GiB for 8.
+- `compressParallel` copies a part and its dictionary when a worker takes it, not all parts up front, so the extra JavaScript memory grows with the workers instead of the parts. The input must therefore not change until the Promise settles.
+
 ## 0.3.1 - 2026-11-09
 
 ### Added

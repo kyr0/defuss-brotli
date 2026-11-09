@@ -51,7 +51,7 @@ Options:
                               window size = 2**NUM - 16
                               0 lets compressor choose the optimal value
   -S SUF, --suffix=SUF        output file suffix (default:'.br')
-  --threads=NUM               compress on up to NUM workers (default: CPUs, at most 8);
+  --threads=NUM               compress on up to NUM workers (default: CPUs);
                               the output is the same for every NUM
   -V, --version               display version and exit
   -Z, --best                  use best compression level (11) (default)

@@ -1,7 +1,7 @@
 // The performance views: ECharts options and table rows from the measured data (site/data/*.json). Pure, so the
 // build renders the first table into the static page and the browser renders every view from the same code.
 // VERIFIED: every view yields series and complete table rows in both languages (site.test.ts), and the e2e switches
-// through all five views with ECharts 6.1.0 mounted by defuss-shadcn's chart component.
+// through all four views and both speed charts with ECharts 6.1.0 mounted by defuss-shadcn's chart component.
 import { bytes, duration, percent, windowSize, type Locale } from "./format.js";
 
 export interface Timing {
@@ -18,7 +18,8 @@ export interface Bench {
   node: string;
   cpu: string;
   threads: number;
-  inputs: Record<string, { label: string; file: string; bytes: number }>;
+  /** `cores`: how many cores compressParallel kept busy (one per part); `runs`: calls per timing. */
+  inputs: Record<string, { label: string; file: string; bytes: number; cores?: number; runs?: number }>;
   quality: Record<string, QualityRow[]>;
   gzip: Record<string, Timing>;
   window: Record<string, Array<Timing & { lgwin: number }>>;
@@ -28,8 +29,9 @@ export interface CliData {
   source: string;
   rows: Array<{ input: string; node: number; bun: number; brotli: number }>;
 }
-export type View = "quality" | "workers" | "window" | "cli" | "download";
-export type Metric = "size" | "time";
+export type View = "speed" | "window" | "cli" | "download";
+/** The speed view's chart: compressParallel against compress, or compress against Node.js's C library. */
+export type Metric = "multi" | "single";
 export interface ViewState {
   view: View;
   input: string;
@@ -58,13 +60,16 @@ const LABELS = {
     device: "This device",
     gzip: "gzip, highest level",
     native: "Node.js built-in (C)",
-    single: "compress, 1 core",
-    workers: (n: number) => `compressParallel, ${n} cores`,
+    nativeSingle: "Node.js built-in (C), 1 core",
+    single: "compress(), 1 core",
+    workers: (n: number) => `compressParallel(), ${n === 1 ? "1 core" : `${n} cores`}`,
+    /** "on 8 cores" in a sentence. */
+    coresOn: (n: number) => (n === 1 ? "1 core" : `${n} cores`),
     uncompressed: "Uncompressed",
     br4: "Brotli level 4, like jsDelivr",
     br11: "Brotli level 11",
     zstd: "zstd, level 19",
-    labels: { html: "HTML page", json: "JSON", svg: "SVG, 1 MiB", png: "PNG image" } as Record<string, string>,
+    labels: { html: "HTML page", json: "JSON", svg: "SVG drawing", png: "PNG image", logs: "Log lines" } as Record<string, string>,
   },
   de: {
     quality: "Qualität",
@@ -72,28 +77,32 @@ const LABELS = {
     share: "Komprimierte Größe, % des Originals",
     size: "Größe",
     time: "Zeit zum Komprimieren",
-    window: "Suchweite",
+    window: "Look-back",
     relative: "Größe, % des Ergebnisses bei 64 KiB",
-    wall: "Gesamtzeit des Befehls",
+    wall: "Gesamtausführungszeit des Befehls",
     download: "Download-Größe",
     input: "Eingabe",
-    import: "Was du importierst",
+    import: "Was Sie importieren",
     device: "Dieses Gerät",
     gzip: "gzip, höchste Stufe",
     native: "Node.js eingebaut (C)",
-    single: "compress, 1 Kern",
-    workers: (n: number) => `compressParallel, ${n} Kerne`,
+    nativeSingle: "Node.js eingebaut (C), 1 Kern",
+    single: "compress(), 1 Kern",
+    workers: (n: number) => `compressParallel(), ${n === 1 ? "1 Kern" : `${n} Kerne`}`,
+    coresOn: (n: number) => (n === 1 ? "1 Kern" : `${n} Kernen`),
     uncompressed: "Unkomprimiert",
     br4: "Brotli Stufe 4, wie jsDelivr",
     br11: "Brotli Stufe 11",
     zstd: "zstd, Stufe 19",
-    labels: { html: "HTML-Seite", json: "JSON", svg: "SVG, 1 MiB", png: "PNG-Bild" } as Record<string, string>,
+    labels: { html: "HTML-Seite", json: "JSON", svg: "SVG-Zeichnung", png: "PNG-Bild", logs: "Logzeilen" } as Record<string, string>,
   },
 };
 
 export const labels = (locale: Locale) => LABELS[locale];
-const KEYS = ["html", "json", "svg", "png"];
-const QUALITIES = Array.from({ length: 12 }, (_, q) => String(q));
+/** How many cores compressParallel kept busy on an input: one per part, at most the measured thread count. */
+export const cores = (bench: Bench, input: string) => bench.inputs[input]!.cores ?? bench.threads;
+/** The speed chart shows the slow qualities, where the cores make the difference; the table lists all 12. */
+const CHART_FROM_QUALITY = 9;
 const share = (size: number, input: number) => Math.round((size / input) * 10000) / 100;
 
 const axisMs = (name: string) => ({
@@ -141,56 +150,26 @@ function viewOption(bench: Bench, cli: CliData, state: ViewState, locale: Locale
     universalTransition: true,
     ...extra,
   });
-  if (state.view === "quality") {
-    const rows = bench.quality[state.input]!;
-    const input = bench.inputs[state.input]!.bytes;
-    const xAxis = { type: "category", name: L.qualityAxis, nameLocation: "middle", nameGap: 36, data: QUALITIES };
-    if (state.metric === "size") {
-      const gzip = share(bench.gzip[state.input]!.size, input);
-      return {
-        ...option,
-        tooltip: { trigger: "axis", valueFormatter: (v: number) => `${v} %` },
-        xAxis,
-        yAxis: { type: "value", name: L.share, nameLocation: "middle", nameGap: 56, min: 0, axisLabel: { formatter: "{value} %" } },
-        series: [
-          series("defuss-brotli", rows.map((r) => share(r.size, input)), "var(--chart-1)", { type: "line" }),
-          series(L.native, rows.map((r) => share(r.native.size, input)), "var(--chart-4)", {
-            type: "line",
-            lineStyle: { color: "var(--chart-4)", width: 2, type: "dashed" },
-          }),
-          series(L.gzip, rows.map(() => gzip), "var(--chart-3)", { type: "line", symbol: "none" }),
-        ],
-      };
-    }
-    const timed = [
-      series(L.single, rows.map((r) => r.ms), "var(--chart-1)", { type: "line" }),
-      series(L.workers(bench.threads), rows.map((r) => r.parallel.ms), "var(--chart-2)", { type: "line" }),
-      series(L.native, rows.map((r) => r.native.ms), "var(--chart-4)", {
-        type: "line",
-        lineStyle: { color: "var(--chart-4)", width: 2, type: "dashed" },
-      }),
-    ];
-    if (state.device) timed.push(series(L.device, state.device, "var(--chart-5)", { type: "line" }));
+  if (state.view === "speed") {
+    const rows = bench.quality[state.input]!.filter((r) => r.quality >= CHART_FROM_QUALITY);
+    const dashed = (color: string) => ({ type: "line", lineStyle: { color, width: 2, type: "dashed" } });
+    const single = series(L.single, rows.map((r) => r.ms), "var(--chart-1)", { type: "line" });
+    const timed =
+      state.metric === "multi"
+        ? [
+            series(L.workers(cores(bench, state.input)), rows.map((r) => r.parallel.ms), "var(--chart-2)", { type: "line" }),
+            series(L.single, rows.map((r) => r.ms), "var(--chart-1)", dashed("var(--chart-1)")),
+            // zlib's Brotli has no multicore mode; the line shows where one C core stands against the WASM cores
+            series(L.nativeSingle, rows.map((r) => r.native.ms), "var(--chart-4)", dashed("var(--chart-4)")),
+          ]
+        : [single, series(L.native, rows.map((r) => r.native.ms), "var(--chart-4)", dashed("var(--chart-4)"))];
+    if (state.metric === "single" && state.device) timed.push(series(L.device, state.device.slice(CHART_FROM_QUALITY), "var(--chart-5)", { type: "line" }));
     return {
       ...option,
       tooltip: { trigger: "axis", valueFormatter: (v: number) => duration(v, locale) },
-      xAxis,
+      xAxis: { type: "category", name: L.qualityAxis, nameLocation: "middle", nameGap: 36, data: rows.map((r) => String(r.quality)) },
       yAxis: axisMs(L.time),
       series: timed,
-    };
-  }
-  if (state.view === "workers") {
-    const q11 = KEYS.map((k) => bench.quality[k]!.at(-1)!);
-    return {
-      ...option,
-      tooltip: { trigger: "axis", valueFormatter: (v: number) => duration(v, locale) },
-      xAxis: { type: "category", data: KEYS.map((k) => L.labels[k]) },
-      yAxis: axisMs(L.time),
-      series: [
-        series(L.single, q11.map((r) => r.ms), "var(--chart-1)", { type: "bar" }),
-        series(L.workers(bench.threads), q11.map((r) => r.parallel.ms), "var(--chart-2)", { type: "bar" }),
-        series(L.native, q11.map((r) => r.native.ms), "var(--chart-4)", { type: "bar" }),
-      ],
     };
   }
   if (state.view === "window") {
@@ -245,7 +224,7 @@ export function chartTable(bench: Bench, cli: CliData, state: ViewState, locale:
   const L = LABELS[locale];
   const b = (n: number) => bytes(n, locale);
   const d = (n: number) => duration(n, locale);
-  if (state.view === "quality") {
+  if (state.view === "speed") {
     const input = bench.inputs[state.input]!.bytes;
     const gzip = bench.gzip[state.input]!;
     const rows = bench.quality[state.input]!.map((r, i) => [
@@ -258,17 +237,8 @@ export function chartTable(bench: Bench, cli: CliData, state: ViewState, locale:
     ]);
     rows.push([L.gzip, `${b(gzip.size)} (${percent((gzip.size / input) * 100, locale)})`, d(gzip.ms), "-", "-", ...(state.device ? ["-"] : [])]);
     return {
-      head: [L.quality, L.size, L.single, L.workers(bench.threads), L.native, ...(state.device ? [L.device] : [])],
+      head: [L.quality, L.size, L.single, L.workers(cores(bench, state.input)), L.native, ...(state.device ? [L.device] : [])],
       rows,
-    };
-  }
-  if (state.view === "workers") {
-    return {
-      head: [L.input, L.single, L.workers(bench.threads), L.native],
-      rows: KEYS.map((k) => {
-        const r = bench.quality[k]!.at(-1)!;
-        return [`${L.labels[k]}, ${b(bench.inputs[k]!.bytes)}`, d(r.ms), d(r.parallel.ms), d(r.native.ms)];
-      }),
     };
   }
   if (state.view === "window") {
@@ -291,12 +261,6 @@ export function chartTable(bench: Bench, cli: CliData, state: ViewState, locale:
     head: [L.import, L.uncompressed, L.gzip, L.br4, L.br11, L.zstd],
     rows: bench.sizes.map((s) => [s.variant, b(s.raw), b(s.gzip), b(s.br4), b(s.br11), b(s.zstd)]),
   };
-}
-
-/** How much smaller quality 11 is than gzip at level 9 for an input, in percent of gzip's size. */
-export function savingOverGzip(bench: Bench, input: string): number {
-  const q11 = bench.quality[input]!.at(-1)!.size;
-  return (1 - q11 / bench.gzip[input]!.size) * 100;
 }
 
 const escape = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");

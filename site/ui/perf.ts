@@ -2,8 +2,8 @@
 // the table of the same numbers, and an optional measurement in the visitor's browser. One instance that changes
 // its option beats one chart per view: ECharts animates between views. VERIFIED: the e2e switches every view and
 // measures the JSON sample on the test browser.
-import { chartOption, chartTable, labels, savingOverGzip, tableHtml, type Bench, type CliData, type ViewState } from "../lib/charts.js";
-import { bytes, percent } from "../lib/format.js";
+import { chartOption, chartTable, cores, labels, tableHtml, type Bench, type CliData, type ViewState } from "../lib/charts.js";
+import { bytes } from "../lib/format.js";
 import { compressor } from "./demos.js";
 import { $, locale, msg, onLocale, painted, press } from "./shared.js";
 
@@ -17,7 +17,7 @@ const SAMPLE_FILES: Record<string, string> = { html: "page.html", json: "data.js
 export function setupPerf(): void {
   const data = JSON.parse($("#perf-data").textContent!) as { bench: Bench; cli: CliData; echarts: [string, string] };
   const { bench, cli } = data;
-  const state: ViewState = { view: "quality", input: "html", metric: "size" };
+  const state: ViewState = { view: "speed", input: "logs", metric: "multi" };
   const devices: Record<string, number[]> = {};
   const chartElement = $("#perf-chart");
   let chart: ChartMount | undefined;
@@ -29,15 +29,14 @@ export function setupPerf(): void {
 
   const lead = () => {
     const l = locale();
-    if (state.view !== "quality") return msg(`lead-${state.view}`);
-    if (state.metric === "time") return msg("lead-quality-time");
+    if (state.view !== "speed") return msg(`lead-${state.view}`);
     const input = bench.inputs[state.input]!;
-    return msg("lead-quality-size", { input: labels(l).labels[state.input]!, saving: percent(savingOverGzip(bench, state.input), l), size: bytes(input.bytes, l) });
+    return msg(`lead-${state.metric}`, { input: labels(l).labels[state.input]!, size: bytes(input.bytes, l), cores: labels(l).coresOn(cores(bench, state.input)) });
   };
 
   const render = () => {
     const l = locale();
-    const view = { ...state, device: state.view === "quality" ? devices[state.input] : undefined };
+    const view = { ...state, device: state.view === "speed" ? devices[state.input] : undefined };
     $("#perf-lead").textContent = lead();
     $("#perf-table").innerHTML = tableHtml(chartTable(bench, cli, view, l));
     for (const control of document.querySelectorAll<HTMLElement>("[data-for-view]")) control.hidden = control.dataset.forView !== state.view;
@@ -93,8 +92,8 @@ export function setupPerf(): void {
       const response = await fetch(new URL(`assets/samples/${SAMPLE_FILES[key]}`, document.baseURI));
       const input = new Uint8Array(await response.arrayBuffer());
       const lib = await compressor();
-      state.metric = "time";
-      press($("#perf-metric"), "time");
+      state.metric = "single";
+      press($("#perf-metric"), "single");
       devices[key] = [];
       for (let quality = 0; quality <= 11; quality++) {
         $("#perf-lead").textContent = msg("measuring", { quality });

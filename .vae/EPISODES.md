@@ -89,3 +89,18 @@ Wrap: EVERY lead becomes a test | .vae/VERIFY.py rule | one MEMORY line with BC,
 2026-11-09T17:24:01Z s=698894d0 FINDING site/page.html hero copy learn=test: site/e2e.mjs asserts the footnote text 'Files from 1 MiB at quality 11'
 2026-11-09T17:24:01Z s=698894d0 FINDING site/ui/demos.ts:renderCompress learn=none: wording only; the e2e language switch covers re-rendering of script-written text
 2026-11-09T17:24:01Z s=698894d0 FINDING site/assets/site.css:.pack learn=test: site/e2e.mjs hero check and the axe-core check
+2026-11-09T20:04:43Z s=698894d0 FAIL hygiene.probes
+2026-11-09T20:22:19Z s=698894d0 FAIL lint
+2026-11-09T21:06:24Z s=698894d0 DONE fp=3e916d6cdc99 cov=95.8% paths=ARCH.md,CHANGELOG.md,README.md,docs/assets/lib/compressor-slim.js(+19)
+2026-11-09T21:06:24Z s=698894d0 FINDING site/lib/callcode.ts:TOKEN learn=test: site/lib/site.test.ts 'the call lines the demos print get Shiki's colours on every character'
+2026-11-09T21:06:24Z s=698894d0 FINDING site/build.ts:CALL learn=test: site/e2e.mjs 'page opened from disk' check
+2026-11-09T21:06:24Z s=698894d0 FINDING src/compressor-core.ts:partRanges learn=test: src/compressor.test.ts layout test pins 8 parts to 64 MiB, 9 above, 16 x 8 MiB at 128 MiB, 32 KiB floor at window 10
+2026-11-09T21:06:24Z s=698894d0 FINDING src/workers.ts:runParts dispatch learn=none: allocation failure is not reproducible in a test without mocks; the path is a two-line catch
+2026-11-09T21:06:24Z s=698894d0 FINDING src/compressor-core.ts:compressParallel learn=none: documented contract; the CLI awaits each file and never reuses the buffer
+2026-11-09T21:06:24Z s=698894d0 FINDING site/measure.mjs:timed learn=none: comment in site/measure.mjs records the measurement; a timing threshold test would pin env values
+2026-11-09T21:06:24Z s=698894d0 FINDING site/lib/charts.ts:KEYS learn=verifier: make lint in the gate
+2026-11-09T21:06:24Z s=698894d0 FINDING README.md:threads learn=none: one-off unit slip
+2026-11-09T21:20:55Z s=698894d0 DONE fp=52dba3bd1fc1 cov=95.8% paths=ARCH.md,CHANGELOG.md,README.md,docs/assets/lib/compressor-slim.js(+20)
+2026-11-09T21:20:55Z s=698894d0 FINDING package.json:version learn=none: release metadata, no code path changed
+2026-11-09T21:23:30Z s=698894d0 DONE fp=a091d6acb1f4 cov=95.9% paths=ARCH.md,CHANGELOG.md,README.md,docs/assets/lib/compressor-slim.js(+20)
+2026-11-09T21:23:30Z s=698894d0 FINDING site/lib/charts.ts:CHART_FROM_QUALITY learn=test: site/lib/site.test.ts speed view test

@@ -76,7 +76,7 @@ await writeFile("dist/app.js.br", await compressParallel(input));`,
       prompt: false,
       code: `<script type="importmap">
   { "imports": { "defuss-brotli/decompressor/slim":
-    "https://cdn.jsdelivr.net/npm/defuss-brotli@0.3.1/dist/decompressor-slim.js" } }
+    "https://cdn.jsdelivr.net/npm/defuss-brotli@0.4.0/dist/decompressor-slim.js" } }
 </script>
 <script type="module">
   import { init, decompress } from "defuss-brotli/decompressor/slim";
@@ -98,32 +98,46 @@ const CONTRAST: Record<string, string> = {
 const escape = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const attr = (s: string) => escape(s).replace(/"/g, "&quot;");
 
+export type CodeHighlighter = Awaited<ReturnType<typeof createHighlighter>>;
+export const createCodeHighlighter = () => createHighlighter({ themes: ["github-light", "github-dark"], langs: ["ts", "html", "shellscript"] });
+
+/** Shiki tokens of `code` as HTML per line: spans carrying both theme colours, with the contrast fixes. */
+function linesHtml(highlighter: CodeHighlighter, code: string, lang: Snippet["lang"]): Array<{ html: string; comment: boolean }> {
+  const { tokens } = highlighter.codeToTokens(code, {
+    lang,
+    themes: { light: "github-light", dark: "github-dark" },
+    defaultColor: false,
+    cssVariablePrefix: "--code-example-",
+  });
+  return tokens.map((line) => ({
+    html: line
+      .map((token) => {
+        const style = Object.entries(token.htmlStyle ?? {})
+          .map(([key, value]) => {
+            const theme = key.endsWith("-dark") ? "dark" : "light";
+            return `${key}:${CONTRAST[`${theme}:${String(value).toLowerCase()}`] ?? value}`;
+          })
+          .join(";");
+        return style ? `<span style="${style}">${escape(token.content)}</span>` : escape(token.content);
+      })
+      .join(""),
+    comment: line.length > 0 && line.every((t) => /^\s*(#.*)?$/.test(t.content)),
+  }));
+}
+
+/** One line of TypeScript, highlighted; the demos' "what ran" boxes start with it. */
+export const highlightLine = (highlighter: CodeHighlighter, code: string): string =>
+  linesHtml(highlighter, code, "ts")
+    .map((line) => line.html)
+    .join("\n");
+
 /** Renders every snippet as a defuss-shadcn mockup-code window; returns name to HTML. */
-export async function renderSnippets(): Promise<Record<string, string>> {
-  const highlighter = await createHighlighter({ themes: ["github-light", "github-dark"], langs: ["ts", "html", "shellscript"] });
+export function renderSnippets(highlighter: CodeHighlighter): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [name, variants] of Object.entries(SNIPPETS)) {
     out[name] = variants
       .map((snippet) => {
-        const { tokens } = highlighter.codeToTokens(snippet.code, {
-          lang: snippet.lang,
-          themes: { light: "github-light", dark: "github-dark" },
-          defaultColor: false,
-          cssVariablePrefix: "--code-example-",
-        });
-        const lines = tokens.map((line) => {
-          const html = line
-            .map((token) => {
-              const style = Object.entries(token.htmlStyle ?? {})
-                .map(([key, value]) => {
-                  const theme = key.endsWith("-dark") ? "dark" : "light";
-                  return `${key}:${CONTRAST[`${theme}:${String(value).toLowerCase()}`] ?? value}`;
-                })
-                .join(";");
-              return style ? `<span style="${style}">${escape(token.content)}</span>` : escape(token.content);
-            })
-            .join("");
-          const comment = line.length > 0 && line.every((t) => /^\s*(#.*)?$/.test(t.content));
+        const lines = linesHtml(highlighter, snippet.code, snippet.lang).map(({ html, comment }) => {
           const prefix = snippet.prompt ? (comment ? ' data-prefix="" data-tone="muted"' : ' data-prefix="$"') : "";
           return `<pre${prefix}><code>${html || " "}</code></pre>`;
         });

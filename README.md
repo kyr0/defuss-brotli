@@ -68,7 +68,7 @@ bunx defuss-brotli -t data.json.br               # test integrity, write nothing
 | `-s`, `--squash` | when compressing, drop an output that is larger than its source |
 | `-n`, `--no-copy-stat` | do not copy the source's mode and timestamps to the output |
 | `-S SUF`, `--suffix=SUF` | suffix to add or strip, default `.br` |
-| `--threads=NUM` | compress on up to `NUM` workers, default the number of CPUs, at most 8; the output is the same for every `NUM` (not a `brotli` option) |
+| `--threads=NUM` | compress on up to `NUM` workers, default the number of CPUs; the output is the same for every `NUM` (not a `brotli` option) |
 | `-v`, `--verbose` / `-h`, `--help` / `-V`, `--version` | per-file sizes and time / usage / version |
 
 With no file, or with `-`, it reads standard input and writes standard output. Short flags combine (`-9kf`) and `--` ends the options. Each input is written to `FILE.br` or, when decompressing, to `FILE` without `.br`. The command refuses to overwrite a file without `-f`, to write compressed bytes to a terminal, and to decompress a name that lacks the suffix. It stops at the first file that fails and exits with status 1.
@@ -155,11 +155,13 @@ await init();
 const compressed = await compressParallel(bytes, { quality: 11, threads: 4 });
 ```
 
-`compressParallel` splits the input into at most 8 parts of at least 32 KiB, compresses each part on a worker with its own instance of the compressor, and joins the parts into one standard Brotli stream on the calling thread. Each part gets the window of input before it as a dictionary, so matches still reach back across parts. This is the multithreaded mode of the `brotli` crate, run on workers instead of threads.
+`compressParallel` splits the input into 8 parts of at least 32 KiB, or, above 64 MiB at the default window, into parts of two windows (8 MiB), one more part per 8 MiB. It compresses each part on a worker with its own instance of the compressor, and joins the parts into one standard Brotli stream on the calling thread. Each part gets the window of input before it as a dictionary, so matches still reach back across parts. This is the multithreaded mode of the `brotli` crate, run on workers instead of threads.
 
 - **Output:** it depends only on the input, `quality` and `lgwin`, never on `threads` or the number of CPUs; `threads: 1` compresses the parts one after another on the calling thread and returns the same bytes. Below quality 10, or when the input fits in one part, it returns exactly what `compress` returns. Otherwise the output differs from `compress`'s and is slightly larger. Qualities 2 to 9 stay on one thread because the `brotli` crate's matcher for them can panic when a part has a dictionary (see [ARCH.md](ARCH.md)), and one thread suffices there: the 2.1 MB PNG takes 0.45 s at quality 9 and 2.66 s at quality 11 (Node.js 26, `site/data/bench.json`).
 - **Workers:** Web Workers from a Blob URL in browsers and Bun, and `worker_threads` in Node.js. Pages with a Content Security Policy must allow `worker-src blob:`. No extra file is needed, because the worker script is embedded in the module. The workers are terminated before the Promise settles. A runtime that cannot start such a worker compresses the parts on the calling thread.
-- **`threads`:** how many workers run at once, default the number of logical CPUs, at most 8. Each worker allocates its own encoder state, as a `compress` call does.
+- **`threads`:** how many workers run at once, default the number of logical CPUs. More workers than parts add nothing, so inputs up to 64 MiB use at most 8. Each worker allocates its own encoder state, as a `compress` call does: 16 workers on 128 MiB peaked at 2.2 GiB of resident memory, against 1.4 GiB for 8. Pass a smaller `threads` to cap it.
+- **100 MiB:** on the website's 100 MiB of log lines (`site/data/bench.json`, quality 11, one run each, 18-core Apple M5 Max, Node.js 26), `compressParallel` took 16.6 s on 13 cores, `compress` 138.6 s and `node:zlib` 113.7 s, with output 0.02 % larger than `compress`'s.
+- **Why parts of two windows:** each part after the first re-reads up to one window of the input before it, which costs about a quarter of compressing one window. VERIFIED (Apple M5 Max with 18 cores, Node.js 26, quality 11, 128 MiB of log lines, median of 3): 16 parts of 8 MiB took 18.4 s on 18 workers, against 25.7 s for 8 parts, and 27.0 s against 26.2 s on 8 workers; 32 parts of 4 MiB took 19.5 s and 30.0 s. On 32 MiB, 16 parts would make 8 workers 25 % slower, so inputs up to 64 MiB keep 8 parts.
 
 VERIFIED on Node.js 26 (Apple Silicon, quality 11, window 22, median of 3 in-process runs, first call):
 
@@ -222,7 +224,7 @@ Hard cap on decompressed output to prevent **decompression bombs**. Raise explic
 - `quality` must be an integer in **0-11** (the range of the reference Brotli encoder).
 - `lgwin` must be an integer in **10-24** (the window range of the Brotli format, RFC 7932).
 - `maxOutputSize` defaults to **64 MiB** - the WASM module rejects output exceeding this. Values above 2^32 − 1 act as 2^32 − 1.
-- `threads` must be a positive integer. `compressParallel` copies each part and its dictionary (up to one window) to its worker, so it holds up to 8 windows more than the input in JavaScript memory while it runs.
+- `threads` must be a positive integer. `compressParallel` copies each part and its dictionary (up to one window) to its worker when the worker takes it, so it holds up to one part and one window per worker more than the input in JavaScript memory while it runs. Because of that, the input must not change until the Promise settles.
 - Calls stream the input and output through chunks of at most 1 MiB (one window of input when compressing), so WASM memory holds the codec state and two chunks however large the payload; the returned `Uint8Array` lives in JavaScript memory. Truncated input, corrupt input and bytes after the end of the Brotli stream throw.
 
 ## Why the Split Exports?
