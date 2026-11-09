@@ -18,3 +18,7 @@ Budget 4 KiB (`vae.py doctor --repo .`); entries are injected at session start. 
 - VERIFIED[GNU Make 3.81 macOS] edits in the same second as tmp/build.stamp skip `make build` (1 s mtimes) BC stale dist in a probe 2026-11-09; sleep 1 + touch, or make clean
 - VERIFIED[vitest toEqual on large typed arrays] 32 MiB Uint8Array comparison exhausts the 4 GiB V8 heap BC src/memory.test.ts 2026-11-09; compare with Buffer.equals
 - VERIFIED[brotli q11 of compressor.wasm] swings 340,693 ↔ 392,638 B under wasm-opt passes that move raw and br4 by 0.2 % BC 2026-11-09 measurement; judge size changes by br4/gzip, budget br11 at the upper value
+- VERIFIED[bunx running a `#!/usr/bin/env node` bin] uses Node when it is on PATH, Bun when not, Bun with `--bun`; in a project that installed the package, bunx runs that local bin offline BC 2026-11-09 PATH-wrapper probe in tmp/e2e/cli
+- VERIFIED[brotli 1.2.0 CLI defaults] quality 11 and the smallest lgwin with 2**w - 16 >= file size (stdin: 24); usage errors print the help to stdout BC md5 and exit-code probes 2026-11-09
+- VERIFIED[Bun 1.4 exit after Worker.terminate()] the process lingers ~200 ms while terminated workers shut down; flush stdout/stderr, then process.exit BC src/bin.ts probe 2026-11-09 (300 → 85 ms)
+- VERIFIED[Deno] not installed here; worker behavior there is UNKNOWN, docs make no Deno claim BC `which deno` 2026-11-09

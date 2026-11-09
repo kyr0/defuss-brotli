@@ -103,8 +103,8 @@ export function initFrom(source: () => WasmSource): Promise<void> {
     initPromise = Promise.resolve()
       .then(() => instantiateWasm(source(), "./defuss_brotli_decompressor_bg.js", glue))
       .then(
-        (wasmMemory) => {
-          wasmDecompressBytes = (input, maxOutputSize) => decodeChunks(wasmMemory, input, maxOutputSize);
+        ({ memory }) => {
+          wasmDecompressBytes = (input, maxOutputSize) => decodeChunks(memory, input, maxOutputSize);
           ready = true;
         },
         (error: unknown) => {

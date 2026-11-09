@@ -43,6 +43,14 @@ assert.equal(slimDecompressor.decompressText(slimPacked), text);
 assert.equal(decompressor.decompressText(slimPacked), text, "slim and inline builds are interchangeable");
 results.push({ file: "page.html", entry: "slim", quality: 6, inputBytes: Buffer.byteLength(text), outputBytes: slimPacked.length });
 
+// compressParallel: worker_threads in Node.js, Web Workers in Bun. VERIFIED: the parts run on workers in both, and
+// the output does not depend on the thread count (src/workers.ts picks the API by runtime).
+const big = new TextEncoder().encode(text.repeat(12));
+const parallel = await compressor.compressParallel(big);
+assert.deepEqual(new Uint8Array(brotliDecompressSync(parallel)), big, "compressParallel node:zlib decode");
+assert.deepEqual(await slimCompressor.compressParallel(big, { threads: 1 }), parallel, "compressParallel threads 1");
+results.push({ file: "page.html x12", entry: "parallel", quality: 11, inputBytes: big.length, outputBytes: parallel.length });
+
 // README "Quick Start", verbatim.
 assert.equal(decompressor.decompressText(compressor.compressText("Hello, Brotli!", { quality: 6 })), "Hello, Brotli!");
 

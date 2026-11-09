@@ -9,6 +9,8 @@ A split pure-Rust Brotli package for Node.js + browsers.
 - **Pure-Rust WebAssembly** - no native addons
 - **Typed TypeScript API** with full JSDoc
 - **Vitest coverage** in Node and browser
+- **Parallel compression** - `compressParallel()` compresses parts of the input on workers: 2.3 to 4.3 times faster at quality 11 from 256 KiB, with output at most 0.1 % larger
+- **`defuss-brotli` command** with the options of the `brotli` CLI, `bunx defuss-brotli compress FILE`; from 256 KiB it compresses 1.2 to 5.3 times faster than `brotli` 1.2.0
 
 ## Install
 
@@ -38,6 +40,64 @@ await init();
 const text = decompressText(compressed);
 // returns "Hello, Brotli!"
 ```
+
+### Command line
+
+The package ships a `defuss-brotli` command with the options of the `brotli` CLI, so it can replace `brotli` in build scripts and on machines where only Node.js or Bun is installed:
+
+```bash
+bunx defuss-brotli compress dist/app.js          # writes dist/app.js.br, keeps dist/app.js
+bunx defuss-brotli decompress dist/app.js.br -o app.js
+bunx defuss-brotli -q 5 -v *.html *.css          # brotli's spelling: compress by default
+bunx defuss-brotli -d -c page.html.br | head     # -d decompresses, -c writes to stdout
+cat data.json | bunx defuss-brotli > data.json.br
+bunx defuss-brotli -t data.json.br               # test integrity, write nothing
+```
+
+`compress` and `decompress` as the first argument select the mode; without one the command compresses unless `-d` or `-t` is given, as `brotli` does. It compresses with [`compressParallel`](#compressparallel), so inputs above 32 KiB are split into parts that compress on several workers. `npx defuss-brotli` works the same way. The command runs on Node.js when it is on the `PATH` and on Bun otherwise; `bunx --bun defuss-brotli` always uses Bun, which starts faster.
+
+| Option | Meaning |
+|---|---|
+| `-0` to `-9`, `-q NUM`, `--quality=NUM`, `-Z`, `--best` | quality 0 to 11, default 11 (`-Z`) |
+| `-w NUM`, `--lgwin=NUM` | window 10 to 24; `0` (default) picks the smallest window that holds the input |
+| `-c`, `--stdout` | write to standard output |
+| `-o FILE`, `--output=FILE` | output file (only with one input) |
+| `-d`, `--decompress` / `-t`, `--test` | decompress / decompress without writing, to check integrity |
+| `-f`, `--force` | overwrite existing output, allow terminal input and output |
+| `-k`, `--keep` / `-j`, `--rm` | keep (default) / delete each source after writing its output |
+| `-s`, `--squash` | when compressing, drop an output that is larger than its source |
+| `-n`, `--no-copy-stat` | do not copy the source's mode and timestamps to the output |
+| `-S SUF`, `--suffix=SUF` | suffix to add or strip, default `.br` |
+| `--threads=NUM` | compress on up to `NUM` workers, default the number of CPUs, at most 8; the output is the same for every `NUM` (not a `brotli` option) |
+| `-v`, `--verbose` / `-h`, `--help` / `-V`, `--version` | per-file sizes and time / usage / version |
+
+With no file, or with `-`, it reads standard input and writes standard output. Short flags combine (`-9kf`) and `--` ends the options. Each input is written to `FILE.br` or, when decompressing, to `FILE` without `.br`. The command refuses to overwrite a file without `-f`, to write compressed bytes to a terminal, and to decompress a name that lacks the suffix. It stops at the first file that fails and exits with status 1.
+
+VERIFIED (2026-11-09, against brotli 1.2.0 on macOS):
+
+- The defaults, output file names and refusals match `brotli`'s. Messages keep its wording, with the error text of Node.js or Bun (`file already exists` where `brotli` prints `File exists`).
+- The default output for `input/page.html` and `input/data.json` is byte-identical to `brotli`'s.
+- On larger inputs, which it compresses in parts, the default output was 0.00 to 0.16 % larger than `brotli`'s: 64 KiB and 1 MiB of SVG, a 64 KiB PNG head, a 2.1 MB PNG and a 5.1 MB SVG.
+
+Some `brotli` behavior is not supported or differs:
+
+- `--large_window`, `-C`/`--comment`, `-D`/`--dictionary` and `-K`/`--concatenated` fail with a reason, because the WASM encoder and decoder do not implement them.
+- Usage errors print a one-line hint instead of the whole help text.
+- `-t -j` is refused; `brotli` 1.2.0 deletes the file it has just tested.
+- Each input is read into memory whole and each output is written at once, so files must fit in memory; decompressed output is limited to 2^32 − 1 bytes, the wasm32 limit.
+
+At the default quality 11, the command compresses 64 KiB as fast as `brotli` 1.2.0 on Bun, and from 256 KiB 2.3 to 5.3 times faster on Bun and 1.2 to 5.1 times faster on Node.js. Smaller files take longer, because it first starts a JavaScript runtime and compiles the WASM. Median of 5 interleaved runs on Apple Silicon (18 cores), startup included, Node.js 26 and Bun 1.4:
+
+| Input | `defuss-brotli` on Node.js | on Bun (`bunx --bun`) | `brotli` 1.2.0 |
+|---|---|---|---|
+| 29 KB HTML (`input/page.html`), one part | 164 ms | 89 ms | 55 ms |
+| 64 KiB of SVG, 2 parts | 174 ms | 68 ms | 69 ms |
+| 256 KiB of SVG, 8 parts | 178 ms | 89 ms | 219 ms |
+| 1 MiB of SVG, 8 parts | 320 ms | 301 ms | 879 ms |
+| 2.1 MB PNG, 8 parts | 740 ms | 714 ms | 3.79 s |
+| 5.1 MB SVG, 8 parts | 1.89 s | 1.71 s | 4.00 s |
+
+The SVG inputs are the start of the 5.1 MB file. Decompressing the 5.1 MB SVG took 93 ms on Node.js and 55 ms on Bun, against 32 ms for `brotli` (median of 3). Startup (`-V`) took 59 ms on Node.js and 24 ms on Bun.
 
 ### Inlined or separate `.wasm`
 
@@ -86,6 +146,30 @@ With an explicit import, the bundler copies the file and gives it a hashed name,
 raw bytes. `TextEncoder` converts to canonical UTF-8 - the standard encoding for
 web text. `compressText` handles this so you don't have to.
 
+### `compressParallel`
+
+```ts
+import { init, compressParallel } from "defuss-brotli/compressor";
+
+await init();
+const compressed = await compressParallel(bytes, { quality: 11, threads: 4 });
+```
+
+`compressParallel` splits the input into at most 8 parts of at least 32 KiB, compresses each part on a worker with its own instance of the compressor, and joins the parts into one standard Brotli stream on the calling thread. Each part gets the window of input before it as a dictionary, so matches still reach back across parts. This is the multithreaded mode of the `brotli` crate, run on workers instead of threads.
+
+- **Output:** it depends only on the input, `quality` and `lgwin`, never on `threads` or the number of CPUs; `threads: 1` compresses the parts one after another on the calling thread and returns the same bytes. Below quality 2, or when the input fits in one part, it returns exactly what `compress` returns. Otherwise the output differs from `compress`'s and is slightly larger.
+- **Workers:** Web Workers from a Blob URL in browsers and Bun, and `worker_threads` in Node.js. Pages with a Content Security Policy must allow `worker-src blob:`. No extra file is needed, because the worker script is embedded in the module. The workers are terminated before the Promise settles. A runtime that cannot start such a worker compresses the parts on the calling thread.
+- **`threads`:** how many workers run at once, default the number of logical CPUs, at most 8. Each worker allocates its own encoder state, as a `compress` call does.
+
+VERIFIED on Node.js 26 (Apple Silicon, quality 11, window 22, median of 3 in-process runs, first call):
+
+| Input | `compress` | `compressParallel` | Size |
+|---|---|---|---|
+| 256 KiB of SVG | 187 ms | 44 ms | +0.01 % |
+| 1 MiB of SVG | 617 ms | 189 ms | +0.05 % |
+| 2.1 MB PNG | 1.79 s | 0.60 s | +0.10 % |
+| 5.1 MB SVG | 3.82 s | 1.67 s | +0.09 % |
+
 ### `decompress` vs `decompressText`
 
 | Function | Output | Decoding | When to use |
@@ -100,7 +184,7 @@ valid UTF-8, replacement characters (U+FFFD) are inserted rather than throwing.
 
 ```ts
 interface BrotliCompressOptions {
-  quality?: number;  // 0-11, default 6
+  quality?: number;  // 0-11, default 11
   lgwin?: number;    // 10-24, default 22
 }
 ```
@@ -138,6 +222,7 @@ Hard cap on decompressed output to prevent **decompression bombs**. Raise explic
 - `quality` must be an integer in **0-11** (the range of the reference Brotli encoder).
 - `lgwin` must be an integer in **10-24** (the window range of the Brotli format, RFC 7932).
 - `maxOutputSize` defaults to **64 MiB** - the WASM module rejects output exceeding this. Values above 2^32 − 1 act as 2^32 − 1.
+- `threads` must be a positive integer. `compressParallel` copies each part and its dictionary (up to one window) to its worker, so it holds up to 8 windows more than the input in JavaScript memory while it runs.
 - Calls stream the input and output through chunks of at most 1 MiB (one window of input when compressing), so WASM memory holds the codec state and two chunks however large the payload; the returned `Uint8Array` lives in JavaScript memory. Truncated input, corrupt input and bytes after the end of the Brotli stream throw.
 
 ## Why the Split Exports?
@@ -150,10 +235,10 @@ What a browser downloads for one import, with each file transfer-compressed on i
 
 | Import | Files | raw | gzip -9 | brotli q4 (jsDelivr) | brotli q11 | zstd -19 |
 |---|---|---:|---:|---:|---:|---:|
-| `defuss-brotli/decompressor/slim` | `decompressor-slim.js` + `decompressor.wasm` | 190,260 B | 85,609 B | 85,064 B | 50,801 B | 78,590 B |
-| `defuss-brotli/decompressor` | `decompressor.js` | 252,184 B | 109,982 B | 111,509 B | 92,957 B | 101,421 B |
-| `defuss-brotli/compressor/slim` | `compressor-slim.js` + `compressor.wasm` | 938,084 B | 447,231 B | 503,917 B | 394,522 B | 400,635 B |
-| `defuss-brotli/compressor` | `compressor.js` | 1,249,264 B | 599,668 B | 655,950 B | 500,472 B | 520,192 B |
+| `defuss-brotli/decompressor/slim` | `decompressor-slim.js` + `decompressor.wasm` | 190,289 B | 85,633 B | 85,090 B | 50,828 B | 78,609 B |
+| `defuss-brotli/decompressor` | `decompressor.js` | 252,213 B | 110,006 B | 111,536 B | 92,996 B | 101,435 B |
+| `defuss-brotli/compressor/slim` | `compressor-slim.js` + `compressor.wasm` | 960,020 B | 453,582 B | 510,561 B | 396,565 B | 405,487 B |
+| `defuss-brotli/compressor` | `compressor.js` | 1,275,038 B | 608,203 B | 663,816 B | 499,177 B | 524,736 B |
 
 - **gzip -9** and **brotli q4** are what [jsDelivr](https://www.jsdelivr.com/) sends: measured on 2026-11-09, its brotli responses match quality 4 byte for byte and its gzip responses lie within 0.1 % of levels 6 to 9. jsDelivr serves `.wasm` files as `application/wasm` with `access-control-allow-origin: *`, and serves no zstd.
 - **brotli q11** and **zstd -19** are what precompressed static hosting reaches (for example `.br` files next to the assets, or a CDN that compresses at its highest level). Quality 11 is unstable on `compressor.wasm`: passes of `wasm-opt` that change its raw size and its quality-4 size by 0.2 % move it between 340,693 B and 392,638 B, so its budget allows the upper value.
@@ -294,13 +379,12 @@ Sample output:
 
 ## Defaults
 
-For typical web text (JSON, Markdown, HTML, CSS, JS):
-
-- `quality = 6`
+- `quality = 11`
 - `lgwin = 22`
 
-That is a sane point on the speed/ratio curve. Crank `quality` higher if you
-need smaller output and can afford more CPU time.
+These are the defaults of Node.js zlib (`BROTLI_DEFAULT_QUALITY`, `BROTLI_DEFAULT_WINDOW`), and quality 11 gives the smallest output. Pass a lower `quality` when compression time matters more than size, for example when compressing each response as it is served.
+
+The `defuss-brotli` command also uses quality 11 and, like the `brotli` CLI, the smallest window that holds the input.
 
 ## Build
 
@@ -322,21 +406,21 @@ What happens during build, for each of the two crates:
 3. The binary is written as a base64 module next to the wasm-bindgen glue.
 4. `bun build` bundles `src/compressor.ts` or `src/decompressor.ts` with the glue and the base64 module into `dist/`.
 
-`tsc` then generates the declaration files.
+`bun build` then bundles the command, `src/bin.ts`, into `dist/cli.js`, and `tsc` generates the declaration files.
 
 ## Test and Benchmark
 
 ```bash
 make test       # Rust unit tests, then Vitest in Node and in headless Chromium
 make coverage   # Rust line coverage (fails below 60 %), then the TypeScript coverage table
-make e2e        # packs the tarball into clean projects: Node.js, Bun, a bun build app and a Vite app (build + dev) in Chromium
+make e2e        # packs the tarball into clean projects: Node.js, Bun, the CLI via bunx, a bun build app and a Vite app (build + dev) in Chromium
 make lint       # oxlint, tsc, clippy, rustfmt
 make verify     # all of the above, as CI runs it
 make bench      # Vitest bench and the 100 MB benchmark in Node, Bun and Chromium, against the perf budgets
 bun run example # quality comparison table
 ```
 
-`make e2e` writes one result file per consumer to `output/` (`e2e-node.json`, `e2e-bun.json`, `e2e-bun-bundle.json`, `e2e-vite-build.json`, `e2e-vite-dev.json`); `make e2e-runtime`, `make e2e-bun` and `make e2e-vite` run one group.
+`make e2e` writes one result file per consumer to `output/` (`e2e-node.json`, `e2e-bun.json`, `e2e-cli.json`, `e2e-bun-bundle.json`, `e2e-vite-build.json`, `e2e-vite-dev.json`); `make e2e-runtime`, `make e2e-cli`, `make e2e-bun` and `make e2e-vite` run one group.
 
 ## License
 

@@ -14,7 +14,7 @@ BUILD_INPUTS := $(shell find rust/compressor rust/decompressor src scripts -type
 	rust/Cargo.toml rust/Cargo.lock package.json tsconfig.json tsconfig.build.json
 STAMP := tmp/build.stamp
 
-.PHONY: help setup build start stop restart status log metrics bench test coverage lint e2e e2e-sizes e2e-runtime e2e-bun e2e-vite e2e-cdn verify clean
+.PHONY: help setup build start stop restart status log metrics bench test coverage lint e2e e2e-sizes e2e-runtime e2e-cli e2e-bun e2e-vite e2e-cdn verify clean
 .DEFAULT_GOAL := help
 
 help: ## list the verbs with their usage (default goal)
@@ -70,7 +70,7 @@ define e2e_project
 	cd $(E2E)/$(1) && echo '{"name":"e2e-$(1)","private":true,"type":"module"}' >package.json && bun add --silent ../defuss-brotli.tgz $(2)
 endef
 
-e2e: e2e-sizes e2e-runtime e2e-bun e2e-vite e2e-cdn ## pack → clean consumers (Node, Bun, Bun bundler, Vite build + dev, CDN) → input/ → output/
+e2e: e2e-sizes e2e-runtime e2e-cli e2e-bun e2e-vite e2e-cdn ## pack → clean consumers (Node, Bun, CLI, Bun bundler, Vite build + dev, CDN) → input/ → output/
 
 $(E2E)/defuss-brotli.tgz: $(STAMP)
 	rm -rf $(E2E) && mkdir -p $(E2E) output
@@ -86,6 +86,11 @@ e2e-runtime: $(E2E)/defuss-brotli.tgz ## the package in Node.js and in Bun
 	cp e2e/runtime.mjs $(E2E)/runtime/
 	node $(E2E)/runtime/runtime.mjs input output/e2e-node.json
 	bun $(E2E)/runtime/runtime.mjs input output/e2e-bun.json
+
+e2e-cli: $(E2E)/defuss-brotli.tgz ## the `defuss-brotli` command via `bunx` (Node.js) and `bunx --bun` (Bun)
+	$(call e2e_project,cli)
+	cp e2e/cli.mjs $(E2E)/cli/
+	cd $(E2E)/cli && node cli.mjs ../../../input ../../../output/e2e-cli.json
 
 # No encoder code in a decompress-only bundle: the encoder glue calls WASM exports named `encoder_*`, which no
 # decoder name contains.

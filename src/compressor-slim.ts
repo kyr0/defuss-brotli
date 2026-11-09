@@ -6,12 +6,16 @@ import type { WasmSource } from "./wasm.js";
 export {
   DEFAULT_LGWIN,
   DEFAULT_QUALITY,
+  MIN_PART_SIZE,
+  PARALLEL_PARTS,
   assertReady,
   compress,
+  compressParallel,
   compressText,
   isReady,
   normalizeOptions,
   type BrotliCompressOptions,
+  type BrotliParallelOptions,
 } from "./compressor-core.js";
 export type { WasmSource } from "./wasm.js";
 

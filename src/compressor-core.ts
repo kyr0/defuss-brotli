@@ -2,7 +2,10 @@
 // Each entry point only decides where the binary comes from. VERIFIED: both builds produce identical output
 // (`make e2e` round-trips through both and decodes slim output with the inline build).
 import * as glue from "../wasm/pkg/compressor/defuss_brotli_compressor_bg.js";
+import WORKER_SOURCE from "../wasm/pkg/compressor/worker_source.js";
+import { encodeWith } from "./compressor-encode.js";
 import { concat, instantiateWasm, type WasmSource } from "./wasm.js";
+import { runParts, type PartTask } from "./workers.js";
 
 /**
  * Options for Brotli compression.
@@ -21,7 +24,7 @@ export interface BrotliCompressOptions {
    * - **5–7** — good balance for web text (HTML/CSS/JS/JSON)
    * - **11** — smallest output, slowest compression
    *
-   * @default 6
+   * @default 11
    */
   quality?: number;
 
@@ -36,46 +39,100 @@ export interface BrotliCompressOptions {
   lgwin?: number;
 }
 
-/** Default compression quality. Good balance of speed and ratio for web text. */
-export const DEFAULT_QUALITY = 6;
+/**
+ * Default compression quality: the smallest output. VERIFIED: the same default as Node.js zlib
+ * (`BROTLI_DEFAULT_QUALITY` = 11) and the `brotli` CLI. Pass a lower quality when compression time matters more.
+ */
+export const DEFAULT_QUALITY = 11;
 
-/** Default sliding window exponent. Covers most web-text repetition patterns. */
+/** Default sliding window exponent, as in Node.js zlib (`BROTLI_DEFAULT_WINDOW` = 22). */
 export const DEFAULT_LGWIN = 22;
+
+/**
+ * Options for {@link compressParallel}.
+ *
+ * @example
+ * ```ts
+ * await compressParallel(data);                 // quality 11, up to 8 workers
+ * await compressParallel(data, { threads: 2 }); // same bytes, two workers
+ * ```
+ */
+export interface BrotliParallelOptions extends BrotliCompressOptions {
+  /**
+   * How many workers compress parts at once, at most {@link PARALLEL_PARTS}; 1 compresses the parts one after
+   * another on the calling thread. The output does not depend on it.
+   *
+   * @default the number of logical CPUs, at most 8
+   */
+  threads?: number;
+}
+
+/**
+ * A parallel compression splits its input into at most this many parts of at least {@link MIN_PART_SIZE} bytes.
+ * A constant rather than the number of CPUs, so the output is the same on every machine. VERIFIED (native, brotli
+ * 8.0.2, quality 11): with 8 threads, 8 parts beat 4 and 16 on a 256 KiB SVG, the 5.1 MB SVG and a 20 MB mix.
+ */
+export const PARALLEL_PARTS = 8;
+
+/** Smallest part. VERIFIED: 32 KiB parts cost a 256 KiB SVG 0.007 % in size, 16 KiB parts of a 29 KB page 1.6 %. */
+export const MIN_PART_SIZE = 32 * 1024;
 
 let initPromise: Promise<void> | null = null;
 let ready = false;
 let memory: WebAssembly.Memory | null = null;
+let compiled: WebAssembly.Module | null = null;
 
 /**
- * Encodes `input` through a WASM `Encoder`: one window (`2 ** lgwin` bytes) of input at a time is copied into WASM
- * memory and each compressed chunk (at most 1 MiB) straight out of it, so linear memory holds the encoder state
- * and two chunks rather than the whole input and output. The chunks are joined once at the end.
+ * The byte ranges of a parallel compression: one range below quality 2, whose encoders use no dictionary, or when
+ * the input fits in one part; otherwise at most {@link PARALLEL_PARTS} of at least {@link MIN_PART_SIZE} bytes.
  */
-function encodeChunks(wasm: WebAssembly.Memory, input: Uint8Array, quality: number, lgwin: number): Uint8Array {
-  const encoder = new glue.Encoder(input.length, quality, lgwin);
+export function partRanges(length: number, quality: number): Array<[number, number]> {
+  const size = Math.max(Math.ceil(length / PARALLEL_PARTS), MIN_PART_SIZE);
+  if (quality < 2 || length <= size) return [[0, length]];
+  const ranges: Array<[number, number]> = [];
+  for (let start = 0; start < length; start += size) ranges.push([start, Math.min(start + size, length)]);
+  return ranges;
+}
+
+/** Joins part streams, in input order, through a WASM `Joiner` (fixed buffers, as in `encodeWith`). */
+function joinParts(wasm: WebAssembly.Memory, parts: Uint8Array[]): Uint8Array {
+  const joiner = new glue.Joiner();
   try {
-    const inputPtr = encoder.input_ptr();
-    const outputPtr = encoder.output_ptr();
-    const capacity = encoder.input_capacity();
-    const parts: Uint8Array[] = [];
-    let offset = 0;
+    const inputPtr = joiner.input_ptr();
+    const outputPtr = joiner.output_ptr();
+    const capacity = joiner.input_capacity();
+    const chunks: Uint8Array[] = [];
     let size = 0;
-    do {
-      let len = 0;
-      if (encoder.needs_input()) {
-        len = Math.min(capacity, input.length - offset);
-        new Uint8Array(wasm.buffer, inputPtr, len).set(input.subarray(offset, offset + len));
-        offset += len;
-      }
-      const written = encoder.encode(len, offset === input.length);
-      // Views are taken after each call: growing WASM memory detaches the previous `memory.buffer`.
-      if (written > 0) parts.push(new Uint8Array(wasm.buffer, outputPtr, written).slice());
+    const take = (written: number) => {
+      if (written > 0) chunks.push(new Uint8Array(wasm.buffer, outputPtr, written).slice());
       size += written;
-    } while (!encoder.finished());
-    return concat(parts, size);
+    };
+    for (const part of parts) {
+      joiner.next_part();
+      for (let offset = 0; offset < part.length; offset += capacity) {
+        const chunk = part.subarray(offset, offset + capacity);
+        new Uint8Array(wasm.buffer, inputPtr, chunk.length).set(chunk);
+        let len = chunk.length;
+        do {
+          take(joiner.join(len));
+          len = 0;
+        } while (!joiner.needs_input());
+      }
+    }
+    while (!joiner.finished()) take(joiner.finish());
+    return concat(chunks, size);
   } finally {
-    encoder.free();
+    joiner.free();
   }
+}
+
+function defaultThreads(): number {
+  const runtime = globalThis as {
+    navigator?: { hardwareConcurrency?: number };
+    process?: { getBuiltinModule?(id: string): { availableParallelism?(): number } | undefined };
+  };
+  const cpus = runtime.navigator?.hardwareConcurrency ?? runtime.process?.getBuiltinModule?.("node:os")?.availableParallelism?.();
+  return Math.min(PARALLEL_PARTS, cpus ?? 1);
 }
 
 /**
@@ -83,7 +140,7 @@ function encodeChunks(wasm: WebAssembly.Memory, input: Uint8Array, quality: numb
  * Used internally before every compress call.
  */
 export function assertReady(): void {
-  if (!ready || !memory) {
+  if (!ready || !memory || !compiled) {
     throw new Error("defuss-brotli/compressor is not initialized. Call await init() first.");
   }
 }
@@ -118,8 +175,9 @@ export function initFrom(source: () => WasmSource): Promise<void> {
     initPromise = Promise.resolve()
       .then(() => instantiateWasm(source(), "./defuss_brotli_compressor_bg.js", glue))
       .then(
-        (wasmMemory) => {
-          memory = wasmMemory;
+        (wasm) => {
+          memory = wasm.memory;
+          compiled = wasm.module;
           ready = true;
         },
         (error: unknown) => {
@@ -165,7 +223,58 @@ export function isReady(): boolean {
 export function compress(input: Uint8Array, options: BrotliCompressOptions = {}): Uint8Array {
   assertReady();
   const { quality, lgwin } = normalizeOptions(options);
-  return encodeChunks(memory!, input, quality, lgwin);
+  return encodeWith(memory!, new glue.Encoder(input.length, quality, lgwin), input);
+}
+
+/**
+ * Compress raw bytes with Brotli on several workers.
+ *
+ * The input is split into at most {@link PARALLEL_PARTS} parts of at least {@link MIN_PART_SIZE} bytes. Each worker
+ * runs its own instance of the compressor and compresses one part with the window before it as dictionary, so
+ * matches still reach across parts; the calling thread joins the parts into one standard Brotli stream. The output
+ * depends only on the input and the options other than `threads`, and differs slightly from {@link compress}'s
+ * when there is more than one part. Below quality 2, or when the input fits in one part, it equals `compress`.
+ * Workers start from a Blob URL (browsers, Bun; a Content Security Policy must allow `worker-src blob:`) or, in
+ * Node.js, with `worker_threads`, and are terminated before the Promise settles. Where no such worker starts, the
+ * parts run one after another on the calling thread, with the same output.
+ *
+ * @param input   Raw bytes to compress. Not modified.
+ * @param options Compression tuning and the number of workers — see {@link BrotliParallelOptions}.
+ * @returns A Promise of a new `Uint8Array` with the Brotli-compressed output.
+ *
+ * @throws If `init()` was not called first, or if options are out of range.
+ *
+ * @example
+ * ```ts
+ * await init();
+ * const compressed = await compressParallel(bigFileBytes);
+ * ```
+ */
+export async function compressParallel(input: Uint8Array, options: BrotliParallelOptions = {}): Promise<Uint8Array> {
+  assertReady();
+  const { quality, lgwin } = normalizeOptions(options);
+  const threads = options.threads ?? defaultThreads();
+  if (!Number.isInteger(threads) || threads < 1) throw new Error("threads must be a positive integer");
+  const ranges = partRanges(input.length, quality);
+  if (ranges.length === 1) return compress(input, { quality, lgwin });
+
+  const window = 2 ** lgwin - 16;
+  // Copies with their own buffers, which are transferred to the workers: `Buffer#slice` would share (and detach)
+  // the caller's memory.
+  const copy = (start: number, end: number) => new Uint8Array(input.subarray(start, end));
+  const tasks: PartTask[] = ranges.map(([start, end]) => ({
+    total: input.length,
+    quality,
+    lgwin,
+    part: copy(start, end),
+    dictionary: copy(Math.max(0, start - window), start),
+  }));
+  const parts =
+    (threads > 1 ? await runParts(WORKER_SOURCE, compiled!, tasks, Math.min(threads, tasks.length)) : null) ??
+    tasks.map((task) =>
+      encodeWith(memory!, glue.Encoder.part(task.part.length, task.total, quality, lgwin, task.dictionary), task.part),
+    );
+  return joinParts(memory!, parts);
 }
 
 /**

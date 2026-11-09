@@ -40,18 +40,28 @@ async function readFileUrl(url: URL): Promise<Uint8Array<ArrayBuffer>> {
   return fs.readFile(url);
 }
 
-async function instantiateResponse(response: Response, imports: WebAssembly.Imports): Promise<WebAssembly.Instance> {
+async function instantiateResponse(
+  response: Response,
+  imports: WebAssembly.Imports,
+): Promise<WebAssembly.WebAssemblyInstantiatedSource> {
   if (!response.ok) throw new Error(`failed to load WASM from ${response.url}: HTTP ${response.status}`);
   // instantiateStreaming rejects any other MIME type, so other servers fall back to buffering the body.
   if (typeof WebAssembly.instantiateStreaming === "function" && response.headers.get("Content-Type") === "application/wasm") {
-    return (await WebAssembly.instantiateStreaming(response, imports)).instance;
+    return WebAssembly.instantiateStreaming(response, imports);
   }
-  return (await WebAssembly.instantiate(await response.arrayBuffer(), imports)).instance;
+  return WebAssembly.instantiate(await response.arrayBuffer(), imports);
+}
+
+/** An instantiated module: the linear memory the entry points copy chunks through, and the compiled module. */
+export interface WasmInstance {
+  memory: WebAssembly.Memory;
+  /** Lets workers instantiate the same compiled code without fetching or compiling it again. */
+  module: WebAssembly.Module;
 }
 
 /**
  * Instantiates a WASM module from `source` against its wasm-bindgen glue, hands the exports to the glue and
- * returns the instance's linear memory, from which the entry points copy chunks directly.
+ * returns the instance's linear memory, from which the entry points copy chunks directly, with the compiled module.
  *
  * VERIFIED: the whole glue namespace is the import object, so hashed wasm-bindgen shim names need no build change
  * when a release or a Rust signature renames them.
@@ -60,19 +70,23 @@ export async function instantiateWasm(
   source: WasmSource,
   glueModule: string,
   glue: WasmGlue,
-): Promise<WebAssembly.Memory> {
+): Promise<WasmInstance> {
   const imports = { [glueModule]: glue as unknown as WebAssembly.ModuleImports };
   let resolved = await source;
   if (typeof resolved === "string" || resolved instanceof URL) {
     const url = new URL(resolved, globalThis.location?.href);
     resolved = url.protocol === "file:" ? await readFileUrl(url) : await fetch(url);
   }
-  let instance: WebAssembly.Instance;
-  if (resolved instanceof WebAssembly.Module) instance = await WebAssembly.instantiate(resolved, imports);
-  else if (resolved instanceof Response) instance = await instantiateResponse(resolved, imports);
-  else instance = (await WebAssembly.instantiate(resolved, imports)).instance;
-  glue.__wbg_set_wasm(instance.exports);
-  return instance.exports.memory as WebAssembly.Memory;
+  let instantiated: WebAssembly.WebAssemblyInstantiatedSource;
+  if (resolved instanceof WebAssembly.Module) {
+    instantiated = { module: resolved, instance: await WebAssembly.instantiate(resolved, imports) };
+  } else if (resolved instanceof Response) {
+    instantiated = await instantiateResponse(resolved, imports);
+  } else {
+    instantiated = await WebAssembly.instantiate(resolved, imports);
+  }
+  glue.__wbg_set_wasm(instantiated.instance.exports);
+  return { memory: instantiated.instance.exports.memory as WebAssembly.Memory, module: instantiated.module };
 }
 
 /** Joins chunks copied out of WASM memory; a single chunk is returned as is. */

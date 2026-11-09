@@ -2,6 +2,9 @@ import { brotliDecompressSync } from "node:zlib";
 import { beforeAll, describe, expect, test } from "vitest";
 import { FIXTURE_BINARY, FIXTURE_TEXT } from "./fixtures";
 import * as compressor from "./compressor";
+import { partRanges } from "./compressor-core";
+
+const FIXTURE_TEXT_BYTES = new TextEncoder().encode(FIXTURE_TEXT);
 import * as decompressor from "./decompressor";
 
 beforeAll(async () => {
@@ -96,7 +99,58 @@ describe("compressor", () => {
   });
 });
 
+// Text with repeats near and far, so that dropping the dictionary of a part would show in the size.
+function webText(bytes: number): Uint8Array {
+  const rows = Array.from({ length: bytes / 40 }, (_, i) => `<tr><td>${(i * 7919) % 5003}</td><td>row</td></tr>`);
+  return new TextEncoder().encode(rows.join("\n")).subarray(0, bytes);
+}
+
+describe("compressParallel", () => {
+  test("splits into at most 8 parts of at least 32 KiB, and not below quality 2", () => {
+    expect(partRanges(32 * 1024, 11)).toEqual([[0, 32 * 1024]]);
+    expect(partRanges(32 * 1024 + 1, 11)).toEqual([[0, 32 * 1024], [32 * 1024, 32 * 1024 + 1]]);
+    expect(partRanges(800_000, 11)).toHaveLength(8);
+    expect(partRanges(800_000, 11).at(-1)).toEqual([700_000, 800_000]);
+    expect(partRanges(800_000, 1)).toEqual([[0, 800_000]]);
+    expect(partRanges(0, 11)).toEqual([[0, 0]]);
+  });
+
+  test("joins parts into one stream that node:zlib decodes, the same for every thread count", async () => {
+    const input = webText(300_000);
+    const parallel = await compressor.compressParallel(input);
+    expect(brotliDecompressSync(parallel).equals(input)).toBe(true);
+    for (const threads of [1, 2, 3]) {
+      expect(Buffer.from(await compressor.compressParallel(input, { threads })).equals(parallel), `${threads}`).toBe(true);
+    }
+  });
+
+  test("equals compress() for one part and below quality 2", async () => {
+    const input = webText(300_000);
+    expect(await compressor.compressParallel(FIXTURE_TEXT_BYTES)).toEqual(compressor.compress(FIXTURE_TEXT_BYTES));
+    expect(await compressor.compressParallel(input, { quality: 1 })).toEqual(compressor.compress(input, { quality: 1 }));
+  });
+
+  // Regression: Buffer#slice shares memory, so transferring parts made with it detached the caller's Buffer.
+  test("leaves a Buffer input intact", async () => {
+    const input = Buffer.from(webText(100_000));
+    const before = Buffer.from(input);
+    const packed = await compressor.compressParallel(input, { lgwin: 16 });
+    expect(input.equals(before)).toBe(true);
+    expect(brotliDecompressSync(packed).equals(before)).toBe(true);
+  });
+
+  test("rejects a thread count that is not a positive integer", async () => {
+    await expect(compressor.compressParallel(FIXTURE_TEXT_BYTES, { threads: 0 })).rejects.toThrow("threads");
+    await expect(compressor.compressParallel(FIXTURE_TEXT_BYTES, { threads: 1.5 })).rejects.toThrow("threads");
+  });
+});
+
 describe("compressor normalizeOptions", () => {
+  test("defaults to quality 11 and window 22, the defaults of Node.js zlib", () => {
+    expect(compressor.normalizeOptions()).toEqual({ quality: 11, lgwin: 22 });
+    expect(compressor.compressText(FIXTURE_TEXT)).toEqual(compressor.compressText(FIXTURE_TEXT, { quality: 11, lgwin: 22 }));
+  });
+
   test("quality 0 is accepted", () => {
     expect(() => compressor.normalizeOptions({ quality: 0 })).not.toThrow();
   });

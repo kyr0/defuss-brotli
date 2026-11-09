@@ -1,4 +1,4 @@
-import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { homedir } from "node:os";
 import { delimiter, dirname, join } from "node:path";
@@ -53,6 +53,14 @@ for (const name of ["compressor", "decompressor"]) {
     `${readFileSync(`${stem}.d.ts`, "utf-8")}export function __wbg_set_wasm(exports: WebAssembly.Exports): void;\n`,
   );
   console.log(`  ${name}: ${wasm.length} bytes WASM`);
+  if (name === "compressor") {
+    // The worker of compressParallel, as one classic script embedded as a string: Blob URLs and Node.js `eval`
+    // workers start it without a separate file that bundlers would have to find and copy (src/workers.ts).
+    run(`bun build src/compressor-worker.ts --format iife --target browser --minify --outfile ${pkg}/worker.js`);
+    const worker = readFileSync(join(pkg, "worker.js"), "utf-8");
+    writeFileSync(join(pkg, "worker_source.js"), `export default ${JSON.stringify(worker)};\n`);
+    writeFileSync(join(pkg, "worker_source.d.ts"), "declare const workerSource: string;\nexport default workerSource;\n");
+  }
 
   // Two delivery modes per crate, same API: dist/NAME.js inlines the binary, dist/NAME-slim.js loads dist/NAME.wasm.
   run(`bun build src/${name}.ts --format esm --target browser --minify --outfile dist/${name}.js`);
@@ -60,5 +68,11 @@ for (const name of ["compressor", "decompressor"]) {
   mkdirSync(join(root, "dist"), { recursive: true });
   copyFileSync(`${stem}_bg.wasm`, join(root, "dist", `${name}.wasm`));
 }
+
+// The `defuss-brotli` command: the /slim modules bundled in (15.8 KB) rather than the inline ones, which would add the
+// 1.5 MB of base64 that dist/*.wasm already ship. VERIFIED: bun build keeps the `#!/usr/bin/env node` line of
+// src/bin.ts; the mode makes a local `./dist/cli.js` runnable, and `make e2e-cli` runs the installed bin via bunx.
+run("bun build src/bin.ts --format esm --target node --minify --outfile dist/cli.js");
+chmodSync(join(root, "dist", "cli.js"), 0o755);
 
 run("bunx tsc --project tsconfig.build.json");

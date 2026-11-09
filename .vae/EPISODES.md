@@ -51,3 +51,21 @@ Wrap: EVERY lead becomes a test | .vae/VERIFY.py rule | one MEMORY line with BC,
 2026-11-09T10:38:51Z s=698894d0 DONE fp=aca1737d4967 cov=100.0% paths=ARCH.md,README.md,package.json,scripts/build.ts
 2026-11-09T10:38:51Z s=698894d0 FINDING package.json:files THIRD_PARTY_NOTICES.md learn=verifier: .vae/VERIFY.py rule package.files-exist (fails on the old entry)
 2026-11-09T10:38:51Z s=698894d0 FINDING package.json:version 0.1.3 learn=none: release decision, not a recurring defect
+2026-11-09T11:59:52Z s=698894d0 DONE fp=44e28770f52a cov=100.0% paths=ARCH.md,Makefile,README.md,e2e/cli.mjs(+7)
+2026-11-09T11:59:52Z s=698894d0 FINDING src/cli.ts:processFile learn=none: no public behavior differs (init is idempotent); only the redundant read, which a test could observe only through a spy
+2026-11-09T11:59:52Z s=698894d0 FINDING src/cli-args.ts:parseCli learn=test: cli.test.ts rejects ["-o","-x"] with the one-line message
+2026-11-09T11:59:52Z s=698894d0 FINDING README.md:80 B learn=none: doc claim corrected against the probe output
+2026-11-09T11:59:52Z s=698894d0 FINDING README.md:82 B learn=none: doc claim narrowed to the measured set
+2026-11-09T11:59:52Z s=698894d0 FINDING ARCH.md:31 B learn=memory: .vae/MEMORY.md brotli 1.2.0 CLI line
+2026-11-09T12:13:42Z s=698894d0 DONE fp=6d84d32a3394 cov=100.0% paths=ARCH.md,Makefile,README.md,e2e/cli.mjs(+9)
+2026-11-09T12:13:42Z s=698894d0 FINDING ARCH.md:74 B learn=none: doc corrected from a measurement; memory figures are machine-independent but input-dependent, so no test pins them
+2026-11-09T12:13:42Z s=698894d0 FINDING ARCH.md:38 B01 learn=verifier: vae prose B01 already rejects it
+2026-11-09T12:13:42Z s=698894d0 FINDING src/compressor-core.ts:DEFAULT_QUALITY learn=test: compressor normalizeOptions default test
+2026-11-09T13:20:37Z s=698894d0 DONE fp=87a468ec57c6 cov=96.7% paths=ARCH.md,CHANGELOG.md,Makefile,README.md(+22)
+2026-11-09T13:20:37Z s=698894d0 FINDING src/compressor-core.ts:compressParallel learn=test: compressor.test.ts 'leaves a Buffer input intact'
+2026-11-09T13:20:37Z s=698894d0 FINDING src/bin.ts:process.exit learn=memory: .vae/MEMORY.md Bun exit line; timing is not a stable test contract
+2026-11-09T13:20:37Z s=698894d0 FINDING README.md:161 B, src/workers.ts:3, src/compressor-core.ts:compressParallel, ARCH.md:42 B learn=memory: .vae/MEMORY.md Deno line
+2026-11-09T13:20:37Z s=698894d0 FINDING README.md:3-12 P learn=none: doc numbers corrected to the medians
+2026-11-09T13:20:37Z s=698894d0 FINDING ARCH.md:40 B learn=none: doc corrected against the probe output
+2026-11-09T13:20:37Z s=698894d0 FINDING src/compressor.test.ts:compressParallel learn=none: tests assert verified requirements only
+2026-11-09T13:20:37Z s=698894d0 FINDING CHANGELOG.md:27 B learn=none: release notes state only what the history shows
