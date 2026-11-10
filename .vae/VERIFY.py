@@ -92,4 +92,12 @@ RULES = [{
     # build that generates wasm/pkg and dist/; locally both always existed, so the gate never saw it.
     "pattern": r"(?m)^lint: \$\(STAMP\)",
     "claim": "lint depends on the build, so tsc finds the generated modules in a clean CI checkout",
+}, {
+    "id": "ci.llvm-cov-pinned",
+    "kind": "regex",
+    "path": "mise.toml",
+    # VERIFIED 2026-11-10: CI failed at `cargo llvm-cov` ("no such command"), which existed only in this Mac's
+    # ~/.cargo/bin from a manual `cargo install`; `make setup` (mise install) now installs it in every checkout.
+    "pattern": r'(?m)^"github:taiki-e/cargo-llvm-cov" = "',
+    "claim": "the cargo-llvm-cov that `make coverage` runs is pinned in mise.toml, so `make setup` installs it in CI",
 }]
