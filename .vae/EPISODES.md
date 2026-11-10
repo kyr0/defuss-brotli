@@ -16,15 +16,8 @@ Wrap: EVERY lead becomes a test | .vae/VERIFY.py rule | one MEMORY line with BC,
 2026-11-08T21:35:43Z s=698894d0 FINDING rust/decompressor/src/runtime.rs:Arena::reserve|bump learn=none: only reachable at the 4 GiB limit; a test would need 4 GiB of RAM, so the fix is reasoned, and the leak test exercises the out-of-memory path
 2026-11-08T21:35:43Z s=698894d0 FINDING Makefile:lint learn=none: Makefile verb
 2026-11-08T23:45:10Z s=698894d0 FINDING vitest.config.ts:coverage.reporter learn=none: skipFull: false set; the gate output shows the row
-2026-11-09T00:14:19Z s=698894d0 FAIL lint,tests.e2e.1
-2026-11-09T00:15:16Z s=698894d0 FAIL tests.e2e.1
-2026-11-09T04:19:01Z s=698894d0 DONE fp=05d69e847eb1 cov=100.0% paths=.github/workflows/verify.yml,AGENTS.md,ARCH.md,Makefile(+53)
-2026-11-09T04:19:01Z s=698894d0 FINDING src/decompressor-core.ts, src/compressor-core.ts (whole-buffer wasm-bindgen calls) learn=test: src/memory.test.ts: a 64 MiB output and 32 MiB compress input need no more memory than 4 / 8 MiB ones; perf budgets in bench/perf-budgets.json cap wasm-memory-m
-2026-11-09T04:19:01Z s=698894d0 FINDING rust/compressor/src/lib.rs:Encoder::new input chunk learn=test: chunked_output_matches_one_finish_call (all qualities, lgwin 10/16/22)
-2026-11-09T04:19:01Z s=698894d0 FINDING size-budgets.json compressor/slim br11 learn=memory: MEMORY line [brotli q11 of compressor.wasm]
 2026-11-09T04:19:01Z s=698894d0 FINDING README.md:5 'about 50 KB over Brotli HTTP' learn=none: both figures stated
 2026-11-09T04:19:01Z s=698894d0 FINDING ARCH.md Security and privacy learn=none: documented with evidence
-2026-11-09T04:19:01Z s=698894d0 FINDING src/memory.test.ts first draft learn=memory: MEMORY line [vitest toEqual on large typed arrays]
 2026-11-09T09:08:49Z s=698894d0 DONE fp=ae9da35c5f82 cov=100.0% paths=scripts/build.ts
 2026-11-09T09:08:49Z s=698894d0 FINDING scripts/build.ts:run (child process PATH) learn=verifier: .vae/VERIFY.py rule build.tools-without-mise-activation
 2026-11-09T10:38:51Z s=698894d0 DONE fp=aca1737d4967 cov=100.0% paths=ARCH.md,README.md,package.json,scripts/build.ts
@@ -106,3 +99,10 @@ Wrap: EVERY lead becomes a test | .vae/VERIFY.py rule | one MEMORY line with BC,
 2026-11-10T00:57:25Z s=698894d0 FINDING Makefile:e2e (E2E_SIZES) learn=verifier: .vae/VERIFY.py ci.size-budgets-local-only requires the CI condition on e2e-sizes in the Makefile
 2026-11-10T01:24:15Z s=698894d0 DONE fp=ed2956cfc7ea cov=95.9% paths=docs/assets/site.css,docs/assets/site.js,docs/index.html,site/assets/site.css(+3)
 2026-11-10T01:24:15Z s=698894d0 FINDING site/ui/demos.ts:runCompress, renderCompress; site/page.html #compress-gzip learn=test: site/e2e.mjs asserts the default-off state, the hidden bar and a gzip size when switched on
+2026-11-10T02:10:37Z s=698894d0 DONE fp=8fecc379c03d cov=95.9% paths=docs/assets/site.css,docs/index.html,site/assets/site.css,site/e2e.mjs(+1)
+2026-11-10T02:10:37Z s=698894d0 FINDING site/assets/site.css:html font-size learn=test: site/e2e.mjs asserts the root size at 1600 px and at phone width
+2026-11-10T02:10:37Z s=698894d0 FINDING site/page.html .how-diagram; site/assets/site.css .diagram-node-eyebrow learn=test: site/e2e.mjs asserts no figure or node overflow at 1440 px
+2026-11-10T02:10:37Z s=698894d0 FINDING site/e2e.mjs route scroll check learn=test: the check itself
+2026-11-10T02:10:37Z s=698894d0 FINDING site/assets/site.css .hero-copy; site/page.html lead-single learn=none: layout preference and a wording fix; no mechanical check beyond the e2e caption match
+2026-11-10T02:18:44Z s=698894d0 DONE fp=c7f4636fb755 cov=95.9% paths=docs/assets/site.css,docs/index.html,site/assets/site.css,site/e2e.mjs(+1)
+2026-11-10T02:18:44Z s=698894d0 FINDING site/assets/site.css:html font-size, media queries, header container query, phone bars, hero title learn=test: site/e2e.mjs asserts the root size and that the hero title fits at phone width; the existing sideways-overflow check covers the page

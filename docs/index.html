@@ -398,8 +398,8 @@
         <p class="mk-section-header-desc" data-i18n-target="t87">The encoder and the decoder are separate Rust libraries compiled to separate WebAssembly files. Pages that only decompress load only the decoder.</p>
       </div>
     </header>
-    <figure class="diagram how-diagram" data-type="data-flow" aria-label="How data flows through defuss-brotli" data-i18n-aria-label-en="How data flows through defuss-brotli" data-i18n-aria-label-de="Wie Daten durch defuss-brotli fließen">
-      <div class="diagram-canvas" style="grid-template-columns:8rem repeat(4,minmax(9.5rem,1fr));--diagram-node-w:12rem">
+    <figure class="diagram how-diagram" data-type="data-flow" tabindex="0" aria-label="How data flows through defuss-brotli" data-i18n-aria-label-en="How data flows through defuss-brotli" data-i18n-aria-label-de="Wie Daten durch defuss-brotli fließen">
+      <div class="diagram-canvas" style="grid-template-columns:6.5rem repeat(4,minmax(9.5rem,1fr));--diagram-node-w:12rem;--diagram-gap-x:1.5rem">
         <div class="diagram-group" data-shape="lane" style="--col:1;--row:1;--span:5"><span class="diagram-group-label" data-i18n-target="t88">Compress</span></div>
         <div class="diagram-group" data-shape="lane" style="--col:1;--row:2;--span:5"><span class="diagram-group-label" data-i18n-target="t89">Decompress</span></div>
         <div class="diagram-node" data-node="input" data-shape="pill" style="--col:2;--row:1">
@@ -682,7 +682,7 @@ yarn dlx defuss-brotli -d -c data.json.br | head"><pre data-prefix="" data-tone=
     <span data-i18n-target="t183" data-msg="this-device">This device</span>
     <span data-i18n-target="t184" data-msg="copied">Copied</span>
     <span data-i18n-target="t185" data-msg="lead-multi">{input} ({size}): how long one compression takes at qualities 9 to 11, with <code>compressParallel()</code> on {cores}, with <code>compress()</code> on 1 core, and with the C library built into Node.js, which has no multicore mode. Only qualities 10 and 11, the slowest levels, use more than one core; the table lists all 12.</span>
-    <span data-i18n-target="t186" data-msg="lead-single">{input} ({size}): how long one compression takes at each quality on 1 core, against the C library built into Node.js.</span>
+    <span data-i18n-target="t186" data-msg="lead-single">{input} ({size}): how long one compression takes at qualities 9 to 11 on 1 core, against the C library built into Node.js.</span>
     <span data-i18n-target="t187" data-msg="lead-window">Brotli saves space by pointing back to data it has already seen. The look-back distance limits how far back it looks: a longer look-back finds more repeats, and unpacking needs that much memory. Sizes at quality 11, compared with a 64 KiB look-back.</span>
     <span data-i18n-target="t188" data-msg="lead-cli">Total time of the whole command at quality 11, startup included, median of 5 runs, against Google's brotli CLI on an Apple M5 Max.</span>
     <span data-i18n-target="t189" data-msg="lead-download">What a browser downloads for each part of the package, depending on how the server compresses the files.</span>
@@ -1057,7 +1057,7 @@ yarn dlx defuss-brotli -d -c data.json.br | head"><pre data-prefix="" data-tone=
 <template data-i18n-for="t184" data-i18n-locale="de">Kopiert</template>
 <template data-i18n-for="t185" data-i18n-locale="en">{input} ({size}): how long one compression takes at qualities 9 to 11, with <code>compressParallel()</code> on {cores}, with <code>compress()</code> on 1 core, and with the C library built into Node.js, which has no multicore mode. Only qualities 10 and 11, the slowest levels, use more than one core; the table lists all 12.</template>
 <template data-i18n-for="t185" data-i18n-locale="de">{input} ({size}): wie lange eine Kompression bei Qualität 9 bis 11 dauert, mit <code>compressParallel()</code> auf {cores}, mit <code>compress()</code> auf 1 Kern und mit der in Node.js eingebauten C-Bibliothek, die nur einen Kern nutzt. Nur Qualität 10 und 11, die langsamsten Stufen, nutzen mehr als einen Kern; die Tabelle enthält alle 12.</template>
-<template data-i18n-for="t186" data-i18n-locale="en">{input} ({size}): how long one compression takes at each quality on 1 core, against the C library built into Node.js.</template>
+<template data-i18n-for="t186" data-i18n-locale="en">{input} ({size}): how long one compression takes at qualities 9 to 11 on 1 core, against the C library built into Node.js.</template>
 <template data-i18n-for="t186" data-i18n-locale="de">{input} ({size}): wie lange eine Kompression bei Qualität 9 bis 11 auf 1 Kern dauert, im Vergleich zur in Node.js eingebauten C-Bibliothek.</template>
 <template data-i18n-for="t187" data-i18n-locale="en">Brotli saves space by pointing back to data it has already seen. The look-back distance limits how far back it looks: a longer look-back finds more repeats, and unpacking needs that much memory. Sizes at quality 11, compared with a 64 KiB look-back.</template>
 <template data-i18n-for="t187" data-i18n-locale="de">Brotli spart Platz, indem es auf schon gesehene Daten zurückverweist. Look-back begrenzt, wie weit zurück geschaut wird: Ein längerer Look-back findet mehr Wiederholungen, und das Entpacken braucht so viel Speicher. Größen bei Qualität 11, im Vergleich zu 64 KiB Look-back.</template>

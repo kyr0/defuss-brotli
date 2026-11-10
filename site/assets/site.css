@@ -68,7 +68,9 @@
 
 @layer components {
   *, *::before, *::after { box-sizing: border-box; }
-  html { scroll-padding-top: 6rem; -webkit-text-size-adjust: 100%; }
+  /* Everything is sized in rem, so the root size scales the whole page: 1.25 times the browser's default. Media queries
+     ignore it (their rem is always 16 px), so their widths below are the 16 px design widths times 1.25. */
+  html { font-size: 125%; scroll-padding-top: 6rem; -webkit-text-size-adjust: 100%; }
   body {
     margin: 0; background: var(--background); color: var(--foreground); font-family: var(--font-sans);
     font-size: 1.0625rem; line-height: 1.65; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
@@ -121,12 +123,13 @@
   .hero-blob-2 { inset-block-start: 20%; inset-inline-end: 6%; width: min(20rem, 40%); background: color-mix(in oklch, var(--chart-3) 45%, transparent); }
   .hero { display: grid; gap: clamp(2rem, 5vw, 4rem); align-items: center; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
   /* the title scales with its column (container units), so the longest rotating line never reaches the box */
-  .hero-copy { display: flex; flex-direction: column; gap: 1.5rem; align-items: flex-start; container-type: inline-size; }
+  /* top-aligned with the box beside it; centred, the copy sat lower than the box */
+  .hero-copy { display: flex; flex-direction: column; gap: 1.5rem; align-items: flex-start; align-self: start; container-type: inline-size; }
   .mk-hero-pill { display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.35rem 0.9rem 0.35rem 0.4rem; border: 1px solid var(--border);
     border-radius: 999px; background: color-mix(in oklch, var(--card) 85%, transparent); font-size: 0.9375rem; text-decoration: none; }
   .mk-hero-pill:hover { border-color: var(--primary); }
   .mk-hero-pill .badge { font-size: 0.8125rem; }
-  .hero-title { margin: 0; font-size: clamp(1.75rem, 9.2cqi, 4.5rem); line-height: 1.12; font-weight: 800; letter-spacing: -0.035em; }
+  .hero-title { margin: 0; font-size: clamp(1.5rem, 9.2cqi, 4.5rem); line-height: 1.12; font-weight: 800; letter-spacing: -0.035em; }
   .hero-rotate { display: inline-block; line-height: 1.2; }
   .hero-title .text-rotate { display: block; }
   .hero-desc { margin: 0; font-size: clamp(1.125rem, 2vw, 1.3rem); color: var(--muted-foreground); max-width: 38rem; }
@@ -331,7 +334,9 @@
 
   /* how it works */
   .how-diagram .diagram-node-name { font-size: 1rem; }
-  .how-diagram .diagram-node-meta, .how-diagram .diagram-node-eyebrow, .how-diagram .diagram-group-label { font-size: 0.875rem; }
+  .how-diagram .diagram-node-meta, .how-diagram .diagram-group-label { font-size: 0.875rem; }
+  /* File names keep their case; capitals with defuss-shadcn's letter spacing made decompressor.wasm wider than its node. */
+  .how-diagram .diagram-node-eyebrow { font-size: 0.8125rem; text-transform: none; letter-spacing: 0; }
   .how-diagram .diagram-group-label { letter-spacing: 0.02em; }
   .how-diagram .diagram-edge { font-size: 0.875rem; }
   .how-diagram { margin: 0; padding: clamp(1rem, 2.5vw, 1.75rem); border: 1px solid var(--border); border-radius: var(--radius-xl); background: var(--card); }
@@ -351,7 +356,7 @@
   .consult-eyebrow { margin: 0 0 0.35rem; font-size: 0.875rem; font-weight: 650; letter-spacing: 0.06em; text-transform: uppercase; color: var(--primary); }
   .consult-title { margin: 0 0 0.5rem; font-size: clamp(1.5rem, 2.8vw, 2.1rem); line-height: 1.2; }
   .consult-desc { margin: 0; max-width: 40rem; font-size: 1.0625rem; color: var(--foreground); }
-  @media (max-width: 60rem) { .consult { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 75rem) { .consult { grid-template-columns: minmax(0, 1fr); } }
 
   /* performance */
   .perf-card { display: flex; flex-direction: column; gap: 1.25rem; padding: clamp(1rem, 2.5vw, 1.75rem); border: 1px solid var(--border);
@@ -379,7 +384,7 @@
     border: 1px solid var(--border); background: var(--muted); font-size: 0.9375rem; }
   .agent-note .icon { color: var(--primary); margin-block-start: 0.2rem; }
   .agent-note a { font-weight: 650; }
-  @media (max-width: 60rem) { .ways { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 75rem) { .ways { grid-template-columns: minmax(0, 1fr); } }
 
   /* the closing call to action: dark on purpose, in both modes */
   .cta-band { position: relative; isolation: isolate; overflow: hidden; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
@@ -403,7 +408,7 @@
   .mk-footer-heading { font-size: 1rem; font-weight: 700; }
   .mk-footer-list a { text-underline-offset: 3px; }
   .mk-footer-copy { color: var(--muted-foreground); font-size: 0.9375rem; }
-  @media (min-width: 64rem) { .footer-nav.mk-footer-nav { grid-template-columns: 1fr 1fr 1.8fr; } }
+  @media (min-width: 80rem) { .footer-nav.mk-footer-nav { grid-template-columns: 1fr 1fr 1.8fr; } }
   .footer-ad { --shape-round: 2rem; display: flex; flex-direction: column; gap: 1rem; padding: 1.5rem; border: 1px solid var(--border);
     background: linear-gradient(135deg, color-mix(in oklch, var(--chart-3) 16%, var(--card)), var(--card) 65%); box-shadow: var(--shadow-lg); }
   .footer-ad-head { display: flex; align-items: center; gap: 1rem; }
@@ -412,19 +417,26 @@
   .footer-ad-role { margin: 0; font-size: 0.9375rem; color: var(--muted-foreground); }
   .footer-ad .btn { align-self: flex-start; }
 
-  @media (max-width: 60rem) {
+  @media (max-width: 75rem) {
     .hero { grid-template-columns: minmax(0, 1fr); }
     .hero-stage { width: min(70%, 16rem); }
     .usps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .split { grid-template-columns: minmax(0, 1fr); }
   }
-  @media (max-width: 40rem) {
+  /* defuss-shadcn shows the header menu from a 40rem wide header; this site's menu and actions need 56rem. */
+  @container mk-header (width < 56rem) {
+    .mk-header-nav { display: none; }
+    .mk-header-menu { display: inline-flex; }
+    .mk-header-actions .mk-header-wide { display: none; }
+  }
+  @media (max-width: 50rem) {
     .mk-header-name { display: none; }
     .lang-select { min-width: 0; }
     .demo-tabs > .tab-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
     .demo-tab { flex-direction: column; justify-content: flex-start; gap: 0.3rem; padding: 0.55rem 0.35rem; text-align: center; }
     .demo-tab-title { font-size: 0.875rem; }
-    .bar { grid-template-columns: 6.5rem minmax(0, 1fr) 5.5rem; }
+    .bar { grid-template-columns: minmax(0, 1fr) auto; row-gap: 0.35rem; }
+    .bar-track { grid-column: 1 / -1; grid-row: 2; }
     .lane { grid-template-columns: minmax(0, 1fr) 5rem; }
     .lane-track { grid-column: 1 / -1; grid-row: 2; }
     .demo-tab-desc { display: none; }

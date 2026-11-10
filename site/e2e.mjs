@@ -98,6 +98,8 @@ try {
     const { context, page, errors } = await open({ colorScheme: "light", locale: "en-US", reducedMotion: "reduce" });
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
     assert.equal(await page.getAttribute("html", "lang"), "en");
+    // text and spacing 1.25 times the browser's default (the root size scales every rem)
+    assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize), "20px");
     assert.equal(await page.evaluate(() => document.documentElement.classList.contains("dark")), false);
     assert.equal(await page.getAttribute("#top", "data-i18n-issues"), "0");
     assert.match(await page.textContent("#hero-title"), /Brotli compression/);
@@ -256,7 +258,8 @@ try {
     // routes: nav link, heading anchor, back
     await page.click('.mk-header-nav a[data-route="perf"]');
     await page.waitForFunction(() => location.hash === "#/en/perf");
-    await page.waitForFunction(() => Math.abs(document.getElementById("perf").getBoundingClientRect().top) < 200);
+    // scrolled to the section: it lands 12rem down (html scroll-padding plus section scroll-margin), in rem as the page scales
+    await page.waitForFunction(() => Math.abs(document.getElementById("perf").getBoundingClientRect().top) < 13 * parseFloat(getComputedStyle(document.documentElement).fontSize));
     await page.click('#how-title .heading-anchor');
     await page.waitForFunction(() => location.hash === "#/en/how");
     await page.goBack();
@@ -282,6 +285,13 @@ try {
     // the diagram draws its wires
     await page.locator("#how").scrollIntoViewIfNeeded();
     await page.waitForFunction(() => document.querySelectorAll("#how .diagram svg path").length > 4);
+    // at desktop width the diagram fits, and every node holds its text (decompressor.wasm overflowed once)
+    const fit = await page.evaluate(() => {
+      const figure = document.querySelector(".how-diagram");
+      const nodes = [...figure.querySelectorAll(".diagram-node")].filter((n) => n.scrollWidth > n.clientWidth + 1).map((n) => n.dataset.node);
+      return { overflow: figure.scrollWidth - figure.clientWidth, nodes };
+    });
+    assert.deepEqual(fit, { overflow: 0, nodes: [] });
     check("how-it-works diagram");
 
     // theme toggle
@@ -308,7 +318,7 @@ try {
     const views = await page.textContent("#perf-view");
     assert.ok(views.includes("Geschwindigkeit") && views.includes("Look-back") && !/Suchweite|Mehrkern|Qualität/.test(views), views);
     assert.equal((await page.textContent("#perf-metric")).replace(/\s+/g, ""), "MulticoreSinglecore");
-    await page.waitForFunction(() => Math.abs(document.getElementById("perf").getBoundingClientRect().top) < 200);
+    await page.waitForFunction(() => Math.abs(document.getElementById("perf").getBoundingClientRect().top) < 13 * parseFloat(getComputedStyle(document.documentElement).fontSize));
     check("German deep link #/de/perf, dark mode from the preferences");
     await page.locator("#demo").scrollIntoViewIfNeeded();
     assert.match(await page.textContent("#compress-summary"), /^Wählen Sie eine Datei/);
@@ -336,6 +346,9 @@ try {
     const { context, page } = await open({ viewport: { width: 390, height: 844 }, locale, reducedMotion: "reduce" });
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     assert.equal(overflow, 0, `${locale}: page scrolls sideways by ${overflow}px`);
+    assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize), "20px", "125 % on phones too");
+    const title = await page.evaluate(() => document.querySelector(".hero-title").scrollWidth - document.querySelector(".hero-copy").clientWidth);
+    assert.ok(title <= 0, `${locale}: hero title wider than the screen by ${title}px`);
     await page.click(".mk-header-menu");
     await page.click('#site-menu a[data-route="use"]');
     await page.waitForFunction(() => location.hash.endsWith("/use"));
