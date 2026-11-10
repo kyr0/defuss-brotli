@@ -68,9 +68,11 @@
 
 @layer components {
   *, *::before, *::after { box-sizing: border-box; }
-  /* Everything is sized in rem, so the root size scales the whole page: 1.25 times the browser's default. Media queries
-     ignore it (their rem is always 16 px), so their widths below are the 16 px design widths times 1.25. */
+  /* Everything is sized in rem, so the root size scales the whole page: 1.25 times the browser's default on desktops,
+     75 % of that (15 px) on tablets and phones. Media queries ignore it (their rem is always 16 px): the two-column
+     layouts switch at 75rem, 60rem times 1.25 for the desktop size; the phone layout at 40rem. */
   html { font-size: 125%; scroll-padding-top: 6rem; -webkit-text-size-adjust: 100%; }
+  @media (max-width: 64rem) { html { font-size: 93.75%; } }
   body {
     margin: 0; background: var(--background); color: var(--foreground); font-family: var(--font-sans);
     font-size: 1.0625rem; line-height: 1.65; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
@@ -337,9 +339,16 @@
   .how-diagram .diagram-node-meta, .how-diagram .diagram-group-label { font-size: 0.875rem; }
   /* File names keep their case; capitals with defuss-shadcn's letter spacing made decompressor.wasm wider than its node. */
   .how-diagram .diagram-node-eyebrow { font-size: 0.8125rem; text-transform: none; letter-spacing: 0; }
+  /* Two lanes of four columns need 55rem (in rem, so this follows the root size); narrower, one column with the boxes
+     in flow order, wired top to bottom, instead of a diagram that scrolls sideways. */
+  @container (width < 55rem) {
+    .how-diagram .diagram-canvas { grid-template-columns: minmax(0, 1fr) !important; }
+    .how-diagram .diagram-node { grid-column: 1 !important; grid-row: auto !important; }
+    .how-diagram .diagram-group { display: none; }
+  }
   .how-diagram .diagram-group-label { letter-spacing: 0.02em; }
   .how-diagram .diagram-edge { font-size: 0.875rem; }
-  .how-diagram { margin: 0; padding: clamp(1rem, 2.5vw, 1.75rem); border: 1px solid var(--border); border-radius: var(--radius-xl); background: var(--card); }
+  .how-diagram { container-type: inline-size; margin: 0; padding: clamp(1rem, 2.5vw, 1.75rem); border: 1px solid var(--border); border-radius: var(--radius-xl); background: var(--card); }
   .facts { list-style: none; margin: 1.5rem 0 0; padding: 0; display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
   .fact { padding: 1.5rem; border: 1px solid var(--border); border-radius: var(--radius-xl); background: var(--card); }
   .fact-title { display: flex; align-items: center; gap: 0.6rem; margin: 0 0 0.5rem; font-size: 1.15rem; }
@@ -429,7 +438,7 @@
     .mk-header-menu { display: inline-flex; }
     .mk-header-actions .mk-header-wide { display: none; }
   }
-  @media (max-width: 50rem) {
+  @media (max-width: 40rem) {
     .mk-header-name { display: none; }
     .lang-select { min-width: 0; }
     .demo-tabs > .tab-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
@@ -447,6 +456,8 @@
     .bar-fill, .lane-fill { transition: none; }
     .pack-spin, .pack-box, .pack-flap, .pack-bits i, .pack-press { animation: none; }
     .pack-flap { transform: rotateY(var(--r)) translateZ(calc(var(--s) / 2)) translateY(var(--lift)) rotateX(90deg); }
+    /* the scroll-driven words stack on top of each other without their animation; the band is decoration */
+    .flythrough { display: none; }
   }
   @media (forced-colors: active) {
     .accent, .fly-word, .result-big span { color: CanvasText; background: none; }

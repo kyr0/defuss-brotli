@@ -98,7 +98,7 @@ try {
     const { context, page, errors } = await open({ colorScheme: "light", locale: "en-US", reducedMotion: "reduce" });
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
     assert.equal(await page.getAttribute("html", "lang"), "en");
-    // text and spacing 1.25 times the browser's default (the root size scales every rem)
+    // text and spacing 1.25 times the browser's default on desktops (the root size scales every rem)
     assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize), "20px");
     assert.equal(await page.evaluate(() => document.documentElement.classList.contains("dark")), false);
     assert.equal(await page.getAttribute("#top", "data-i18n-issues"), "0");
@@ -346,7 +346,9 @@ try {
     const { context, page } = await open({ viewport: { width: 390, height: 844 }, locale, reducedMotion: "reduce" });
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     assert.equal(overflow, 0, `${locale}: page scrolls sideways by ${overflow}px`);
-    assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize), "20px", "125 % on phones too");
+    assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize), "15px", "75 % of the desktop size");
+    // the diagram stacks its boxes in one column instead of scrolling sideways
+    assert.equal(await page.evaluate(() => { const f = document.querySelector(".how-diagram"); return f.scrollWidth - f.clientWidth; }), 0, `${locale}: diagram scrolls sideways`);
     const title = await page.evaluate(() => document.querySelector(".hero-title").scrollWidth - document.querySelector(".hero-copy").clientWidth);
     assert.ok(title <= 0, `${locale}: hero title wider than the screen by ${title}px`);
     await page.click(".mk-header-menu");

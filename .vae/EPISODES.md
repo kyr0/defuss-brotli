@@ -18,10 +18,6 @@ Wrap: EVERY lead becomes a test | .vae/VERIFY.py rule | one MEMORY line with BC,
 2026-11-08T23:45:10Z s=698894d0 FINDING vitest.config.ts:coverage.reporter learn=none: skipFull: false set; the gate output shows the row
 2026-11-09T04:19:01Z s=698894d0 FINDING README.md:5 'about 50 KB over Brotli HTTP' learn=none: both figures stated
 2026-11-09T04:19:01Z s=698894d0 FINDING ARCH.md Security and privacy learn=none: documented with evidence
-2026-11-09T09:08:49Z s=698894d0 DONE fp=ae9da35c5f82 cov=100.0% paths=scripts/build.ts
-2026-11-09T09:08:49Z s=698894d0 FINDING scripts/build.ts:run (child process PATH) learn=verifier: .vae/VERIFY.py rule build.tools-without-mise-activation
-2026-11-09T10:38:51Z s=698894d0 DONE fp=aca1737d4967 cov=100.0% paths=ARCH.md,README.md,package.json,scripts/build.ts
-2026-11-09T10:38:51Z s=698894d0 FINDING package.json:files THIRD_PARTY_NOTICES.md learn=verifier: .vae/VERIFY.py rule package.files-exist (fails on the old entry)
 2026-11-09T10:38:51Z s=698894d0 FINDING package.json:version 0.1.3 learn=none: release decision, not a recurring defect
 2026-11-09T11:59:52Z s=698894d0 DONE fp=44e28770f52a cov=100.0% paths=ARCH.md,Makefile,README.md,e2e/cli.mjs(+7)
 2026-11-09T11:59:52Z s=698894d0 FINDING src/cli.ts:processFile learn=none: no public behavior differs (init is idempotent); only the redundant read, which a test could observe only through a spy
@@ -106,3 +102,7 @@ Wrap: EVERY lead becomes a test | .vae/VERIFY.py rule | one MEMORY line with BC,
 2026-11-10T02:10:37Z s=698894d0 FINDING site/assets/site.css .hero-copy; site/page.html lead-single learn=none: layout preference and a wording fix; no mechanical check beyond the e2e caption match
 2026-11-10T02:18:44Z s=698894d0 DONE fp=c7f4636fb755 cov=95.9% paths=docs/assets/site.css,docs/index.html,site/assets/site.css,site/e2e.mjs(+1)
 2026-11-10T02:18:44Z s=698894d0 FINDING site/assets/site.css:html font-size, media queries, header container query, phone bars, hero title learn=test: site/e2e.mjs asserts the root size and that the hero title fits at phone width; the existing sideways-overflow check covers the page
+2026-11-10T11:03:37Z s=698894d0 DONE fp=38efe4715fa1 cov=95.9% paths=docs/assets/site.css,site/assets/site.css,site/e2e.mjs
+2026-11-10T11:03:37Z s=698894d0 FINDING site/assets/site.css: html font-size, @media (max-width: 64rem) learn=test: site/e2e.mjs asserts the root size at 390 px and at 1440 px
+2026-11-10T11:03:37Z s=698894d0 FINDING site/assets/site.css: .how-diagram container query learn=test: site/e2e.mjs asserts no diagram overflow at 390 and 1440 px
+2026-11-10T11:03:37Z s=698894d0 FINDING site/assets/site.css: prefers-reduced-motion .flythrough learn=none: visual overlap; the e2e runs with reduced motion but checks no pixels, and a rule would only pin this CSS line
