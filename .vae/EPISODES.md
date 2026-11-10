@@ -13,12 +13,8 @@ Wrap: EVERY lead becomes a test | .vae/VERIFY.py rule | one MEMORY line with BC,
 2026-11-08T21:02:26Z s=698894d0 FINDING src/*-slim.ts:init JSDoc learn=none: doc wording, not mechanically checkable
 2026-11-08T21:02:26Z s=698894d0 FINDING ARCH.md:Security and privacy learn=none: prose review
 2026-11-08T21:02:26Z s=698894d0 FINDING README.md:Inlined or separate .wasm learn=none: prose review against make metrics
-2026-11-08T21:35:43Z s=698894d0 DONE fp=feee3e55c8d2 cov=94.0% paths=.github/workflows/verify.yml,AGENTS.md,ARCH.md,Makefile(+40)
 2026-11-08T21:35:43Z s=698894d0 FINDING rust/decompressor/src/runtime.rs:Arena::reserve|bump learn=none: only reachable at the 4 GiB limit; a test would need 4 GiB of RAM, so the fix is reasoned, and the leak test exercises the out-of-memory path
-2026-11-08T21:35:43Z s=698894d0 FINDING rust/decompressor/src/runtime.rs:Arena::dealloc learn=test: src/decompressor.test.ts leak test
 2026-11-08T21:35:43Z s=698894d0 FINDING Makefile:lint learn=none: Makefile verb
-2026-11-08T23:45:10Z s=698894d0 DONE fp=f1218cd35df8 cov=100.0% paths=.github/workflows/verify.yml,AGENTS.md,ARCH.md,Makefile(+52)
-2026-11-08T23:45:10Z s=698894d0 FINDING README.md:Inlined or separate .wasm (B02) learn=verifier: make e2e (e2e-sizes) fails when an import exceeds size-budgets.json for any encoding
 2026-11-08T23:45:10Z s=698894d0 FINDING src/*.ts uncovered paths learn=test: src/init.test.ts, src/slim.test.ts, src/slim.browser.test.ts, rust wasm_export_returns_the_core_result
 2026-11-08T23:45:10Z s=698894d0 FINDING README examples (Quick Start, Decompression Options, init(source) forms, CDN, decompressor-only guarantee) learn=test: make e2e-runtime, e2e-cdn and the decompress-only apps in e2e-bun / e2e-vite (NO_ENCODER grep shown to flag the full bundles)
 2026-11-08T23:45:10Z s=698894d0 FINDING vitest.config.ts:coverage.reporter learn=none: skipFull: false set; the gate output shows the row
@@ -106,3 +102,7 @@ Wrap: EVERY lead becomes a test | .vae/VERIFY.py rule | one MEMORY line with BC,
 2026-11-10T00:11:44Z s=698894d0 FINDING site/page.html (edit run page-2026-11-10T00-03-27-470Z-54c5b4) learn=test: site/e2e.mjs asserts the hero footnote and the perf lead in their new wording
 2026-11-10T00:27:29Z s=698894d0 DONE fp=bf6dbbac9040 cov=95.9% paths=README.md,docs/assets/site.js,docs/index.html,site/e2e.mjs(+3)
 2026-11-10T00:27:29Z s=698894d0 FINDING site/page.html:141,217,475,542,653; site/ui/perf.ts:setupPerf learn=none: wording decided by the human; the open question about the 5.3x claim goes to the review page, no mechanical check applies
+2026-11-10T00:47:32Z s=698894d0 DONE fp=62eb31de4f95 cov=95.9% paths=docs/index.html,site/page.html
+2026-11-10T00:47:32Z s=698894d0 FINDING site/page.html:141 hero-note learn=none: wording chosen by the human; no mechanical check applies
+2026-11-10T00:57:25Z s=698894d0 DONE fp=c110f73c577a cov=95.9% paths=ARCH.md,Makefile,README.md
+2026-11-10T00:57:25Z s=698894d0 FINDING Makefile:e2e (E2E_SIZES) learn=verifier: .vae/VERIFY.py ci.size-budgets-local-only requires the CI condition on e2e-sizes in the Makefile

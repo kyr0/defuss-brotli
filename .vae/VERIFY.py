@@ -100,4 +100,12 @@ RULES = [{
     # ~/.cargo/bin from a manual `cargo install`; `make setup` (mise install) now installs it in every checkout.
     "pattern": r'(?m)^"github:taiki-e/cargo-llvm-cov" = "',
     "claim": "the cargo-llvm-cov that `make coverage` runs is pinned in mise.toml, so `make setup` installs it in CI",
+}, {
+    "id": "ci.size-budgets-local-only",
+    "kind": "regex",
+    "path": "Makefile",
+    # VERIFIED 2026-11-10: CI (ubuntu-latest) failed 3 of size-budgets.json's limits that this Mac's build meets; the
+    # human asked to stop running them in CI.
+    "pattern": r"(?m)^E2E_SIZES := \$\(if \$\(CI\),,e2e-sizes\)\n(?:.*\n)*?^e2e: \$\(E2E_SIZES\) ",
+    "claim": "make e2e skips the machine-calibrated size budgets when CI is set, and runs them locally",
 }]
