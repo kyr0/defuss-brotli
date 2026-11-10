@@ -15,8 +15,6 @@ Wrap: EVERY lead becomes a test | .vae/VERIFY.py rule | one MEMORY line with BC,
 2026-11-08T21:02:26Z s=698894d0 FINDING README.md:Inlined or separate .wasm learn=none: prose review against make metrics
 2026-11-08T21:35:43Z s=698894d0 FINDING rust/decompressor/src/runtime.rs:Arena::reserve|bump learn=none: only reachable at the 4 GiB limit; a test would need 4 GiB of RAM, so the fix is reasoned, and the leak test exercises the out-of-memory path
 2026-11-08T21:35:43Z s=698894d0 FINDING Makefile:lint learn=none: Makefile verb
-2026-11-08T23:45:10Z s=698894d0 FINDING src/*.ts uncovered paths learn=test: src/init.test.ts, src/slim.test.ts, src/slim.browser.test.ts, rust wasm_export_returns_the_core_result
-2026-11-08T23:45:10Z s=698894d0 FINDING README examples (Quick Start, Decompression Options, init(source) forms, CDN, decompressor-only guarantee) learn=test: make e2e-runtime, e2e-cdn and the decompress-only apps in e2e-bun / e2e-vite (NO_ENCODER grep shown to flag the full bundles)
 2026-11-08T23:45:10Z s=698894d0 FINDING vitest.config.ts:coverage.reporter learn=none: skipFull: false set; the gate output shows the row
 2026-11-09T00:14:19Z s=698894d0 FAIL lint,tests.e2e.1
 2026-11-09T00:15:16Z s=698894d0 FAIL tests.e2e.1
@@ -106,3 +104,5 @@ Wrap: EVERY lead becomes a test | .vae/VERIFY.py rule | one MEMORY line with BC,
 2026-11-10T00:47:32Z s=698894d0 FINDING site/page.html:141 hero-note learn=none: wording chosen by the human; no mechanical check applies
 2026-11-10T00:57:25Z s=698894d0 DONE fp=c110f73c577a cov=95.9% paths=ARCH.md,Makefile,README.md
 2026-11-10T00:57:25Z s=698894d0 FINDING Makefile:e2e (E2E_SIZES) learn=verifier: .vae/VERIFY.py ci.size-budgets-local-only requires the CI condition on e2e-sizes in the Makefile
+2026-11-10T01:24:15Z s=698894d0 DONE fp=ed2956cfc7ea cov=95.9% paths=docs/assets/site.css,docs/assets/site.js,docs/index.html,site/assets/site.css(+3)
+2026-11-10T01:24:15Z s=698894d0 FINDING site/ui/demos.ts:runCompress, renderCompress; site/page.html #compress-gzip learn=test: site/e2e.mjs asserts the default-off state, the hidden bar and a gzip size when switched on

@@ -294,6 +294,11 @@
                 <input class="slider" type="range" id="compress-threads" min="1" max="64" step="1" value="8">
                 <p class="field-hint" data-t>Shares the work at quality 10 and 11 for inputs above 32 KiB: up to 8 parts, above 64 MiB one part per 8 MiB; each core compresses one part at a time. With a look-back other than 4 MiB, 64 and 8 MiB change in proportion.<template lang="de">Teilt die Arbeit bei Qualität 10 und 11 für Eingaben über 32 KiB auf: in bis zu 8 Teile, über 64 MiB in einen Teil je 8 MiB; jeder Kern komprimiert einen Teil nach dem anderen. Bei einem anderen Look-back als 4 MiB ändern sich 64 und 8 MiB im selben Verhältnis.</template></p>
               </div>
+              <div class="switch-item-block gzip-switch">
+                <input class="switch" type="checkbox" role="switch" id="compress-gzip">
+                <label class="field-label" for="compress-gzip" data-t>Compare with gzip<template lang="de">Mit gzip vergleichen</template></label>
+                <p class="switch-description" data-t>Also compresses the input with the browser's built-in gzip, which takes extra time on large files.<template lang="de">Komprimiert die Eingabe zusätzlich mit dem eingebauten gzip des Browsers; das dauert bei großen Dateien länger.</template></p>
+              </div>
               <button class="btn run-btn" data-size="lg" type="submit" id="compress-run"><svg class="icon" aria-hidden="true"><use href="#i-zip"/></svg><span data-t>Compress<template lang="de">Komprimieren</template></span><kbd class="kbd-group" aria-hidden="true"><kbd class="kbd" data-size="sm" data-mod>Ctrl</kbd><kbd class="kbd" data-size="sm">Enter</kbd></kbd></button>
             </form>
 
@@ -304,7 +309,7 @@
               </div>
               <ul class="bars" id="compress-bars" aria-label="Sizes" de-aria-label="Größen">
                 <li class="bar" data-bar="input"><span class="bar-label" data-t>Original<template lang="de">Original</template></span><span class="bar-track"><span class="bar-fill"></span></span><span class="bar-value">-</span></li>
-                <li class="bar" data-bar="gzip"><span class="bar-label">gzip <small data-t>(built-in)<template lang="de">(eingebaut)</template></small></span><span class="bar-track"><span class="bar-fill"></span></span><span class="bar-value">-</span></li>
+                <li class="bar" data-bar="gzip" hidden><span class="bar-label">gzip <small data-t>(built-in)<template lang="de">(eingebaut)</template></small></span><span class="bar-track"><span class="bar-fill"></span></span><span class="bar-value">-</span></li>
                 <li class="bar" data-bar="brotli"><span class="bar-label">Brotli <small id="compress-bar-q" data-idle="bar-quality-idle">quality 11</small></span><span class="bar-track"><span class="bar-fill"></span></span><span class="bar-value">-</span></li>
               </ul>
               <p class="check" id="compress-check" hidden><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span data-t>Decompressed again and compared: identical to the input.<template lang="de">Wieder entpackt und verglichen: identisch mit der Eingabe.</template></span></p>
@@ -623,6 +628,7 @@
     <span data-t data-msg="loading-input">Preparing the input...<template lang="de">Eingabe wird vorbereitet ...</template></span>
     <span data-t data-msg="compressing">Compressing {size}...<template lang="de">{size} werden komprimiert ...</template></span>
     <span data-t data-msg="checking">Comparing with gzip and unpacking the result to check it...<template lang="de">Vergleich mit gzip und Prüfung durch Entpacken ...</template></span>
+    <span data-t data-msg="verifying">Unpacking the result to check it...<template lang="de">Ergebnis wird zur Prüfung entpackt ...</template></span>
     <span data-t data-msg="decompressing">Decompressing...<template lang="de">Wird entpackt ...</template></span>
     <span data-t data-msg="smaller">{times} times smaller<template lang="de">{times}-mal kleiner</template></span>
     <span data-t data-msg="compress-done">{output} from {input} in {time}, at quality {quality}.<template lang="de">{output} aus {input} in {time}, mit Qualität {quality}.</template></span>

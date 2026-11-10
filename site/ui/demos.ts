@@ -87,7 +87,8 @@ interface CompressResult {
   output: number;
   ms: number;
   quality: number;
-  gzip: { size: number; ms: number } | null;
+  /** Absent when "Compare with gzip" was off; null when the browser has no CompressionStream. */
+  gzip: { size: number; ms: number } | null | undefined;
   packed: Uint8Array;
 }
 let lastCompressed: CompressResult | undefined;
@@ -106,13 +107,18 @@ function renderCompress(result: CompressResult, animate: boolean): void {
     time: duration(result.ms, l),
     quality: result.quality,
   });
-  const bars: Record<string, [number, string]> = {
+  const gzipBar: [number, string] | undefined =
+    result.gzip === undefined ? undefined : result.gzip ? [result.gzip.size, bytes(result.gzip.size, l)] : [0, msg("gzip-unavailable")];
+  const bars: Record<string, [number, string] | undefined> = {
     input: [result.input, bytes(result.input, l)],
-    gzip: result.gzip ? [result.gzip.size, bytes(result.gzip.size, l)] : [0, msg("gzip-unavailable")],
+    gzip: gzipBar,
     brotli: [result.output, bytes(result.output, l)],
   };
-  for (const [name, [size, label]] of Object.entries(bars)) {
+  for (const [name, value] of Object.entries(bars)) {
     const bar = $(`#compress-bars [data-bar="${name}"]`);
+    bar.hidden = !value;
+    if (!value) continue;
+    const [size, label] = value;
     $(".bar-fill", bar).style.setProperty("--fill", `${Math.max((size / result.input) * 100, size ? 0.6 : 0)}%`);
     $(".bar-value", bar).textContent = label;
   }
@@ -177,10 +183,11 @@ async function runCompress(): Promise<void> {
         ? `await compressParallel(input, { quality: ${quality}, lgwin: ${lgwin}, threads: ${threads} })`
         : `compress(input, { quality: ${quality}, lgwin: ${lgwin} })`,
     );
-    // gzip and the round trip take a while on large files too, so the status says what runs
-    summary.textContent = msg("checking");
+    // gzip (off by default) and the round trip take a while on large files too, so the status says what runs
+    const compare = $<HTMLInputElement>("#compress-gzip").checked;
+    summary.textContent = msg(compare ? "checking" : "verifying");
     await painted();
-    const baseline = await gzip(file ?? new Blob([input as BlobPart]));
+    const baseline = compare ? await gzip(file ?? new Blob([input as BlobPart])) : undefined;
     const decoder = await decompressor();
     const back = decoder.decompress(packed, { maxOutputSize: Math.max(input.length, 1) });
     if (!equal(back, input)) throw new Error("round trip differs");

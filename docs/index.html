@@ -297,7 +297,12 @@
                 <input class="slider" type="range" id="compress-threads" min="1" max="64" step="1" value="8">
                 <p class="field-hint" data-i18n-target="t58">Shares the work at quality 10 and 11 for inputs above 32 KiB: up to 8 parts, above 64 MiB one part per 8 MiB; each core compresses one part at a time. With a look-back other than 4 MiB, 64 and 8 MiB change in proportion.</p>
               </div>
-              <button class="btn run-btn" data-size="lg" type="submit" id="compress-run"><svg class="icon" aria-hidden="true"><use href="#i-zip"/></svg><span data-i18n-target="t59">Compress</span><kbd class="kbd-group" aria-hidden="true"><kbd class="kbd" data-size="sm" data-mod>Ctrl</kbd><kbd class="kbd" data-size="sm">Enter</kbd></kbd></button>
+              <div class="switch-item-block gzip-switch">
+                <input class="switch" type="checkbox" role="switch" id="compress-gzip">
+                <label class="field-label" for="compress-gzip" data-i18n-target="t59">Compare with gzip</label>
+                <p class="switch-description" data-i18n-target="t60">Also compresses the input with the browser's built-in gzip, which takes extra time on large files.</p>
+              </div>
+              <button class="btn run-btn" data-size="lg" type="submit" id="compress-run"><svg class="icon" aria-hidden="true"><use href="#i-zip"/></svg><span data-i18n-target="t61">Compress</span><kbd class="kbd-group" aria-hidden="true"><kbd class="kbd" data-size="sm" data-mod>Ctrl</kbd><kbd class="kbd" data-size="sm">Enter</kbd></kbd></button>
             </form>
 
             <div class="pane result" aria-live="polite" id="compress-result">
@@ -306,15 +311,15 @@
                 <p class="result-sub" id="compress-summary" data-idle="compress-idle">Choose a file, or press Compress for the sample.</p>
               </div>
               <ul class="bars" id="compress-bars" aria-label="Sizes" data-i18n-aria-label-en="Sizes" data-i18n-aria-label-de="Größen">
-                <li class="bar" data-bar="input"><span class="bar-label" data-i18n-target="t60">Original</span><span class="bar-track"><span class="bar-fill"></span></span><span class="bar-value">-</span></li>
-                <li class="bar" data-bar="gzip"><span class="bar-label">gzip <small data-i18n-target="t61">(built-in)</small></span><span class="bar-track"><span class="bar-fill"></span></span><span class="bar-value">-</span></li>
+                <li class="bar" data-bar="input"><span class="bar-label" data-i18n-target="t62">Original</span><span class="bar-track"><span class="bar-fill"></span></span><span class="bar-value">-</span></li>
+                <li class="bar" data-bar="gzip" hidden><span class="bar-label">gzip <small data-i18n-target="t63">(built-in)</small></span><span class="bar-track"><span class="bar-fill"></span></span><span class="bar-value">-</span></li>
                 <li class="bar" data-bar="brotli"><span class="bar-label">Brotli <small id="compress-bar-q" data-idle="bar-quality-idle">quality 11</small></span><span class="bar-track"><span class="bar-fill"></span></span><span class="bar-value">-</span></li>
               </ul>
-              <p class="check" id="compress-check" hidden><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n-target="t62">Decompressed again and compared: identical to the input.</span></p>
+              <p class="check" id="compress-check" hidden><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n-target="t64">Decompressed again and compared: identical to the input.</span></p>
               <div class="mockup-code call-code" data-variant="outline" data-wrap data-title="what ran" id="compress-code"><pre data-prefix=">"><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">await</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">compressParallel</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">(input, { quality: </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">11</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> })</span></code></pre></div>
               <div class="result-actions">
-                <a class="btn" data-variant="outline" id="compress-download" hidden download="input.br"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><span data-i18n-target="t63">Download .br</span></a>
-                <button type="button" class="btn" data-variant="ghost" id="compress-to-decoder" hidden><svg class="icon" aria-hidden="true"><use href="#i-unpack"/></svg><span data-i18n-target="t64">Decompress this</span></button>
+                <a class="btn" data-variant="outline" id="compress-download" hidden download="input.br"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><span data-i18n-target="t65">Download .br</span></a>
+                <button type="button" class="btn" data-variant="ghost" id="compress-to-decoder" hidden><svg class="icon" aria-hidden="true"><use href="#i-unpack"/></svg><span data-i18n-target="t66">Decompress this</span></button>
               </div>
             </div>
           </div>
@@ -324,21 +329,21 @@
           <div class="split">
             <form class="pane controls" id="decompress-form" aria-label="Decompression input" data-i18n-aria-label-en="Decompression input" data-i18n-aria-label-de="Eingabe zum Entpacken">
               <fieldset class="field">
-                <legend class="field-label" data-i18n-target="t65">Brotli data</legend>
+                <legend class="field-label" data-i18n-target="t67">Brotli data</legend>
                 <div class="radio-list" role="radiogroup">
-                  <label class="radio-row"><input class="radio" type="radio" name="decompress-source" value="sample" checked><span><strong data-i18n-target="t66">Precompressed page</strong><small data-i18n-target="t67">page.html.br from this website, made at quality 11</small></span></label>
-                  <label class="radio-row"><input class="radio" type="radio" name="decompress-source" value="last" id="decompress-last" disabled><span><strong data-i18n-target="t68">Your last result</strong><small data-i18n-target="t69">From the Compress tab</small></span></label>
-                  <label class="radio-row"><input class="radio" type="radio" name="decompress-source" value="file"><span><strong data-i18n-target="t70">A .br file</strong><small data-i18n-target="t71">Made by any Brotli encoder</small></span></label>
+                  <label class="radio-row"><input class="radio" type="radio" name="decompress-source" value="sample" checked><span><strong data-i18n-target="t68">Precompressed page</strong><small data-i18n-target="t69">page.html.br from this website, made at quality 11</small></span></label>
+                  <label class="radio-row"><input class="radio" type="radio" name="decompress-source" value="last" id="decompress-last" disabled><span><strong data-i18n-target="t70">Your last result</strong><small data-i18n-target="t71">From the Compress tab</small></span></label>
+                  <label class="radio-row"><input class="radio" type="radio" name="decompress-source" value="file"><span><strong data-i18n-target="t72">A .br file</strong><small data-i18n-target="t73">Made by any Brotli encoder</small></span></label>
                 </div>
-                <label class="file-drop" for="decompress-file" data-source="file" hidden><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg><span data-i18n-target="t72">Choose a .br file or drop it here.</span><span class="file-name" id="decompress-file-name"></span></label>
+                <label class="file-drop" for="decompress-file" data-source="file" hidden><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg><span data-i18n-target="t74">Choose a .br file or drop it here.</span><span class="file-name" id="decompress-file-name"></span></label>
                 <input class="sr-only" type="file" id="decompress-file" accept=".br,application/octet-stream">
               </fieldset>
               <div class="loaded" id="decoder-loaded">
-                <p class="field-label" data-i18n-target="t73">Decoder download</p>
+                <p class="field-label" data-i18n-target="t75">Decoder download</p>
                 <p class="loaded-value" id="decoder-bytes">-</p>
-                <p class="field-hint" data-i18n-target="t74">decompressor-slim.js and decompressor.wasm, as this server sent them</p>
+                <p class="field-hint" data-i18n-target="t76">decompressor-slim.js and decompressor.wasm, as this server sent them</p>
               </div>
-              <button class="btn run-btn" data-size="lg" type="submit" id="decompress-run"><svg class="icon" aria-hidden="true"><use href="#i-unpack"/></svg><span data-i18n-target="t75">Decompress</span><kbd class="kbd-group" aria-hidden="true"><kbd class="kbd" data-size="sm" data-mod>Ctrl</kbd><kbd class="kbd" data-size="sm">Enter</kbd></kbd></button>
+              <button class="btn run-btn" data-size="lg" type="submit" id="decompress-run"><svg class="icon" aria-hidden="true"><use href="#i-unpack"/></svg><span data-i18n-target="t77">Decompress</span><kbd class="kbd-group" aria-hidden="true"><kbd class="kbd" data-size="sm" data-mod>Ctrl</kbd><kbd class="kbd" data-size="sm">Enter</kbd></kbd></button>
             </form>
             <div class="pane result" aria-live="polite" id="decompress-result">
               <div class="result-head">
@@ -355,18 +360,18 @@
           <div class="split">
             <form class="pane controls" id="race-form" aria-label="Race settings" data-i18n-aria-label-en="Race settings" data-i18n-aria-label-de="Einstellungen des Vergleichs">
               <div class="field">
-                <label class="field-label" for="race-sample" data-i18n-target="t76">Input</label>
+                <label class="field-label" for="race-sample" data-i18n-target="t78">Input</label>
                 <select class="select" id="race-sample">
-                  <option value="logs" data-i18n-target="t77">Log lines, 2 MiB, generated here</option>
-                  <option value="svg" data-i18n-target="t78">SVG drawing, 1 MiB</option>
+                  <option value="logs" data-i18n-target="t79">Log lines, 2 MiB, generated here</option>
+                  <option value="svg" data-i18n-target="t80">SVG drawing, 1 MiB</option>
                 </select>
               </div>
               <div class="field">
-                <div class="field-row"><label class="field-label" for="race-threads" data-i18n-target="t79">CPU cores</label><output class="field-value" for="race-threads" id="race-threads-value">8</output></div>
+                <div class="field-row"><label class="field-label" for="race-threads" data-i18n-target="t81">CPU cores</label><output class="field-value" for="race-threads" id="race-threads-value">8</output></div>
                 <input class="slider" type="range" id="race-threads" min="2" max="8" step="1" value="8">
               </div>
-              <p class="field-hint race-note" data-i18n-target="t80">Both run at quality 11. The single-core run uses this page's own thread, so the page freezes until it is done.</p>
-              <button class="btn run-btn" data-size="lg" type="submit" id="race-run"><svg class="icon" aria-hidden="true"><use href="#i-zap"/></svg><span data-i18n-target="t81">Start</span><kbd class="kbd-group" aria-hidden="true"><kbd class="kbd" data-size="sm" data-mod>Ctrl</kbd><kbd class="kbd" data-size="sm">Enter</kbd></kbd></button>
+              <p class="field-hint race-note" data-i18n-target="t82">Both run at quality 11. The single-core run uses this page's own thread, so the page freezes until it is done.</p>
+              <button class="btn run-btn" data-size="lg" type="submit" id="race-run"><svg class="icon" aria-hidden="true"><use href="#i-zap"/></svg><span data-i18n-target="t83">Start</span><kbd class="kbd-group" aria-hidden="true"><kbd class="kbd" data-size="sm" data-mod>Ctrl</kbd><kbd class="kbd" data-size="sm">Enter</kbd></kbd></button>
             </form>
             <div class="pane result" aria-live="polite" id="race-result">
               <div class="result-head">
@@ -375,7 +380,7 @@
               </div>
               <ul class="lanes">
                 <li class="lane" id="lane-parallel"><span class="lane-name"><code>compressParallel</code> <small id="lane-parallel-threads">8 cores</small></span><span class="lane-track"><span class="lane-fill"></span></span><span class="lane-time">-</span></li>
-                <li class="lane" id="lane-single"><span class="lane-name"><code>compress</code> <small data-i18n-target="t82">1 core</small></span><span class="lane-track"><span class="lane-fill"></span></span><span class="lane-time">-</span></li>
+                <li class="lane" id="lane-single"><span class="lane-name"><code>compress</code> <small data-i18n-target="t84">1 core</small></span><span class="lane-track"><span class="lane-fill"></span></span><span class="lane-time">-</span></li>
               </ul>
               <p class="check" id="race-check" hidden><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span id="race-check-text"></span></p>
             </div>
@@ -388,44 +393,44 @@
   <section id="how" class="section section-inner parallax-reveal" aria-labelledby="how-title">
     <header class="mk-section-header">
       <div class="mk-section-header-copy">
-        <span class="mk-section-header-eyebrow" data-i18n-target="t83">How it works</span>
-        <h2 class="mk-section-header-title" id="how-title"><a class="heading-anchor" href="#/how" data-router-link data-route="how" aria-label="Link to section: Two packages in one, split where it pays" data-i18n-aria-label-en="Link to section: Two packages in one, split where it pays" data-i18n-aria-label-de="Link zum Abschnitt: Zwei Pakete in einem, geteilt, wo es sich lohnt">§</a><span data-i18n-target="t84">Two packages in one, split where it pays</span></h2>
-        <p class="mk-section-header-desc" data-i18n-target="t85">The encoder and the decoder are separate Rust libraries compiled to separate WebAssembly files. Pages that only decompress load only the decoder.</p>
+        <span class="mk-section-header-eyebrow" data-i18n-target="t85">How it works</span>
+        <h2 class="mk-section-header-title" id="how-title"><a class="heading-anchor" href="#/how" data-router-link data-route="how" aria-label="Link to section: Two packages in one, split where it pays" data-i18n-aria-label-en="Link to section: Two packages in one, split where it pays" data-i18n-aria-label-de="Link zum Abschnitt: Zwei Pakete in einem, geteilt, wo es sich lohnt">§</a><span data-i18n-target="t86">Two packages in one, split where it pays</span></h2>
+        <p class="mk-section-header-desc" data-i18n-target="t87">The encoder and the decoder are separate Rust libraries compiled to separate WebAssembly files. Pages that only decompress load only the decoder.</p>
       </div>
     </header>
     <figure class="diagram how-diagram" data-type="data-flow" aria-label="How data flows through defuss-brotli" data-i18n-aria-label-en="How data flows through defuss-brotli" data-i18n-aria-label-de="Wie Daten durch defuss-brotli fließen">
       <div class="diagram-canvas" style="grid-template-columns:8rem repeat(4,minmax(9.5rem,1fr));--diagram-node-w:12rem">
-        <div class="diagram-group" data-shape="lane" style="--col:1;--row:1;--span:5"><span class="diagram-group-label" data-i18n-target="t86">Compress</span></div>
-        <div class="diagram-group" data-shape="lane" style="--col:1;--row:2;--span:5"><span class="diagram-group-label" data-i18n-target="t87">Decompress</span></div>
+        <div class="diagram-group" data-shape="lane" style="--col:1;--row:1;--span:5"><span class="diagram-group-label" data-i18n-target="t88">Compress</span></div>
+        <div class="diagram-group" data-shape="lane" style="--col:1;--row:2;--span:5"><span class="diagram-group-label" data-i18n-target="t89">Decompress</span></div>
         <div class="diagram-node" data-node="input" data-shape="pill" style="--col:2;--row:1">
-          <span class="diagram-node-name" data-i18n-target="t88">Your data</span>
-          <span class="diagram-node-meta" data-i18n-target="t89">bytes or text</span>
+          <span class="diagram-node-name" data-i18n-target="t90">Your data</span>
+          <span class="diagram-node-meta" data-i18n-target="t91">bytes or text</span>
         </div>
         <div class="diagram-node" data-node="split" style="--col:3;--row:1">
-          <span class="diagram-node-eyebrow" data-i18n-target="t90">Quality 10 and 11</span>
-          <span class="diagram-node-name" data-i18n-target="t91">Up to 8 parts, above 64 MiB 8 MiB each</span>
-          <span class="diagram-node-meta" data-i18n-target="t92">each may refer back to the data before it</span>
+          <span class="diagram-node-eyebrow" data-i18n-target="t92">Quality 10 and 11</span>
+          <span class="diagram-node-name" data-i18n-target="t93">Up to 8 parts, above 64 MiB 8 MiB each</span>
+          <span class="diagram-node-meta" data-i18n-target="t94">each may refer back to the data before it</span>
         </div>
         <div class="diagram-node" data-node="workers" data-tone="accent" style="--col:4;--row:1">
           <span class="diagram-node-eyebrow">compressor.wasm</span>
-          <span class="diagram-node-name" data-i18n-target="t93">Parts in parallel</span>
-          <span class="diagram-node-meta" data-i18n-target="t94">each with its own encoder</span>
+          <span class="diagram-node-name" data-i18n-target="t95">Parts in parallel</span>
+          <span class="diagram-node-meta" data-i18n-target="t96">each with its own encoder</span>
         </div>
         <div class="diagram-node" data-node="stream" data-shape="store" style="--col:5;--row:1">
-          <span class="diagram-node-name" data-i18n-target="t95">One .br file</span>
-          <span class="diagram-node-meta" data-i18n-target="t96">standard Brotli, RFC 7932</span>
+          <span class="diagram-node-name" data-i18n-target="t97">One .br file</span>
+          <span class="diagram-node-meta" data-i18n-target="t98">standard Brotli, RFC 7932</span>
         </div>
         <div class="diagram-node" data-node="fetch" data-shape="pill" style="--col:2;--row:2">
           <span class="diagram-node-name">fetch()</span>
-          <span class="diagram-node-meta" data-i18n-target="t97">or a file</span>
+          <span class="diagram-node-meta" data-i18n-target="t99">or a file</span>
         </div>
         <div class="diagram-node" data-node="decoder" style="--col:3;--row:2">
           <span class="diagram-node-eyebrow">decompressor.wasm</span>
-          <span class="diagram-node-name" data-i18n-target="t98">~50 KB decoder</span>
-          <span class="diagram-node-meta" data-i18n-target="t99">1 MiB at a time, little memory</span>
+          <span class="diagram-node-name" data-i18n-target="t100">~50 KB decoder</span>
+          <span class="diagram-node-meta" data-i18n-target="t101">1 MiB at a time, little memory</span>
         </div>
         <div class="diagram-node" data-node="output" data-shape="pill" style="--col:4;--row:2">
-          <span class="diagram-node-name" data-i18n-target="t100">Bytes or text</span>
+          <span class="diagram-node-name" data-i18n-target="t102">Bytes or text</span>
           <span class="diagram-node-meta">Uint8Array, string</span>
         </div>
       </div>
@@ -433,23 +438,23 @@
         <li class="diagram-edge" data-from="input" data-to="split" data-flow="2400" data-flow-delay="0"></li>
         <li class="diagram-edge" data-from="split" data-to="workers" data-flow="2400" data-flow-delay="600" data-flow-tokens="3"></li>
         <li class="diagram-edge" data-from="workers" data-to="stream" data-tone="accent" data-flow="2400" data-flow-delay="1200"></li>
-        <li class="diagram-edge" data-from="stream" data-to="fetch" data-line="dashed"><span data-i18n-target="t101">sent by your server</span></li>
+        <li class="diagram-edge" data-from="stream" data-to="fetch" data-line="dashed"><span data-i18n-target="t103">sent by your server</span></li>
         <li class="diagram-edge" data-from="fetch" data-to="decoder" data-flow="2400" data-flow-delay="0"></li>
         <li class="diagram-edge" data-from="decoder" data-to="output" data-flow="2400" data-flow-delay="700"></li>
       </ol>
     </figure>
     <ul class="facts">
       <li class="fact">
-        <h3 class="fact-title"><svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg><span data-i18n-target="t102">Separate downloads</span></h3>
-        <p data-i18n-target="t103">The decoder is a ~50 KB download, the encoder 397 KB. Build tools leave the encoder out of apps that only decompress.</p>
+        <h3 class="fact-title"><svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg><span data-i18n-target="t104">Separate downloads</span></h3>
+        <p data-i18n-target="t105">The decoder is a ~50 KB download, the encoder 397 KB. Build tools leave the encoder out of apps that only decompress.</p>
       </li>
       <li class="fact">
-        <h3 class="fact-title"><svg class="icon" aria-hidden="true"><use href="#i-gauge"/></svg><span data-i18n-target="t104">Memory stays flat</span></h3>
-        <p data-i18n-target="t105">Data passes through 1 MiB at a time, so memory does not grow with the input: unpacking 100 MiB takes ~20 MiB.</p>
+        <h3 class="fact-title"><svg class="icon" aria-hidden="true"><use href="#i-gauge"/></svg><span data-i18n-target="t106">Memory stays flat</span></h3>
+        <p data-i18n-target="t107">Data passes through 1 MiB at a time, so memory does not grow with the input: unpacking 100 MiB takes ~20 MiB.</p>
       </li>
       <li class="fact">
-        <h3 class="fact-title"><svg class="icon" aria-hidden="true"><use href="#i-cpu"/></svg><span data-i18n-target="t106">Same bytes on any machine</span></h3>
-        <p data-i18n-target="t107">Where the input is split depends only on its length and the settings, never on the cores, so any number of cores produces the same file, byte for byte.</p>
+        <h3 class="fact-title"><svg class="icon" aria-hidden="true"><use href="#i-cpu"/></svg><span data-i18n-target="t108">Same bytes on any machine</span></h3>
+        <p data-i18n-target="t109">Where the input is split depends only on its length and the settings, never on the cores, so any number of cores produces the same file, byte for byte.</p>
       </li>
     </ul>
   </section>
@@ -459,13 +464,13 @@
       <div class="consult-head">
         <div class="aura aura-glow aura-gold consult-portrait" style="--shape-round:1.25rem"><img class="shape-squircle" src="assets/aron-homberg.jpg" width="400" height="400" alt="Portrait of Aron Homberg" data-i18n-alt-en="Portrait of Aron Homberg" data-i18n-alt-de="Porträt von Aron Homberg" loading="lazy"></div>
         <div>
-          <p class="consult-eyebrow" data-i18n-target="t108">For teams and companies</p>
-          <h2 class="consult-title" id="services-title"><span data-i18n-target="t109">Adapted to your tech stack</span></h2>
-          <p class="consult-desc" data-i18n-target="t110">I am glad to help you integrate optimized Brotli compression into your projects, for example with custom code dictionaries, a streaming API or Brotli in special edge runtimes.</p>
+          <p class="consult-eyebrow" data-i18n-target="t110">For teams and companies</p>
+          <h2 class="consult-title" id="services-title"><span data-i18n-target="t111">Adapted to your tech stack</span></h2>
+          <p class="consult-desc" data-i18n-target="t112">I am glad to help you integrate optimized Brotli compression into your projects, for example with custom code dictionaries, a streaming API or Brotli in special edge runtimes.</p>
         </div>
       </div>
       <div class="consult-actions">
-        <a class="btn" data-size="lg" href="https://www.linkedin.com/in/aronhomberg/" target="_blank" rel="noopener"><svg class="icon icon-fill" aria-hidden="true"><use href="#i-linkedin"/></svg><span data-i18n-target="t111">Talk to Aron on LinkedIn</span><svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only" data-i18n-target="t112"> (opens in a new tab)</span></a>
+        <a class="btn" data-size="lg" href="https://www.linkedin.com/in/aronhomberg/" target="_blank" rel="noopener"><svg class="icon icon-fill" aria-hidden="true"><use href="#i-linkedin"/></svg><span data-i18n-target="t113">Talk to Aron on LinkedIn</span><svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only" data-i18n-target="t114"> (opens in a new tab)</span></a>
       </div>
     </div>
   </section>
@@ -473,21 +478,21 @@
   <section id="perf" class="section section-inner parallax-reveal" aria-labelledby="perf-title">
     <header class="mk-section-header">
       <div class="mk-section-header-copy">
-        <span class="mk-section-header-eyebrow" data-i18n-target="t113">Performance</span>
-        <h2 class="mk-section-header-title" id="perf-title"><a class="heading-anchor" href="#/perf" data-router-link data-route="perf" aria-label="Link to section: Measured, with the method attached" data-i18n-aria-label-en="Link to section: Measured, with the method attached" data-i18n-aria-label-de="Link zum Abschnitt: Gemessen, mit Methode">§</a><span data-i18n-target="t114">Measured, with the method attached</span></h2>
-        <p class="mk-section-header-desc" id="perf-method" data-i18n-target="t115">Measured on <span data-perf="cpu">Apple M5 Max</span> with Node.js; each time is the median of 3 runs after a warm-up run; the 100 MiB of log lines ran once at quality 10 and 11. The table under the chart has every value.</p>
+        <span class="mk-section-header-eyebrow" data-i18n-target="t115">Performance</span>
+        <h2 class="mk-section-header-title" id="perf-title"><a class="heading-anchor" href="#/perf" data-router-link data-route="perf" aria-label="Link to section: Measured, with the method attached" data-i18n-aria-label-en="Link to section: Measured, with the method attached" data-i18n-aria-label-de="Link zum Abschnitt: Gemessen, mit Methode">§</a><span data-i18n-target="t116">Measured, with the method attached</span></h2>
+        <p class="mk-section-header-desc" id="perf-method" data-i18n-target="t117">Measured on <span data-perf="cpu">Apple M5 Max</span> with Node.js; each time is the median of 3 runs after a warm-up run; the 100 MiB of log lines ran once at quality 10 and 11. The table under the chart has every value.</p>
       </div>
     </header>
     <div class="perf-card">
       <div class="toggle-group perf-views" role="group" data-type="single" data-variant="outline" aria-label="Chart view" data-i18n-aria-label-en="Chart view" data-i18n-aria-label-de="Ansicht des Diagramms" id="perf-view">
-        <button class="toggle" aria-pressed="true" value="speed"><svg class="icon" aria-hidden="true"><use href="#i-gauge"/></svg><span data-i18n-target="t116">Speed</span></button>
-        <button class="toggle" aria-pressed="false" value="window"><svg class="icon" aria-hidden="true"><use href="#i-window"/></svg><span data-i18n-target="t117">Look-back</span></button>
-        <button class="toggle" aria-pressed="false" value="cli"><svg class="icon" aria-hidden="true"><use href="#i-terminal"/></svg><span data-i18n-target="t118">Command line</span></button>
-        <button class="toggle" aria-pressed="false" value="download"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><span data-i18n-target="t119">Download size</span></button>
+        <button class="toggle" aria-pressed="true" value="speed"><svg class="icon" aria-hidden="true"><use href="#i-gauge"/></svg><span data-i18n-target="t118">Speed</span></button>
+        <button class="toggle" aria-pressed="false" value="window"><svg class="icon" aria-hidden="true"><use href="#i-window"/></svg><span data-i18n-target="t119">Look-back</span></button>
+        <button class="toggle" aria-pressed="false" value="cli"><svg class="icon" aria-hidden="true"><use href="#i-terminal"/></svg><span data-i18n-target="t120">Command line</span></button>
+        <button class="toggle" aria-pressed="false" value="download"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><span data-i18n-target="t121">Download size</span></button>
       </div>
       <div class="perf-controls" data-for-view="speed">
         <div class="toggle-group" role="group" data-type="single" data-variant="outline" data-size="sm" aria-label="Input" data-i18n-aria-label-en="Input" data-i18n-aria-label-de="Eingabe" id="perf-input">
-          <button class="toggle" aria-pressed="true" value="logs"><span data-i18n-target="t120">Logs, 100 MiB</span></button>
+          <button class="toggle" aria-pressed="true" value="logs"><span data-i18n-target="t122">Logs, 100 MiB</span></button>
           <button class="toggle" aria-pressed="false" value="html">HTML</button>
           <button class="toggle" aria-pressed="false" value="json">JSON</button>
           <button class="toggle" aria-pressed="false" value="svg">SVG</button>
@@ -497,13 +502,13 @@
           <button class="toggle" aria-pressed="true" value="multi"><svg class="icon" aria-hidden="true"><use href="#i-cpu"/></svg>Multicore</button>
           <button class="toggle" aria-pressed="false" value="single">Singlecore</button>
         </div>
-        <button type="button" class="btn" data-variant="secondary" data-size="sm" id="perf-device"><svg class="icon" aria-hidden="true"><use href="#i-gauge"/></svg><span data-i18n-target="t121">Measure on this device</span></button>
+        <button type="button" class="btn" data-variant="secondary" data-size="sm" id="perf-device"><svg class="icon" aria-hidden="true"><use href="#i-gauge"/></svg><span data-i18n-target="t123">Measure on this device</span></button>
       </div>
       <p class="perf-lead" id="perf-lead" aria-live="polite"></p>
-      <p class="chart-fallback" id="perf-fallback" data-i18n-target="t122">The chart needs JavaScript. The table below has the same numbers.</p>
+      <p class="chart-fallback" id="perf-fallback" data-i18n-target="t124">The chart needs JavaScript. The table below has the same numbers.</p>
       <div class="chart perf-chart" id="perf-chart" role="img" aria-label="Performance chart; the table below lists the values" data-i18n-aria-label-en="Performance chart; the table below lists the values" data-i18n-aria-label-de="Leistungsdiagramm; die Tabelle darunter listet die Werte"></div>
       <details class="collapsible perf-table-wrap" data-variant="ghost" data-marker="arrow">
-        <summary class="collapsible-trigger"><svg class="icon" aria-hidden="true"><use href="#i-table"/></svg><span data-i18n-target="t123">Values as a table</span></summary>
+        <summary class="collapsible-trigger"><svg class="icon" aria-hidden="true"><use href="#i-table"/></svg><span data-i18n-target="t125">Values as a table</span></summary>
         <div class="collapsible-content"><div class="table-scroll" id="perf-table"><table class="table perf-table"><thead><tr><th scope="col">Quality</th><th scope="col">Size</th><th scope="col">compress(), 1 core</th><th scope="col">compressParallel(), 13 cores</th><th scope="col">Node.js built-in (C)</th></tr></thead><tbody><tr><th scope="row">0</th><td>19.2 MB (18.3 %)</td><td>272 ms</td><td>283 ms</td><td>19.2 MB, 125 ms</td></tr><tr><th scope="row">1</th><td>17.5 MB (16.7 %)</td><td>367 ms</td><td>380 ms</td><td>17.5 MB, 210 ms</td></tr><tr><th scope="row">2</th><td>19.3 MB (18.4 %)</td><td>658 ms</td><td>680 ms</td><td>16.1 MB, 387 ms</td></tr><tr><th scope="row">3</th><td>17.6 MB (16.8 %)</td><td>793 ms</td><td>811 ms</td><td>15.9 MB, 484 ms</td></tr><tr><th scope="row">4</th><td>16.3 MB (15.5 %)</td><td>1.21 s</td><td>1.13 s</td><td>15.1 MB, 702 ms</td></tr><tr><th scope="row">5</th><td>13.5 MB (12.9 %)</td><td>1.70 s</td><td>1.59 s</td><td>13.5 MB, 1.12 s</td></tr><tr><th scope="row">6</th><td>13.1 MB (12.5 %)</td><td>2.79 s</td><td>2.62 s</td><td>13.1 MB, 1.70 s</td></tr><tr><th scope="row">7</th><td>12.9 MB (12.3 %)</td><td>4.23 s</td><td>4.25 s</td><td>12.9 MB, 2.65 s</td></tr><tr><th scope="row">8</th><td>12.7 MB (12.1 %)</td><td>5.81 s</td><td>5.23 s</td><td>12.7 MB, 3.19 s</td></tr><tr><th scope="row">9</th><td>12.5 MB (11.9 %)</td><td>9.18 s</td><td>9.56 s</td><td>12.5 MB, 5.90 s</td></tr><tr><th scope="row">10</th><td>10.6 MB (10.2 %)</td><td>72.94 s</td><td>7.07 s</td><td>10.6 MB, 51.75 s</td></tr><tr><th scope="row">11</th><td>10.1 MB (9.6 %)</td><td>138.58 s</td><td>16.57 s</td><td>10.1 MB, 113.74 s</td></tr><tr><th scope="row">gzip, highest level</th><td>13.0 MB (12.4 %)</td><td>4.06 s</td><td>-</td><td>-</td></tr></tbody></table></div></div>
       </details>
     </div>
@@ -513,21 +518,21 @@
     <div class="corner-leaf use-panel">
       <header class="mk-section-header">
         <div class="mk-section-header-copy">
-          <span class="mk-section-header-eyebrow" data-i18n-target="t124">Use it</span>
-          <h2 class="mk-section-header-title" id="use-title"><a class="heading-anchor" href="#/use" data-router-link data-route="use" aria-label="Link to section: A few lines in your app, or one command" data-i18n-aria-label-en="Link to section: A few lines in your app, or one command" data-i18n-aria-label-de="Link zum Abschnitt: Ein paar Zeilen in Ihrer App oder ein Befehl">§</a><span data-i18n-target="t125">A few lines in your app, or one command</span></h2>
+          <span class="mk-section-header-eyebrow" data-i18n-target="t126">Use it</span>
+          <h2 class="mk-section-header-title" id="use-title"><a class="heading-anchor" href="#/use" data-router-link data-route="use" aria-label="Link to section: A few lines in your app, or one command" data-i18n-aria-label-en="Link to section: A few lines in your app, or one command" data-i18n-aria-label-de="Link zum Abschnitt: Ein paar Zeilen in Ihrer App oder ein Befehl">§</a><span data-i18n-target="t127">A few lines in your app, or one command</span></h2>
         </div>
       </header>
       <div class="ways">
         <div class="way">
-          <h3 class="way-title"><svg class="icon" aria-hidden="true"><use href="#i-code"/></svg><span data-i18n-target="t126">In code</span></h3>
+          <h3 class="way-title"><svg class="icon" aria-hidden="true"><use href="#i-code"/></svg><span data-i18n-target="t128">In code</span></h3>
           <div class="tabs code-tabs">
             <div class="tab-list" role="tablist" aria-label="Code examples" data-i18n-aria-label-en="Code examples" data-i18n-aria-label-de="Codebeispiele" data-size="sm">
-              <button class="tab-trigger" role="tab" aria-selected="true" aria-controls="code-browser" id="code-tab-browser"><svg class="icon" aria-hidden="true"><use href="#i-globe"/></svg><span data-i18n-target="t127">Browser</span></button>
+              <button class="tab-trigger" role="tab" aria-selected="true" aria-controls="code-browser" id="code-tab-browser"><svg class="icon" aria-hidden="true"><use href="#i-globe"/></svg><span data-i18n-target="t129">Browser</span></button>
               <button class="tab-trigger" role="tab" aria-selected="false" aria-controls="code-server" id="code-tab-server" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#i-package"/></svg>Node.js, Bun</button>
-              <button class="tab-trigger" role="tab" aria-selected="false" aria-controls="code-cdn" id="code-tab-cdn" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#i-file"/></svg><span data-i18n-target="t128">No bundler</span></button>
+              <button class="tab-trigger" role="tab" aria-selected="false" aria-controls="code-cdn" id="code-tab-cdn" tabindex="-1"><svg class="icon" aria-hidden="true"><use href="#i-file"/></svg><span data-i18n-target="t130">No bundler</span></button>
             </div>
             <div class="tab-content" role="tabpanel" id="code-browser" aria-labelledby="code-tab-browser" tabindex="0">
-              <p class="way-desc" data-i18n-target="t129">Loads only the decoder, then decodes a file your server stored as Brotli.</p>
+              <p class="way-desc" data-i18n-target="t131">Loads only the decoder, then decodes a file your server stored as Brotli.</p>
               <div class="copy-wrap"><div class="mockup-code hl" data-variant="outline" data-wrap data-title="app.ts" data-numbers data-source="import { init, decompressText } from &quot;defuss-brotli/decompressor/slim&quot;;
 
 await init(); // fetches decompressor.wasm
@@ -536,7 +541,7 @@ const bytes = new Uint8Array(await response.arrayBuffer());
 const catalog = JSON.parse(decompressText(bytes));"><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">import</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> { init, decompressText } </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">from</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">"defuss-brotli/decompressor/slim"</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">;</span></code></pre><pre><code> </code></pre><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">await</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">init</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">(); </span><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3">// fetches decompressor.wasm</span></code></pre><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">const</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">response</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">=</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">await</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">fetch</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">(</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">"/data/catalog.json.br"</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">);</span></code></pre><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">const</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">bytes</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">=</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">new</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">Uint8Array</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">(</span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">await</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> response.</span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">arrayBuffer</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">());</span></code></pre><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">const</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">catalog</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">=</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">JSON</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">.</span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">parse</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">(</span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">decompressText</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">(bytes));</span></code></pre></div><button type="button" class="btn copy-btn" data-variant="ghost" data-size="icon" data-copy aria-label="Copy code" data-i18n-aria-label-en="Copy code" data-i18n-aria-label-de="Code kopieren"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg></button></div>
             </div>
             <div class="tab-content" role="tabpanel" id="code-server" aria-labelledby="code-tab-server" tabindex="0" hidden>
-              <p class="way-desc" data-i18n-target="t130">Precompresses build output at quality 11 on all cores.</p>
+              <p class="way-desc" data-i18n-target="t132">Precompresses build output at quality 11 on all cores.</p>
               <div class="copy-wrap"><div class="mockup-code hl" data-variant="outline" data-wrap data-title="precompress.ts" data-numbers data-source="import { readFile, writeFile } from &quot;node:fs/promises&quot;;
 import { init, compressParallel } from &quot;defuss-brotli/compressor&quot;;
 
@@ -545,7 +550,7 @@ const input = await readFile(&quot;dist/app.js&quot;);
 await writeFile(&quot;dist/app.js.br&quot;, await compressParallel(input));"><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">import</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> { readFile, writeFile } </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">from</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">"node:fs/promises"</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">;</span></code></pre><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">import</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> { init, compressParallel } </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">from</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">"defuss-brotli/compressor"</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">;</span></code></pre><pre><code> </code></pre><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">await</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">init</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">();</span></code></pre><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">const</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">input</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">=</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">await</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">readFile</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">(</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">"dist/app.js"</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">);</span></code></pre><pre><code><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">await</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">writeFile</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">(</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">"dist/app.js.br"</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">, </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">await</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">compressParallel</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8">(input));</span></code></pre></div><button type="button" class="btn copy-btn" data-variant="ghost" data-size="icon" data-copy aria-label="Copy code" data-i18n-aria-label-en="Copy code" data-i18n-aria-label-de="Code kopieren"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg></button></div>
             </div>
             <div class="tab-content" role="tabpanel" id="code-cdn" aria-labelledby="code-tab-cdn" tabindex="0" hidden>
-              <p class="way-desc" data-i18n-target="t131">An import map that points at jsDelivr; the decoder fetches its .wasm from the same folder.</p>
+              <p class="way-desc" data-i18n-target="t133">An import map that points at jsDelivr; the decoder fetches its .wasm from the same folder.</p>
               <div class="copy-wrap"><div class="mockup-code hl" data-variant="outline" data-wrap data-title="index.html" data-numbers data-source="&lt;script type=&quot;importmap&quot;&gt;
   { &quot;imports&quot;: { &quot;defuss-brotli/decompressor/slim&quot;:
     &quot;https://cdn.jsdelivr.net/npm/defuss-brotli@0.4.0/dist/decompressor-slim.js&quot; } }
@@ -558,8 +563,8 @@ await writeFile(&quot;dist/app.js.br&quot;, await compressParallel(input));"><pr
           </div>
         </div>
         <div class="way">
-          <h3 class="way-title"><svg class="icon" aria-hidden="true"><use href="#i-terminal"/></svg><span data-i18n-target="t132">On the command line</span></h3>
-          <p class="way-desc" data-i18n-target="t133">Same options, defaults and output names as the brotli CLI, so build scripts can swap it in.</p>
+          <h3 class="way-title"><svg class="icon" aria-hidden="true"><use href="#i-terminal"/></svg><span data-i18n-target="t134">On the command line</span></h3>
+          <p class="way-desc" data-i18n-target="t135">Same options, defaults and output names as the brotli CLI, so build scripts can swap it in.</p>
           <div class="toggle-group pm-switch" role="group" data-type="single" data-variant="outline" data-size="sm" aria-label="Package manager" data-i18n-aria-label-en="Package manager" data-i18n-aria-label-de="Paketmanager">
             <button class="toggle" aria-pressed="true" value="bun">bun</button>
             <button class="toggle" aria-pressed="false" value="pnpm">pnpm</button>
@@ -575,8 +580,8 @@ npx defuss-brotli -v dist/*.html dist/*.css
 npx defuss-brotli -d -c data.json.br | head"><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># writes dist/app.js.br and keeps dist/app.js</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">npx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">compress</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/app.js</span></code></pre><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># several files, quality 11 by default</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">npx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">-v</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/</span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">*</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">.html</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/</span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">*</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">.css</span></code></pre><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># decompress to standard output</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">npx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">-d</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">-c</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">data.json.br</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">|</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">head</span></code></pre></div><div class="mockup-code hl" data-variant="outline" data-wrap data-title="terminal" data-pm="yarn" hidden data-source="yarn dlx defuss-brotli compress dist/app.js
 yarn dlx defuss-brotli -v dist/*.html dist/*.css
 yarn dlx defuss-brotli -d -c data.json.br | head"><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># writes dist/app.js.br and keeps dist/app.js</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">yarn</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dlx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">compress</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/app.js</span></code></pre><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># several files, quality 11 by default</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">yarn</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dlx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">-v</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/</span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">*</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">.html</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dist/</span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">*</span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">.css</span></code></pre><pre data-prefix="" data-tone="muted"><code><span style="--code-example-light:#57606a;--code-example-dark:#9ea7b3"># decompress to standard output</span></code></pre><pre data-prefix="$"><code><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">yarn</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">dlx</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">defuss-brotli</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">-d</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#005CC5;--code-example-dark:#79B8FF">-c</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#032F62;--code-example-dark:#9ECBFF">data.json.br</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#D73A49;--code-example-dark:#F97583">|</span><span style="--code-example-light:#24292E;--code-example-dark:#E1E4E8"> </span><span style="--code-example-light:#6F42C1;--code-example-dark:#B392F0">head</span></code></pre></div><button type="button" class="btn copy-btn" data-variant="ghost" data-size="icon" data-copy aria-label="Copy commands" data-i18n-aria-label-en="Copy commands" data-i18n-aria-label-de="Befehle kopieren"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg></button></div>
-          <p class="agent-note"><svg class="icon" aria-hidden="true"><use href="#i-bot"/></svg><span data-i18n-target="t134">Coding agents: <a href="llms.txt">llms.txt</a> has the API, limits and numbers in one file.</span></p>
-          <p class="agent-note"><svg class="icon" aria-hidden="true"><use href="#i-package"/></svg><span data-i18n-target="t135">If you are looking for maximum Brotli feature support, including streaming compression, streaming decompression and custom dictionaries, use Aron's other library <a href="https://github.com/kyr0/brotli-compress" target="_blank" rel="noopener">brotli-compress<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (opens in a new tab)</span></a>. It has all those features, but is much bigger in code size.</span></p>
+          <p class="agent-note"><svg class="icon" aria-hidden="true"><use href="#i-bot"/></svg><span data-i18n-target="t136">Coding agents: <a href="llms.txt">llms.txt</a> has the API, limits and numbers in one file.</span></p>
+          <p class="agent-note"><svg class="icon" aria-hidden="true"><use href="#i-package"/></svg><span data-i18n-target="t137">If you are looking for maximum Brotli feature support, including streaming compression, streaming decompression and custom dictionaries, use Aron's other library <a href="https://github.com/kyr0/brotli-compress" target="_blank" rel="noopener">brotli-compress<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (opens in a new tab)</span></a>. It has all those features, but is much bigger in code size.</span></p>
         </div>
       </div>
     </div>
@@ -586,12 +591,12 @@ yarn dlx defuss-brotli -d -c data.json.br | head"><pre data-prefix="" data-tone=
     <div class="cta-band">
       <div class="shader" data-variant="background" data-effect="mesh-gradient" data-colors="#3a1d0e #8a3b14 #c2562a #f2b94b" data-distortion="0.7" data-swirl="0.3" aria-hidden="true"></div>
       <div class="cta-copy">
-        <h2 class="cta-title" id="cta-title" data-i18n-target="t136">Brotli for browsers, Node.js and Bun</h2>
-        <p class="cta-desc" data-i18n-target="t137">Open source under the MIT license. Pure Rust compiled to WebAssembly, no native addons.</p>
+        <h2 class="cta-title" id="cta-title" data-i18n-target="t138">Brotli for browsers, Node.js and Bun</h2>
+        <p class="cta-desc" data-i18n-target="t139">Open source under the MIT license. Pure Rust compiled to WebAssembly, no native addons.</p>
       </div>
       <div class="cta-actions">
-        <a class="btn cta-btn" data-size="lg" href="https://github.com/kyr0/defuss-brotli"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg><span data-i18n-target="t138">Source on GitHub</span></a>
-        <a class="btn cta-btn-outline" data-variant="outline" data-size="lg" href="https://www.npmjs.com/package/defuss-brotli"><svg class="icon icon-fill" aria-hidden="true"><use href="#i-npm"/></svg><span data-i18n-target="t139">Package on npm</span></a>
+        <a class="btn cta-btn" data-size="lg" href="https://github.com/kyr0/defuss-brotli"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg><span data-i18n-target="t140">Source on GitHub</span></a>
+        <a class="btn cta-btn-outline" data-variant="outline" data-size="lg" href="https://www.npmjs.com/package/defuss-brotli"><svg class="icon icon-fill" aria-hidden="true"><use href="#i-npm"/></svg><span data-i18n-target="t141">Package on npm</span></a>
       </div>
     </div>
   </section>
@@ -602,16 +607,16 @@ yarn dlx defuss-brotli -d -c data.json.br | head"><pre data-prefix="" data-tone=
     <div class="mk-footer-inner">
       <nav class="mk-footer-nav footer-nav" aria-label="Footer" data-i18n-aria-label-en="Footer" data-i18n-aria-label-de="Fußzeile">
         <div class="mk-footer-col">
-          <h2 class="mk-footer-heading" data-i18n-target="t140">Project</h2>
+          <h2 class="mk-footer-heading" data-i18n-target="t142">Project</h2>
           <ul class="mk-footer-list">
-            <li><a href="https://github.com/kyr0/defuss-brotli#readme" data-i18n-target="t141">Documentation</a></li>
-            <li><a href="https://github.com/kyr0/defuss-brotli/blob/main/ARCH.md" data-i18n-target="t142">Architecture</a></li>
-            <li><a href="https://github.com/kyr0/defuss-brotli/blob/main/CHANGELOG.md" data-i18n-target="t143">Changelog</a></li>
+            <li><a href="https://github.com/kyr0/defuss-brotli#readme" data-i18n-target="t143">Documentation</a></li>
+            <li><a href="https://github.com/kyr0/defuss-brotli/blob/main/ARCH.md" data-i18n-target="t144">Architecture</a></li>
+            <li><a href="https://github.com/kyr0/defuss-brotli/blob/main/CHANGELOG.md" data-i18n-target="t145">Changelog</a></li>
             <li><a href="llms.txt">llms.txt</a></li>
           </ul>
         </div>
         <div class="mk-footer-col">
-          <h2 class="mk-footer-heading" data-i18n-target="t144">Built with</h2>
+          <h2 class="mk-footer-heading" data-i18n-target="t146">Built with</h2>
           <ul class="mk-footer-list">
             <li><a href="https://github.com/dropbox/rust-brotli">rust-brotli (Dropbox)</a></li>
             <li><a href="https://shadcn.defuss.org/">defuss-shadcn</a></li>
@@ -621,65 +626,66 @@ yarn dlx defuss-brotli -d -c data.json.br | head"><pre data-prefix="" data-tone=
           </ul>
         </div>
         <div class="mk-footer-col footer-ad-col">
-          <h2 class="mk-footer-heading" data-i18n-target="t145">Professional services</h2>
+          <h2 class="mk-footer-heading" data-i18n-target="t147">Professional services</h2>
           <aside class="corner-leaf footer-ad" aria-label="Services by Aron Homberg" data-i18n-aria-label-en="Services by Aron Homberg" data-i18n-aria-label-de="Leistungen von Aron Homberg">
             <div class="footer-ad-head">
               <div class="aura aura-glow aura-gold footer-ad-portrait" style="--shape-round:1.5rem"><img class="shape-squircle" src="assets/aron-homberg.jpg" width="400" height="400" alt="Portrait of Aron Homberg" data-i18n-alt-en="Portrait of Aron Homberg" data-i18n-alt-de="Porträt von Aron Homberg" loading="lazy"></div>
               <div>
                 <p class="footer-ad-name">Aron Homberg</p>
-                <p class="footer-ad-role" data-i18n-target="t146">Freelance expert and independent AI researcher: compression, WebAssembly and on-device AI.</p>
+                <p class="footer-ad-role" data-i18n-target="t148">Freelance expert and independent AI researcher: compression, WebAssembly and on-device AI.</p>
               </div>
             </div>
-            <a class="btn" data-size="sm" href="https://www.linkedin.com/in/aronhomberg/" target="_blank" rel="noopener"><svg class="icon icon-fill" aria-hidden="true"><use href="#i-linkedin"/></svg><span data-i18n-target="t147">Connect on LinkedIn</span><svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only" data-i18n-target="t148"> (opens in a new tab)</span></a>
+            <a class="btn" data-size="sm" href="https://www.linkedin.com/in/aronhomberg/" target="_blank" rel="noopener"><svg class="icon icon-fill" aria-hidden="true"><use href="#i-linkedin"/></svg><span data-i18n-target="t149">Connect on LinkedIn</span><svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only" data-i18n-target="t150"> (opens in a new tab)</span></a>
           </aside>
         </div>
       </nav>
       <hr class="separator mk-footer-rule">
       <div class="mk-footer-bottom">
         <a href="#/" data-router-link class="mk-footer-brand"><svg class="icon brand-icon" aria-hidden="true"><use href="#i-logo"/></svg><span class="mk-footer-brand-name">defuss-brotli</span></a>
-        <p class="mk-footer-copy" data-i18n-target="t149">2026 Aron Homberg (kyr0). MIT license. Brotli is specified in RFC 7932.</p>
+        <p class="mk-footer-copy" data-i18n-target="t151">2026 Aron Homberg (kyr0). MIT license. Brotli is specified in RFC 7932.</p>
       </div>
     </div>
   </footer>
 
   <div hidden data-messages>
-    <span data-i18n-target="t150" data-msg="compress-idle">Choose a file, or press Compress for the sample.</span>
-    <span data-i18n-target="t151" data-msg="decompress-idle">Press Decompress to start.</span>
-    <span data-i18n-target="t152" data-msg="race-idle">Press Start to compare.</span>
-    <span data-i18n-target="t153" data-msg="loading-encoder">Loading the encoder (compressor.wasm)...</span>
-    <span data-i18n-target="t154" data-msg="loading-decoder">Loading the decoder (decompressor.wasm)...</span>
-    <span data-i18n-target="t155" data-msg="loading-input">Preparing the input...</span>
-    <span data-i18n-target="t156" data-msg="compressing">Compressing {size}...</span>
-    <span data-i18n-target="t157" data-msg="checking">Comparing with gzip and unpacking the result to check it...</span>
-    <span data-i18n-target="t158" data-msg="decompressing">Decompressing...</span>
-    <span data-i18n-target="t159" data-msg="smaller">{times} times smaller</span>
-    <span data-i18n-target="t160" data-msg="compress-done">{output} from {input} in {time}, at quality {quality}.</span>
-    <span data-i18n-target="t161" data-msg="gzip-unavailable">not available</span>
-    <span data-i18n-target="t162" data-msg="decompress-done">Decoded {input} in {time}.</span>
-    <span data-i18n-target="t163" data-msg="decoder-bytes">{bytes} transferred</span>
-    <span data-i18n-target="t164" data-msg="decoder-cached">from the browser cache</span>
-    <span data-i18n-target="t165" data-msg="faster">{times} times faster</span>
-    <span data-i18n-target="t166" data-msg="race-running-parallel">compressParallel is running on {threads} cores...</span>
-    <span data-i18n-target="t167" data-msg="race-running-single">compress is running on one core; the page freezes until it is done...</span>
-    <span data-i18n-target="t168" data-msg="race-done">{input}: {parallel} on {threads} cores against {single} on one core.</span>
-    <span data-i18n-target="t169" data-msg="race-check">Both results unpack to the input. The multicore one is {delta} larger.</span>
-    <span data-i18n-target="t170" data-msg="bar-quality">quality {quality}</span>
-    <span data-i18n-target="t171" data-msg="bar-quality-idle">quality 11</span>
-    <span data-i18n-target="t172" data-msg="workers">{n} cores</span>
-    <span data-i18n-target="t173" data-msg="binary-preview">Binary data. First bytes in hex:</span>
-    <span data-i18n-target="t174" data-msg="error">It did not work: {message}</span>
-    <span data-i18n-target="t175" data-msg="offline">Open this page over http(s) to run the demos: browsers do not load WebAssembly from a local file.</span>
-    <span data-i18n-target="t176" data-msg="check-native">Built-in Brotli support in this browser (CompressionStream): {native}. defuss-brotli works either way.</span>
-    <span data-i18n-target="t177" data-msg="yes">yes</span>
-    <span data-i18n-target="t178" data-msg="no">no</span>
-    <span data-i18n-target="t179" data-msg="measuring">Measuring quality {quality} of 11...</span>
-    <span data-i18n-target="t180" data-msg="this-device">This device</span>
-    <span data-i18n-target="t181" data-msg="copied">Copied</span>
-    <span data-i18n-target="t182" data-msg="lead-multi">{input} ({size}): how long one compression takes at qualities 9 to 11, with <code>compressParallel()</code> on {cores}, with <code>compress()</code> on 1 core, and with the C library built into Node.js, which has no multicore mode. Only qualities 10 and 11, the slowest levels, use more than one core; the table lists all 12.</span>
-    <span data-i18n-target="t183" data-msg="lead-single">{input} ({size}): how long one compression takes at each quality on 1 core, against the C library built into Node.js.</span>
-    <span data-i18n-target="t184" data-msg="lead-window">Brotli saves space by pointing back to data it has already seen. The look-back distance limits how far back it looks: a longer look-back finds more repeats, and unpacking needs that much memory. Sizes at quality 11, compared with a 64 KiB look-back.</span>
-    <span data-i18n-target="t185" data-msg="lead-cli">Total time of the whole command at quality 11, startup included, median of 5 runs, against Google's brotli CLI on an Apple M5 Max.</span>
-    <span data-i18n-target="t186" data-msg="lead-download">What a browser downloads for each part of the package, depending on how the server compresses the files.</span>
+    <span data-i18n-target="t152" data-msg="compress-idle">Choose a file, or press Compress for the sample.</span>
+    <span data-i18n-target="t153" data-msg="decompress-idle">Press Decompress to start.</span>
+    <span data-i18n-target="t154" data-msg="race-idle">Press Start to compare.</span>
+    <span data-i18n-target="t155" data-msg="loading-encoder">Loading the encoder (compressor.wasm)...</span>
+    <span data-i18n-target="t156" data-msg="loading-decoder">Loading the decoder (decompressor.wasm)...</span>
+    <span data-i18n-target="t157" data-msg="loading-input">Preparing the input...</span>
+    <span data-i18n-target="t158" data-msg="compressing">Compressing {size}...</span>
+    <span data-i18n-target="t159" data-msg="checking">Comparing with gzip and unpacking the result to check it...</span>
+    <span data-i18n-target="t160" data-msg="verifying">Unpacking the result to check it...</span>
+    <span data-i18n-target="t161" data-msg="decompressing">Decompressing...</span>
+    <span data-i18n-target="t162" data-msg="smaller">{times} times smaller</span>
+    <span data-i18n-target="t163" data-msg="compress-done">{output} from {input} in {time}, at quality {quality}.</span>
+    <span data-i18n-target="t164" data-msg="gzip-unavailable">not available</span>
+    <span data-i18n-target="t165" data-msg="decompress-done">Decoded {input} in {time}.</span>
+    <span data-i18n-target="t166" data-msg="decoder-bytes">{bytes} transferred</span>
+    <span data-i18n-target="t167" data-msg="decoder-cached">from the browser cache</span>
+    <span data-i18n-target="t168" data-msg="faster">{times} times faster</span>
+    <span data-i18n-target="t169" data-msg="race-running-parallel">compressParallel is running on {threads} cores...</span>
+    <span data-i18n-target="t170" data-msg="race-running-single">compress is running on one core; the page freezes until it is done...</span>
+    <span data-i18n-target="t171" data-msg="race-done">{input}: {parallel} on {threads} cores against {single} on one core.</span>
+    <span data-i18n-target="t172" data-msg="race-check">Both results unpack to the input. The multicore one is {delta} larger.</span>
+    <span data-i18n-target="t173" data-msg="bar-quality">quality {quality}</span>
+    <span data-i18n-target="t174" data-msg="bar-quality-idle">quality 11</span>
+    <span data-i18n-target="t175" data-msg="workers">{n} cores</span>
+    <span data-i18n-target="t176" data-msg="binary-preview">Binary data. First bytes in hex:</span>
+    <span data-i18n-target="t177" data-msg="error">It did not work: {message}</span>
+    <span data-i18n-target="t178" data-msg="offline">Open this page over http(s) to run the demos: browsers do not load WebAssembly from a local file.</span>
+    <span data-i18n-target="t179" data-msg="check-native">Built-in Brotli support in this browser (CompressionStream): {native}. defuss-brotli works either way.</span>
+    <span data-i18n-target="t180" data-msg="yes">yes</span>
+    <span data-i18n-target="t181" data-msg="no">no</span>
+    <span data-i18n-target="t182" data-msg="measuring">Measuring quality {quality} of 11...</span>
+    <span data-i18n-target="t183" data-msg="this-device">This device</span>
+    <span data-i18n-target="t184" data-msg="copied">Copied</span>
+    <span data-i18n-target="t185" data-msg="lead-multi">{input} ({size}): how long one compression takes at qualities 9 to 11, with <code>compressParallel()</code> on {cores}, with <code>compress()</code> on 1 core, and with the C library built into Node.js, which has no multicore mode. Only qualities 10 and 11, the slowest levels, use more than one core; the table lists all 12.</span>
+    <span data-i18n-target="t186" data-msg="lead-single">{input} ({size}): how long one compression takes at each quality on 1 core, against the C library built into Node.js.</span>
+    <span data-i18n-target="t187" data-msg="lead-window">Brotli saves space by pointing back to data it has already seen. The look-back distance limits how far back it looks: a longer look-back finds more repeats, and unpacking needs that much memory. Sizes at quality 11, compared with a 64 KiB look-back.</span>
+    <span data-i18n-target="t188" data-msg="lead-cli">Total time of the whole command at quality 11, startup included, median of 5 runs, against Google's brotli CLI on an Apple M5 Max.</span>
+    <span data-i18n-target="t189" data-msg="lead-download">What a browser downloads for each part of the package, depending on how the server compresses the files.</span>
   </div>
   <template data-i18n-for="t1" data-i18n-locale="en">Skip to content</template>
 <template data-i18n-for="t1" data-i18n-locale="de">Zum Inhalt springen</template>
@@ -797,262 +803,268 @@ yarn dlx defuss-brotli -d -c data.json.br | head"><pre data-prefix="" data-tone=
 <template data-i18n-for="t57" data-i18n-locale="de">CPU-Kerne</template>
 <template data-i18n-for="t58" data-i18n-locale="en">Shares the work at quality 10 and 11 for inputs above 32 KiB: up to 8 parts, above 64 MiB one part per 8 MiB; each core compresses one part at a time. With a look-back other than 4 MiB, 64 and 8 MiB change in proportion.</template>
 <template data-i18n-for="t58" data-i18n-locale="de">Teilt die Arbeit bei Qualität 10 und 11 für Eingaben über 32 KiB auf: in bis zu 8 Teile, über 64 MiB in einen Teil je 8 MiB; jeder Kern komprimiert einen Teil nach dem anderen. Bei einem anderen Look-back als 4 MiB ändern sich 64 und 8 MiB im selben Verhältnis.</template>
-<template data-i18n-for="t59" data-i18n-locale="en">Compress</template>
-<template data-i18n-for="t59" data-i18n-locale="de">Komprimieren</template>
-<template data-i18n-for="t60" data-i18n-locale="en">Original</template>
-<template data-i18n-for="t60" data-i18n-locale="de">Original</template>
-<template data-i18n-for="t61" data-i18n-locale="en">(built-in)</template>
-<template data-i18n-for="t61" data-i18n-locale="de">(eingebaut)</template>
-<template data-i18n-for="t62" data-i18n-locale="en">Decompressed again and compared: identical to the input.</template>
-<template data-i18n-for="t62" data-i18n-locale="de">Wieder entpackt und verglichen: identisch mit der Eingabe.</template>
-<template data-i18n-for="t63" data-i18n-locale="en">Download .br</template>
-<template data-i18n-for="t63" data-i18n-locale="de">.br herunterladen</template>
-<template data-i18n-for="t64" data-i18n-locale="en">Decompress this</template>
-<template data-i18n-for="t64" data-i18n-locale="de">Dieses Ergebnis entpacken</template>
-<template data-i18n-for="t65" data-i18n-locale="en">Brotli data</template>
-<template data-i18n-for="t65" data-i18n-locale="de">Brotli-Daten</template>
-<template data-i18n-for="t66" data-i18n-locale="en">Precompressed page</template>
-<template data-i18n-for="t66" data-i18n-locale="de">Vorab komprimierte Seite</template>
-<template data-i18n-for="t67" data-i18n-locale="en">page.html.br from this website, made at quality 11</template>
-<template data-i18n-for="t67" data-i18n-locale="de">page.html.br von dieser Website, mit Qualität 11 erzeugt</template>
-<template data-i18n-for="t68" data-i18n-locale="en">Your last result</template>
-<template data-i18n-for="t68" data-i18n-locale="de">Ihr letztes Ergebnis</template>
-<template data-i18n-for="t69" data-i18n-locale="en">From the Compress tab</template>
-<template data-i18n-for="t69" data-i18n-locale="de">Aus dem Tab Komprimieren</template>
-<template data-i18n-for="t70" data-i18n-locale="en">A .br file</template>
-<template data-i18n-for="t70" data-i18n-locale="de">Eine .br-Datei</template>
-<template data-i18n-for="t71" data-i18n-locale="en">Made by any Brotli encoder</template>
-<template data-i18n-for="t71" data-i18n-locale="de">Von einem beliebigen Brotli-Encoder</template>
-<template data-i18n-for="t72" data-i18n-locale="en">Choose a .br file or drop it here.</template>
-<template data-i18n-for="t72" data-i18n-locale="de">.br-Datei wählen oder hier ablegen.</template>
-<template data-i18n-for="t73" data-i18n-locale="en">Decoder download</template>
-<template data-i18n-for="t73" data-i18n-locale="de">Download des Decoders</template>
-<template data-i18n-for="t74" data-i18n-locale="en">decompressor-slim.js and decompressor.wasm, as this server sent them</template>
-<template data-i18n-for="t74" data-i18n-locale="de">decompressor-slim.js und decompressor.wasm, so wie dieser Server sie sendet</template>
-<template data-i18n-for="t75" data-i18n-locale="en">Decompress</template>
-<template data-i18n-for="t75" data-i18n-locale="de">Entpacken</template>
-<template data-i18n-for="t76" data-i18n-locale="en">Input</template>
-<template data-i18n-for="t76" data-i18n-locale="de">Eingabe</template>
-<template data-i18n-for="t77" data-i18n-locale="en">Log lines, 2 MiB, generated here</template>
-<template data-i18n-for="t77" data-i18n-locale="de">Logzeilen, 2 MiB, hier erzeugt</template>
-<template data-i18n-for="t78" data-i18n-locale="en">SVG drawing, 1 MiB</template>
-<template data-i18n-for="t78" data-i18n-locale="de">SVG-Zeichnung, 1 MiB</template>
-<template data-i18n-for="t79" data-i18n-locale="en">CPU cores</template>
-<template data-i18n-for="t79" data-i18n-locale="de">CPU-Kerne</template>
-<template data-i18n-for="t80" data-i18n-locale="en">Both run at quality 11. The single-core run uses this page's own thread, so the page freezes until it is done.</template>
-<template data-i18n-for="t80" data-i18n-locale="de">Beide laufen mit Qualität 11. Der Lauf auf einem Kern nutzt den Thread dieser Seite; sie reagiert daher nicht, bis er fertig ist.</template>
-<template data-i18n-for="t81" data-i18n-locale="en">Start</template>
-<template data-i18n-for="t81" data-i18n-locale="de">Starten</template>
-<template data-i18n-for="t82" data-i18n-locale="en">1 core</template>
-<template data-i18n-for="t82" data-i18n-locale="de">1 Kern</template>
-<template data-i18n-for="t83" data-i18n-locale="en">How it works</template>
-<template data-i18n-for="t83" data-i18n-locale="de">So funktioniert es</template>
-<template data-i18n-for="t84" data-i18n-locale="en">Two packages in one, split where it pays</template>
-<template data-i18n-for="t84" data-i18n-locale="de">Zwei Pakete in einem, geteilt, wo es sich lohnt</template>
-<template data-i18n-for="t85" data-i18n-locale="en">The encoder and the decoder are separate Rust libraries compiled to separate WebAssembly files. Pages that only decompress load only the decoder.</template>
-<template data-i18n-for="t85" data-i18n-locale="de">Encoder und Decoder sind getrennte Rust-Bibliotheken in getrennten WebAssembly-Dateien. Seiten, die nur entpacken, laden nur den Decoder.</template>
-<template data-i18n-for="t86" data-i18n-locale="en">Compress</template>
-<template data-i18n-for="t86" data-i18n-locale="de">Komprimieren</template>
-<template data-i18n-for="t87" data-i18n-locale="en">Decompress</template>
-<template data-i18n-for="t87" data-i18n-locale="de">Entpacken</template>
-<template data-i18n-for="t88" data-i18n-locale="en">Your data</template>
-<template data-i18n-for="t88" data-i18n-locale="de">Ihre Daten</template>
-<template data-i18n-for="t89" data-i18n-locale="en">bytes or text</template>
-<template data-i18n-for="t89" data-i18n-locale="de">Bytes oder Text</template>
-<template data-i18n-for="t90" data-i18n-locale="en">Quality 10 and 11</template>
-<template data-i18n-for="t90" data-i18n-locale="de">Qualität 10 und 11</template>
-<template data-i18n-for="t91" data-i18n-locale="en">Up to 8 parts, above 64 MiB 8 MiB each</template>
-<template data-i18n-for="t91" data-i18n-locale="de">Bis zu 8 Teile, über 64 MiB je 8 MiB</template>
-<template data-i18n-for="t92" data-i18n-locale="en">each may refer back to the data before it</template>
-<template data-i18n-for="t92" data-i18n-locale="de">jeder darf auf die Daten davor verweisen</template>
-<template data-i18n-for="t93" data-i18n-locale="en">Parts in parallel</template>
-<template data-i18n-for="t93" data-i18n-locale="de">Teile parallel</template>
-<template data-i18n-for="t94" data-i18n-locale="en">each with its own encoder</template>
-<template data-i18n-for="t94" data-i18n-locale="de">jeder mit eigenem Encoder</template>
-<template data-i18n-for="t95" data-i18n-locale="en">One .br file</template>
-<template data-i18n-for="t95" data-i18n-locale="de">Eine .br-Datei</template>
-<template data-i18n-for="t96" data-i18n-locale="en">standard Brotli, RFC 7932</template>
-<template data-i18n-for="t96" data-i18n-locale="de">Standard-Brotli, RFC 7932</template>
-<template data-i18n-for="t97" data-i18n-locale="en">or a file</template>
-<template data-i18n-for="t97" data-i18n-locale="de">oder eine Datei</template>
-<template data-i18n-for="t98" data-i18n-locale="en">~50 KB decoder</template>
-<template data-i18n-for="t98" data-i18n-locale="de">~50-KB-Decoder</template>
-<template data-i18n-for="t99" data-i18n-locale="en">1 MiB at a time, little memory</template>
-<template data-i18n-for="t99" data-i18n-locale="de">1 MiB pro Schritt, wenig Speicher</template>
-<template data-i18n-for="t100" data-i18n-locale="en">Bytes or text</template>
-<template data-i18n-for="t100" data-i18n-locale="de">Bytes oder Text</template>
-<template data-i18n-for="t101" data-i18n-locale="en">sent by your server</template>
-<template data-i18n-for="t101" data-i18n-locale="de">von Ihrem Server gesendet</template>
-<template data-i18n-for="t102" data-i18n-locale="en">Separate downloads</template>
-<template data-i18n-for="t102" data-i18n-locale="de">Getrennte Downloads</template>
-<template data-i18n-for="t103" data-i18n-locale="en">The decoder is a ~50 KB download, the encoder 397 KB. Build tools leave the encoder out of apps that only decompress.</template>
-<template data-i18n-for="t103" data-i18n-locale="de">Der Decoder ist ein Download von ~50 KB, der Encoder von 397 KB. Build-Tools lassen den Encoder aus Apps heraus, die nur entpacken.</template>
-<template data-i18n-for="t104" data-i18n-locale="en">Memory stays flat</template>
-<template data-i18n-for="t104" data-i18n-locale="de">Speicherbedarf bleibt gleich</template>
-<template data-i18n-for="t105" data-i18n-locale="en">Data passes through 1 MiB at a time, so memory does not grow with the input: unpacking 100 MiB takes ~20 MiB.</template>
-<template data-i18n-for="t105" data-i18n-locale="de">Die Daten laufen in Schritten von 1 MiB durch, der Speicherbedarf wächst also nicht mit der Eingabe: Das Entpacken von 100 MiB braucht ~20 MiB.</template>
-<template data-i18n-for="t106" data-i18n-locale="en">Same bytes on any machine</template>
-<template data-i18n-for="t106" data-i18n-locale="de">Gleiche Bytes auf jeder Maschine</template>
-<template data-i18n-for="t107" data-i18n-locale="en">Where the input is split depends only on its length and the settings, never on the cores, so any number of cores produces the same file, byte for byte.</template>
-<template data-i18n-for="t107" data-i18n-locale="de">Wo die Eingabe geteilt wird, hängt nur von ihrer Länge und den Einstellungen ab, nie von den Kernen; daher erzeugt jede Anzahl von Kernen dieselbe Datei, Byte für Byte.</template>
-<template data-i18n-for="t108" data-i18n-locale="en">For teams and companies</template>
-<template data-i18n-for="t108" data-i18n-locale="de">Für Teams und Unternehmen</template>
-<template data-i18n-for="t109" data-i18n-locale="en">Adapted to your tech stack</template>
-<template data-i18n-for="t109" data-i18n-locale="de">Anpassung an Ihren Tech-Stack</template>
-<template data-i18n-for="t110" data-i18n-locale="en">I am glad to help you integrate optimized Brotli compression into your projects, for example with custom code dictionaries, a streaming API or Brotli in special edge runtimes.</template>
-<template data-i18n-for="t110" data-i18n-locale="de">Gerne unterstütze ich Sie bei der Integration optimierter Brotli-Kompression in Ihre Projekte, etwa mit eigenen Code-Wörterbüchern, einer Streaming-API oder Brotli in speziellen Edge-Runtimes.</template>
-<template data-i18n-for="t111" data-i18n-locale="en">Talk to Aron on LinkedIn</template>
-<template data-i18n-for="t111" data-i18n-locale="de">Schreiben Sie Aron auf LinkedIn</template>
-<template data-i18n-for="t112" data-i18n-locale="en"> (opens in a new tab)</template>
-<template data-i18n-for="t112" data-i18n-locale="de"> (öffnet in neuem Tab)</template>
-<template data-i18n-for="t113" data-i18n-locale="en">Performance</template>
-<template data-i18n-for="t113" data-i18n-locale="de">Leistung</template>
-<template data-i18n-for="t114" data-i18n-locale="en">Measured, with the method attached</template>
-<template data-i18n-for="t114" data-i18n-locale="de">Gemessen, mit Methode</template>
-<template data-i18n-for="t115" data-i18n-locale="en">Measured on <span data-perf="cpu">Apple M5 Max</span> with Node.js; each time is the median of 3 runs after a warm-up run; the 100 MiB of log lines ran once at quality 10 and 11. The table under the chart has every value.</template>
-<template data-i18n-for="t115" data-i18n-locale="de">Gemessen auf <span data-perf="cpu">Apple M5 Max</span> mit Node.js; jede Zeit ist der Median aus 3 Läufen nach einem Aufwärmlauf; die 100 MiB Logzeilen liefen bei Qualität 10 und 11 nur einmal. Die Tabelle unter dem Diagramm enthält jeden Wert.</template>
-<template data-i18n-for="t116" data-i18n-locale="en">Speed</template>
-<template data-i18n-for="t116" data-i18n-locale="de">Geschwindigkeit</template>
-<template data-i18n-for="t117" data-i18n-locale="en">Look-back</template>
-<template data-i18n-for="t117" data-i18n-locale="de">Look-back</template>
-<template data-i18n-for="t118" data-i18n-locale="en">Command line</template>
-<template data-i18n-for="t118" data-i18n-locale="de">Kommandozeile</template>
-<template data-i18n-for="t119" data-i18n-locale="en">Download size</template>
-<template data-i18n-for="t119" data-i18n-locale="de">Download-Größe</template>
-<template data-i18n-for="t120" data-i18n-locale="en">Logs, 100 MiB</template>
-<template data-i18n-for="t120" data-i18n-locale="de">Logs, 100 MiB</template>
-<template data-i18n-for="t121" data-i18n-locale="en">Measure on this device</template>
-<template data-i18n-for="t121" data-i18n-locale="de">Auf diesem Gerät messen</template>
-<template data-i18n-for="t122" data-i18n-locale="en">The chart needs JavaScript. The table below has the same numbers.</template>
-<template data-i18n-for="t122" data-i18n-locale="de">Das Diagramm braucht JavaScript. Die Tabelle darunter enthält dieselben Zahlen.</template>
-<template data-i18n-for="t123" data-i18n-locale="en">Values as a table</template>
-<template data-i18n-for="t123" data-i18n-locale="de">Werte als Tabelle</template>
-<template data-i18n-for="t124" data-i18n-locale="en">Use it</template>
-<template data-i18n-for="t124" data-i18n-locale="de">Einbinden</template>
-<template data-i18n-for="t125" data-i18n-locale="en">A few lines in your app, or one command</template>
-<template data-i18n-for="t125" data-i18n-locale="de">Ein paar Zeilen in Ihrer App oder ein Befehl</template>
-<template data-i18n-for="t126" data-i18n-locale="en">In code</template>
-<template data-i18n-for="t126" data-i18n-locale="de">Im Code</template>
-<template data-i18n-for="t127" data-i18n-locale="en">Browser</template>
-<template data-i18n-for="t127" data-i18n-locale="de">Browser</template>
-<template data-i18n-for="t128" data-i18n-locale="en">No bundler</template>
-<template data-i18n-for="t128" data-i18n-locale="de">Ohne Bundler</template>
-<template data-i18n-for="t129" data-i18n-locale="en">Loads only the decoder, then decodes a file your server stored as Brotli.</template>
-<template data-i18n-for="t129" data-i18n-locale="de">Lädt nur den Decoder und entpackt dann eine Datei, die Ihr Server als Brotli abgelegt hat.</template>
-<template data-i18n-for="t130" data-i18n-locale="en">Precompresses build output at quality 11 on all cores.</template>
-<template data-i18n-for="t130" data-i18n-locale="de">Komprimiert Build-Ausgaben vorab mit Qualität 11 auf allen Kernen.</template>
-<template data-i18n-for="t131" data-i18n-locale="en">An import map that points at jsDelivr; the decoder fetches its .wasm from the same folder.</template>
-<template data-i18n-for="t131" data-i18n-locale="de">Eine Import-Map, die auf jsDelivr zeigt; der Decoder lädt seine .wasm-Datei aus demselben Ordner.</template>
-<template data-i18n-for="t132" data-i18n-locale="en">On the command line</template>
-<template data-i18n-for="t132" data-i18n-locale="de">Auf der Kommandozeile</template>
-<template data-i18n-for="t133" data-i18n-locale="en">Same options, defaults and output names as the brotli CLI, so build scripts can swap it in.</template>
-<template data-i18n-for="t133" data-i18n-locale="de">Gleiche Optionen, Standardwerte und Dateinamen wie die brotli-CLI, sodass Build-Skripte einfach wechseln können.</template>
-<template data-i18n-for="t134" data-i18n-locale="en">Coding agents: <a href="llms.txt">llms.txt</a> has the API, limits and numbers in one file.</template>
-<template data-i18n-for="t134" data-i18n-locale="de">Coding-Agenten: <a href="llms.txt">llms.txt</a> enthält API, Grenzen und Zahlen in einer Datei.</template>
-<template data-i18n-for="t135" data-i18n-locale="en">If you are looking for maximum Brotli feature support, including streaming compression, streaming decompression and custom dictionaries, use Aron's other library <a href="https://github.com/kyr0/brotli-compress" target="_blank" rel="noopener">brotli-compress<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (opens in a new tab)</span></a>. It has all those features, but is much bigger in code size.</template>
-<template data-i18n-for="t135" data-i18n-locale="de">Wenn Sie den vollen Brotli-Funktionsumfang suchen, mit Streaming-Kompression, Streaming-Dekompression und eigenen Wörterbüchern, nutzen Sie Arons andere Bibliothek <a href="https://github.com/kyr0/brotli-compress" target="_blank" rel="noopener">brotli-compress<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (öffnet in neuem Tab)</span></a>. Sie bietet all diese Funktionen, ihr Code ist aber deutlich größer.</template>
-<template data-i18n-for="t136" data-i18n-locale="en">Brotli for browsers, Node.js and Bun</template>
-<template data-i18n-for="t136" data-i18n-locale="de">Brotli für Browser, Node.js und Bun</template>
-<template data-i18n-for="t137" data-i18n-locale="en">Open source under the MIT license. Pure Rust compiled to WebAssembly, no native addons.</template>
-<template data-i18n-for="t137" data-i18n-locale="de">Open Source unter MIT-Lizenz. Reines Rust als WebAssembly, ohne native Addons.</template>
-<template data-i18n-for="t138" data-i18n-locale="en">Source on GitHub</template>
-<template data-i18n-for="t138" data-i18n-locale="de">Quellcode auf GitHub</template>
-<template data-i18n-for="t139" data-i18n-locale="en">Package on npm</template>
-<template data-i18n-for="t139" data-i18n-locale="de">Paket auf npm</template>
-<template data-i18n-for="t140" data-i18n-locale="en">Project</template>
-<template data-i18n-for="t140" data-i18n-locale="de">Projekt</template>
-<template data-i18n-for="t141" data-i18n-locale="en">Documentation</template>
-<template data-i18n-for="t141" data-i18n-locale="de">Dokumentation</template>
-<template data-i18n-for="t142" data-i18n-locale="en">Architecture</template>
-<template data-i18n-for="t142" data-i18n-locale="de">Architektur</template>
-<template data-i18n-for="t143" data-i18n-locale="en">Changelog</template>
-<template data-i18n-for="t143" data-i18n-locale="de">Änderungen</template>
-<template data-i18n-for="t144" data-i18n-locale="en">Built with</template>
-<template data-i18n-for="t144" data-i18n-locale="de">Gebaut mit</template>
-<template data-i18n-for="t145" data-i18n-locale="en">Professional services</template>
-<template data-i18n-for="t145" data-i18n-locale="de">Professionelle Unterstützung</template>
-<template data-i18n-for="t146" data-i18n-locale="en">Freelance expert and independent AI researcher: compression, WebAssembly and on-device AI.</template>
-<template data-i18n-for="t146" data-i18n-locale="de">Freiberuflicher Experte und unabhängiger KI-Forscher: Kompression, WebAssembly und KI auf dem Gerät.</template>
-<template data-i18n-for="t147" data-i18n-locale="en">Connect on LinkedIn</template>
-<template data-i18n-for="t147" data-i18n-locale="de">Auf LinkedIn vernetzen</template>
-<template data-i18n-for="t148" data-i18n-locale="en"> (opens in a new tab)</template>
-<template data-i18n-for="t148" data-i18n-locale="de"> (öffnet in neuem Tab)</template>
-<template data-i18n-for="t149" data-i18n-locale="en">2026 Aron Homberg (kyr0). MIT license. Brotli is specified in RFC 7932.</template>
-<template data-i18n-for="t149" data-i18n-locale="de">2026 Aron Homberg (kyr0). MIT-Lizenz. Brotli ist in RFC 7932 spezifiziert.</template>
-<template data-i18n-for="t150" data-i18n-locale="en">Choose a file, or press Compress for the sample.</template>
-<template data-i18n-for="t150" data-i18n-locale="de">Wählen Sie eine Datei, oder drücken Sie Komprimieren, um das Beispiel zu verwenden.</template>
-<template data-i18n-for="t151" data-i18n-locale="en">Press Decompress to start.</template>
-<template data-i18n-for="t151" data-i18n-locale="de">Mit Entpacken geht es los.</template>
-<template data-i18n-for="t152" data-i18n-locale="en">Press Start to compare.</template>
-<template data-i18n-for="t152" data-i18n-locale="de">Mit Starten beginnt der Vergleich.</template>
-<template data-i18n-for="t153" data-i18n-locale="en">Loading the encoder (compressor.wasm)...</template>
-<template data-i18n-for="t153" data-i18n-locale="de">Encoder wird geladen (compressor.wasm) ...</template>
-<template data-i18n-for="t154" data-i18n-locale="en">Loading the decoder (decompressor.wasm)...</template>
-<template data-i18n-for="t154" data-i18n-locale="de">Decoder wird geladen (decompressor.wasm) ...</template>
-<template data-i18n-for="t155" data-i18n-locale="en">Preparing the input...</template>
-<template data-i18n-for="t155" data-i18n-locale="de">Eingabe wird vorbereitet ...</template>
-<template data-i18n-for="t156" data-i18n-locale="en">Compressing {size}...</template>
-<template data-i18n-for="t156" data-i18n-locale="de">{size} werden komprimiert ...</template>
-<template data-i18n-for="t157" data-i18n-locale="en">Comparing with gzip and unpacking the result to check it...</template>
-<template data-i18n-for="t157" data-i18n-locale="de">Vergleich mit gzip und Prüfung durch Entpacken ...</template>
-<template data-i18n-for="t158" data-i18n-locale="en">Decompressing...</template>
-<template data-i18n-for="t158" data-i18n-locale="de">Wird entpackt ...</template>
-<template data-i18n-for="t159" data-i18n-locale="en">{times} times smaller</template>
-<template data-i18n-for="t159" data-i18n-locale="de">{times}-mal kleiner</template>
-<template data-i18n-for="t160" data-i18n-locale="en">{output} from {input} in {time}, at quality {quality}.</template>
-<template data-i18n-for="t160" data-i18n-locale="de">{output} aus {input} in {time}, mit Qualität {quality}.</template>
-<template data-i18n-for="t161" data-i18n-locale="en">not available</template>
-<template data-i18n-for="t161" data-i18n-locale="de">nicht verfügbar</template>
-<template data-i18n-for="t162" data-i18n-locale="en">Decoded {input} in {time}.</template>
-<template data-i18n-for="t162" data-i18n-locale="de">{input} in {time} entpackt.</template>
-<template data-i18n-for="t163" data-i18n-locale="en">{bytes} transferred</template>
-<template data-i18n-for="t163" data-i18n-locale="de">{bytes} übertragen</template>
-<template data-i18n-for="t164" data-i18n-locale="en">from the browser cache</template>
-<template data-i18n-for="t164" data-i18n-locale="de">aus dem Browser-Cache</template>
-<template data-i18n-for="t165" data-i18n-locale="en">{times} times faster</template>
-<template data-i18n-for="t165" data-i18n-locale="de">{times}-mal schneller</template>
-<template data-i18n-for="t166" data-i18n-locale="en">compressParallel is running on {threads} cores...</template>
-<template data-i18n-for="t166" data-i18n-locale="de">compressParallel läuft auf {threads} Kernen ...</template>
-<template data-i18n-for="t167" data-i18n-locale="en">compress is running on one core; the page freezes until it is done...</template>
-<template data-i18n-for="t167" data-i18n-locale="de">compress läuft auf einem Kern; die Seite reagiert nicht, bis der Lauf fertig ist ...</template>
-<template data-i18n-for="t168" data-i18n-locale="en">{input}: {parallel} on {threads} cores against {single} on one core.</template>
-<template data-i18n-for="t168" data-i18n-locale="de">{input}: {parallel} auf {threads} Kernen gegen {single} auf einem Kern.</template>
-<template data-i18n-for="t169" data-i18n-locale="en">Both results unpack to the input. The multicore one is {delta} larger.</template>
-<template data-i18n-for="t169" data-i18n-locale="de">Beide Ergebnisse ergeben entpackt die Eingabe. Das Mehrkern-Ergebnis ist {delta} größer.</template>
-<template data-i18n-for="t170" data-i18n-locale="en">quality {quality}</template>
-<template data-i18n-for="t170" data-i18n-locale="de">Qualität {quality}</template>
-<template data-i18n-for="t171" data-i18n-locale="en">quality 11</template>
-<template data-i18n-for="t171" data-i18n-locale="de">Qualität 11</template>
-<template data-i18n-for="t172" data-i18n-locale="en">{n} cores</template>
-<template data-i18n-for="t172" data-i18n-locale="de">{n} Kerne</template>
-<template data-i18n-for="t173" data-i18n-locale="en">Binary data. First bytes in hex:</template>
-<template data-i18n-for="t173" data-i18n-locale="de">Binärdaten. Erste Bytes als Hex:</template>
-<template data-i18n-for="t174" data-i18n-locale="en">It did not work: {message}</template>
-<template data-i18n-for="t174" data-i18n-locale="de">Das hat nicht geklappt: {message}</template>
-<template data-i18n-for="t175" data-i18n-locale="en">Open this page over http(s) to run the demos: browsers do not load WebAssembly from a local file.</template>
-<template data-i18n-for="t175" data-i18n-locale="de">Öffnen Sie die Seite über http(s), um die Demos zu starten: Browser laden WebAssembly nicht aus einer lokalen Datei.</template>
-<template data-i18n-for="t176" data-i18n-locale="en">Built-in Brotli support in this browser (CompressionStream): {native}. defuss-brotli works either way.</template>
-<template data-i18n-for="t176" data-i18n-locale="de">Eingebautes Brotli in diesem Browser (CompressionStream): {native}. defuss-brotli funktioniert in beiden Fällen.</template>
-<template data-i18n-for="t177" data-i18n-locale="en">yes</template>
-<template data-i18n-for="t177" data-i18n-locale="de">ja</template>
-<template data-i18n-for="t178" data-i18n-locale="en">no</template>
-<template data-i18n-for="t178" data-i18n-locale="de">nein</template>
-<template data-i18n-for="t179" data-i18n-locale="en">Measuring quality {quality} of 11...</template>
-<template data-i18n-for="t179" data-i18n-locale="de">Qualität {quality} von 11 wird gemessen ...</template>
-<template data-i18n-for="t180" data-i18n-locale="en">This device</template>
-<template data-i18n-for="t180" data-i18n-locale="de">Dieses Gerät</template>
-<template data-i18n-for="t181" data-i18n-locale="en">Copied</template>
-<template data-i18n-for="t181" data-i18n-locale="de">Kopiert</template>
-<template data-i18n-for="t182" data-i18n-locale="en">{input} ({size}): how long one compression takes at qualities 9 to 11, with <code>compressParallel()</code> on {cores}, with <code>compress()</code> on 1 core, and with the C library built into Node.js, which has no multicore mode. Only qualities 10 and 11, the slowest levels, use more than one core; the table lists all 12.</template>
-<template data-i18n-for="t182" data-i18n-locale="de">{input} ({size}): wie lange eine Kompression bei Qualität 9 bis 11 dauert, mit <code>compressParallel()</code> auf {cores}, mit <code>compress()</code> auf 1 Kern und mit der in Node.js eingebauten C-Bibliothek, die nur einen Kern nutzt. Nur Qualität 10 und 11, die langsamsten Stufen, nutzen mehr als einen Kern; die Tabelle enthält alle 12.</template>
-<template data-i18n-for="t183" data-i18n-locale="en">{input} ({size}): how long one compression takes at each quality on 1 core, against the C library built into Node.js.</template>
-<template data-i18n-for="t183" data-i18n-locale="de">{input} ({size}): wie lange eine Kompression bei Qualität 9 bis 11 auf 1 Kern dauert, im Vergleich zur in Node.js eingebauten C-Bibliothek.</template>
-<template data-i18n-for="t184" data-i18n-locale="en">Brotli saves space by pointing back to data it has already seen. The look-back distance limits how far back it looks: a longer look-back finds more repeats, and unpacking needs that much memory. Sizes at quality 11, compared with a 64 KiB look-back.</template>
-<template data-i18n-for="t184" data-i18n-locale="de">Brotli spart Platz, indem es auf schon gesehene Daten zurückverweist. Look-back begrenzt, wie weit zurück geschaut wird: Ein längerer Look-back findet mehr Wiederholungen, und das Entpacken braucht so viel Speicher. Größen bei Qualität 11, im Vergleich zu 64 KiB Look-back.</template>
-<template data-i18n-for="t185" data-i18n-locale="en">Total time of the whole command at quality 11, startup included, median of 5 runs, against Google's brotli CLI on an Apple M5 Max.</template>
-<template data-i18n-for="t185" data-i18n-locale="de">Gesamtausführungszeit des Befehls bei Qualität 11 samt Programmstart, Median aus 5 Läufen, im Vergleich zu Googles brotli-CLI auf einem Apple M5 Max.</template>
-<template data-i18n-for="t186" data-i18n-locale="en">What a browser downloads for each part of the package, depending on how the server compresses the files.</template>
-<template data-i18n-for="t186" data-i18n-locale="de">Was ein Browser für jeden Teil des Pakets an Codemenge lädt, je nachdem, wie der Server die Dateien komprimiert.</template>
+<template data-i18n-for="t59" data-i18n-locale="en">Compare with gzip</template>
+<template data-i18n-for="t59" data-i18n-locale="de">Mit gzip vergleichen</template>
+<template data-i18n-for="t60" data-i18n-locale="en">Also compresses the input with the browser's built-in gzip, which takes extra time on large files.</template>
+<template data-i18n-for="t60" data-i18n-locale="de">Komprimiert die Eingabe zusätzlich mit dem eingebauten gzip des Browsers; das dauert bei großen Dateien länger.</template>
+<template data-i18n-for="t61" data-i18n-locale="en">Compress</template>
+<template data-i18n-for="t61" data-i18n-locale="de">Komprimieren</template>
+<template data-i18n-for="t62" data-i18n-locale="en">Original</template>
+<template data-i18n-for="t62" data-i18n-locale="de">Original</template>
+<template data-i18n-for="t63" data-i18n-locale="en">(built-in)</template>
+<template data-i18n-for="t63" data-i18n-locale="de">(eingebaut)</template>
+<template data-i18n-for="t64" data-i18n-locale="en">Decompressed again and compared: identical to the input.</template>
+<template data-i18n-for="t64" data-i18n-locale="de">Wieder entpackt und verglichen: identisch mit der Eingabe.</template>
+<template data-i18n-for="t65" data-i18n-locale="en">Download .br</template>
+<template data-i18n-for="t65" data-i18n-locale="de">.br herunterladen</template>
+<template data-i18n-for="t66" data-i18n-locale="en">Decompress this</template>
+<template data-i18n-for="t66" data-i18n-locale="de">Dieses Ergebnis entpacken</template>
+<template data-i18n-for="t67" data-i18n-locale="en">Brotli data</template>
+<template data-i18n-for="t67" data-i18n-locale="de">Brotli-Daten</template>
+<template data-i18n-for="t68" data-i18n-locale="en">Precompressed page</template>
+<template data-i18n-for="t68" data-i18n-locale="de">Vorab komprimierte Seite</template>
+<template data-i18n-for="t69" data-i18n-locale="en">page.html.br from this website, made at quality 11</template>
+<template data-i18n-for="t69" data-i18n-locale="de">page.html.br von dieser Website, mit Qualität 11 erzeugt</template>
+<template data-i18n-for="t70" data-i18n-locale="en">Your last result</template>
+<template data-i18n-for="t70" data-i18n-locale="de">Ihr letztes Ergebnis</template>
+<template data-i18n-for="t71" data-i18n-locale="en">From the Compress tab</template>
+<template data-i18n-for="t71" data-i18n-locale="de">Aus dem Tab Komprimieren</template>
+<template data-i18n-for="t72" data-i18n-locale="en">A .br file</template>
+<template data-i18n-for="t72" data-i18n-locale="de">Eine .br-Datei</template>
+<template data-i18n-for="t73" data-i18n-locale="en">Made by any Brotli encoder</template>
+<template data-i18n-for="t73" data-i18n-locale="de">Von einem beliebigen Brotli-Encoder</template>
+<template data-i18n-for="t74" data-i18n-locale="en">Choose a .br file or drop it here.</template>
+<template data-i18n-for="t74" data-i18n-locale="de">.br-Datei wählen oder hier ablegen.</template>
+<template data-i18n-for="t75" data-i18n-locale="en">Decoder download</template>
+<template data-i18n-for="t75" data-i18n-locale="de">Download des Decoders</template>
+<template data-i18n-for="t76" data-i18n-locale="en">decompressor-slim.js and decompressor.wasm, as this server sent them</template>
+<template data-i18n-for="t76" data-i18n-locale="de">decompressor-slim.js und decompressor.wasm, so wie dieser Server sie sendet</template>
+<template data-i18n-for="t77" data-i18n-locale="en">Decompress</template>
+<template data-i18n-for="t77" data-i18n-locale="de">Entpacken</template>
+<template data-i18n-for="t78" data-i18n-locale="en">Input</template>
+<template data-i18n-for="t78" data-i18n-locale="de">Eingabe</template>
+<template data-i18n-for="t79" data-i18n-locale="en">Log lines, 2 MiB, generated here</template>
+<template data-i18n-for="t79" data-i18n-locale="de">Logzeilen, 2 MiB, hier erzeugt</template>
+<template data-i18n-for="t80" data-i18n-locale="en">SVG drawing, 1 MiB</template>
+<template data-i18n-for="t80" data-i18n-locale="de">SVG-Zeichnung, 1 MiB</template>
+<template data-i18n-for="t81" data-i18n-locale="en">CPU cores</template>
+<template data-i18n-for="t81" data-i18n-locale="de">CPU-Kerne</template>
+<template data-i18n-for="t82" data-i18n-locale="en">Both run at quality 11. The single-core run uses this page's own thread, so the page freezes until it is done.</template>
+<template data-i18n-for="t82" data-i18n-locale="de">Beide laufen mit Qualität 11. Der Lauf auf einem Kern nutzt den Thread dieser Seite; sie reagiert daher nicht, bis er fertig ist.</template>
+<template data-i18n-for="t83" data-i18n-locale="en">Start</template>
+<template data-i18n-for="t83" data-i18n-locale="de">Starten</template>
+<template data-i18n-for="t84" data-i18n-locale="en">1 core</template>
+<template data-i18n-for="t84" data-i18n-locale="de">1 Kern</template>
+<template data-i18n-for="t85" data-i18n-locale="en">How it works</template>
+<template data-i18n-for="t85" data-i18n-locale="de">So funktioniert es</template>
+<template data-i18n-for="t86" data-i18n-locale="en">Two packages in one, split where it pays</template>
+<template data-i18n-for="t86" data-i18n-locale="de">Zwei Pakete in einem, geteilt, wo es sich lohnt</template>
+<template data-i18n-for="t87" data-i18n-locale="en">The encoder and the decoder are separate Rust libraries compiled to separate WebAssembly files. Pages that only decompress load only the decoder.</template>
+<template data-i18n-for="t87" data-i18n-locale="de">Encoder und Decoder sind getrennte Rust-Bibliotheken in getrennten WebAssembly-Dateien. Seiten, die nur entpacken, laden nur den Decoder.</template>
+<template data-i18n-for="t88" data-i18n-locale="en">Compress</template>
+<template data-i18n-for="t88" data-i18n-locale="de">Komprimieren</template>
+<template data-i18n-for="t89" data-i18n-locale="en">Decompress</template>
+<template data-i18n-for="t89" data-i18n-locale="de">Entpacken</template>
+<template data-i18n-for="t90" data-i18n-locale="en">Your data</template>
+<template data-i18n-for="t90" data-i18n-locale="de">Ihre Daten</template>
+<template data-i18n-for="t91" data-i18n-locale="en">bytes or text</template>
+<template data-i18n-for="t91" data-i18n-locale="de">Bytes oder Text</template>
+<template data-i18n-for="t92" data-i18n-locale="en">Quality 10 and 11</template>
+<template data-i18n-for="t92" data-i18n-locale="de">Qualität 10 und 11</template>
+<template data-i18n-for="t93" data-i18n-locale="en">Up to 8 parts, above 64 MiB 8 MiB each</template>
+<template data-i18n-for="t93" data-i18n-locale="de">Bis zu 8 Teile, über 64 MiB je 8 MiB</template>
+<template data-i18n-for="t94" data-i18n-locale="en">each may refer back to the data before it</template>
+<template data-i18n-for="t94" data-i18n-locale="de">jeder darf auf die Daten davor verweisen</template>
+<template data-i18n-for="t95" data-i18n-locale="en">Parts in parallel</template>
+<template data-i18n-for="t95" data-i18n-locale="de">Teile parallel</template>
+<template data-i18n-for="t96" data-i18n-locale="en">each with its own encoder</template>
+<template data-i18n-for="t96" data-i18n-locale="de">jeder mit eigenem Encoder</template>
+<template data-i18n-for="t97" data-i18n-locale="en">One .br file</template>
+<template data-i18n-for="t97" data-i18n-locale="de">Eine .br-Datei</template>
+<template data-i18n-for="t98" data-i18n-locale="en">standard Brotli, RFC 7932</template>
+<template data-i18n-for="t98" data-i18n-locale="de">Standard-Brotli, RFC 7932</template>
+<template data-i18n-for="t99" data-i18n-locale="en">or a file</template>
+<template data-i18n-for="t99" data-i18n-locale="de">oder eine Datei</template>
+<template data-i18n-for="t100" data-i18n-locale="en">~50 KB decoder</template>
+<template data-i18n-for="t100" data-i18n-locale="de">~50-KB-Decoder</template>
+<template data-i18n-for="t101" data-i18n-locale="en">1 MiB at a time, little memory</template>
+<template data-i18n-for="t101" data-i18n-locale="de">1 MiB pro Schritt, wenig Speicher</template>
+<template data-i18n-for="t102" data-i18n-locale="en">Bytes or text</template>
+<template data-i18n-for="t102" data-i18n-locale="de">Bytes oder Text</template>
+<template data-i18n-for="t103" data-i18n-locale="en">sent by your server</template>
+<template data-i18n-for="t103" data-i18n-locale="de">von Ihrem Server gesendet</template>
+<template data-i18n-for="t104" data-i18n-locale="en">Separate downloads</template>
+<template data-i18n-for="t104" data-i18n-locale="de">Getrennte Downloads</template>
+<template data-i18n-for="t105" data-i18n-locale="en">The decoder is a ~50 KB download, the encoder 397 KB. Build tools leave the encoder out of apps that only decompress.</template>
+<template data-i18n-for="t105" data-i18n-locale="de">Der Decoder ist ein Download von ~50 KB, der Encoder von 397 KB. Build-Tools lassen den Encoder aus Apps heraus, die nur entpacken.</template>
+<template data-i18n-for="t106" data-i18n-locale="en">Memory stays flat</template>
+<template data-i18n-for="t106" data-i18n-locale="de">Speicherbedarf bleibt gleich</template>
+<template data-i18n-for="t107" data-i18n-locale="en">Data passes through 1 MiB at a time, so memory does not grow with the input: unpacking 100 MiB takes ~20 MiB.</template>
+<template data-i18n-for="t107" data-i18n-locale="de">Die Daten laufen in Schritten von 1 MiB durch, der Speicherbedarf wächst also nicht mit der Eingabe: Das Entpacken von 100 MiB braucht ~20 MiB.</template>
+<template data-i18n-for="t108" data-i18n-locale="en">Same bytes on any machine</template>
+<template data-i18n-for="t108" data-i18n-locale="de">Gleiche Bytes auf jeder Maschine</template>
+<template data-i18n-for="t109" data-i18n-locale="en">Where the input is split depends only on its length and the settings, never on the cores, so any number of cores produces the same file, byte for byte.</template>
+<template data-i18n-for="t109" data-i18n-locale="de">Wo die Eingabe geteilt wird, hängt nur von ihrer Länge und den Einstellungen ab, nie von den Kernen; daher erzeugt jede Anzahl von Kernen dieselbe Datei, Byte für Byte.</template>
+<template data-i18n-for="t110" data-i18n-locale="en">For teams and companies</template>
+<template data-i18n-for="t110" data-i18n-locale="de">Für Teams und Unternehmen</template>
+<template data-i18n-for="t111" data-i18n-locale="en">Adapted to your tech stack</template>
+<template data-i18n-for="t111" data-i18n-locale="de">Anpassung an Ihren Tech-Stack</template>
+<template data-i18n-for="t112" data-i18n-locale="en">I am glad to help you integrate optimized Brotli compression into your projects, for example with custom code dictionaries, a streaming API or Brotli in special edge runtimes.</template>
+<template data-i18n-for="t112" data-i18n-locale="de">Gerne unterstütze ich Sie bei der Integration optimierter Brotli-Kompression in Ihre Projekte, etwa mit eigenen Code-Wörterbüchern, einer Streaming-API oder Brotli in speziellen Edge-Runtimes.</template>
+<template data-i18n-for="t113" data-i18n-locale="en">Talk to Aron on LinkedIn</template>
+<template data-i18n-for="t113" data-i18n-locale="de">Schreiben Sie Aron auf LinkedIn</template>
+<template data-i18n-for="t114" data-i18n-locale="en"> (opens in a new tab)</template>
+<template data-i18n-for="t114" data-i18n-locale="de"> (öffnet in neuem Tab)</template>
+<template data-i18n-for="t115" data-i18n-locale="en">Performance</template>
+<template data-i18n-for="t115" data-i18n-locale="de">Leistung</template>
+<template data-i18n-for="t116" data-i18n-locale="en">Measured, with the method attached</template>
+<template data-i18n-for="t116" data-i18n-locale="de">Gemessen, mit Methode</template>
+<template data-i18n-for="t117" data-i18n-locale="en">Measured on <span data-perf="cpu">Apple M5 Max</span> with Node.js; each time is the median of 3 runs after a warm-up run; the 100 MiB of log lines ran once at quality 10 and 11. The table under the chart has every value.</template>
+<template data-i18n-for="t117" data-i18n-locale="de">Gemessen auf <span data-perf="cpu">Apple M5 Max</span> mit Node.js; jede Zeit ist der Median aus 3 Läufen nach einem Aufwärmlauf; die 100 MiB Logzeilen liefen bei Qualität 10 und 11 nur einmal. Die Tabelle unter dem Diagramm enthält jeden Wert.</template>
+<template data-i18n-for="t118" data-i18n-locale="en">Speed</template>
+<template data-i18n-for="t118" data-i18n-locale="de">Geschwindigkeit</template>
+<template data-i18n-for="t119" data-i18n-locale="en">Look-back</template>
+<template data-i18n-for="t119" data-i18n-locale="de">Look-back</template>
+<template data-i18n-for="t120" data-i18n-locale="en">Command line</template>
+<template data-i18n-for="t120" data-i18n-locale="de">Kommandozeile</template>
+<template data-i18n-for="t121" data-i18n-locale="en">Download size</template>
+<template data-i18n-for="t121" data-i18n-locale="de">Download-Größe</template>
+<template data-i18n-for="t122" data-i18n-locale="en">Logs, 100 MiB</template>
+<template data-i18n-for="t122" data-i18n-locale="de">Logs, 100 MiB</template>
+<template data-i18n-for="t123" data-i18n-locale="en">Measure on this device</template>
+<template data-i18n-for="t123" data-i18n-locale="de">Auf diesem Gerät messen</template>
+<template data-i18n-for="t124" data-i18n-locale="en">The chart needs JavaScript. The table below has the same numbers.</template>
+<template data-i18n-for="t124" data-i18n-locale="de">Das Diagramm braucht JavaScript. Die Tabelle darunter enthält dieselben Zahlen.</template>
+<template data-i18n-for="t125" data-i18n-locale="en">Values as a table</template>
+<template data-i18n-for="t125" data-i18n-locale="de">Werte als Tabelle</template>
+<template data-i18n-for="t126" data-i18n-locale="en">Use it</template>
+<template data-i18n-for="t126" data-i18n-locale="de">Einbinden</template>
+<template data-i18n-for="t127" data-i18n-locale="en">A few lines in your app, or one command</template>
+<template data-i18n-for="t127" data-i18n-locale="de">Ein paar Zeilen in Ihrer App oder ein Befehl</template>
+<template data-i18n-for="t128" data-i18n-locale="en">In code</template>
+<template data-i18n-for="t128" data-i18n-locale="de">Im Code</template>
+<template data-i18n-for="t129" data-i18n-locale="en">Browser</template>
+<template data-i18n-for="t129" data-i18n-locale="de">Browser</template>
+<template data-i18n-for="t130" data-i18n-locale="en">No bundler</template>
+<template data-i18n-for="t130" data-i18n-locale="de">Ohne Bundler</template>
+<template data-i18n-for="t131" data-i18n-locale="en">Loads only the decoder, then decodes a file your server stored as Brotli.</template>
+<template data-i18n-for="t131" data-i18n-locale="de">Lädt nur den Decoder und entpackt dann eine Datei, die Ihr Server als Brotli abgelegt hat.</template>
+<template data-i18n-for="t132" data-i18n-locale="en">Precompresses build output at quality 11 on all cores.</template>
+<template data-i18n-for="t132" data-i18n-locale="de">Komprimiert Build-Ausgaben vorab mit Qualität 11 auf allen Kernen.</template>
+<template data-i18n-for="t133" data-i18n-locale="en">An import map that points at jsDelivr; the decoder fetches its .wasm from the same folder.</template>
+<template data-i18n-for="t133" data-i18n-locale="de">Eine Import-Map, die auf jsDelivr zeigt; der Decoder lädt seine .wasm-Datei aus demselben Ordner.</template>
+<template data-i18n-for="t134" data-i18n-locale="en">On the command line</template>
+<template data-i18n-for="t134" data-i18n-locale="de">Auf der Kommandozeile</template>
+<template data-i18n-for="t135" data-i18n-locale="en">Same options, defaults and output names as the brotli CLI, so build scripts can swap it in.</template>
+<template data-i18n-for="t135" data-i18n-locale="de">Gleiche Optionen, Standardwerte und Dateinamen wie die brotli-CLI, sodass Build-Skripte einfach wechseln können.</template>
+<template data-i18n-for="t136" data-i18n-locale="en">Coding agents: <a href="llms.txt">llms.txt</a> has the API, limits and numbers in one file.</template>
+<template data-i18n-for="t136" data-i18n-locale="de">Coding-Agenten: <a href="llms.txt">llms.txt</a> enthält API, Grenzen und Zahlen in einer Datei.</template>
+<template data-i18n-for="t137" data-i18n-locale="en">If you are looking for maximum Brotli feature support, including streaming compression, streaming decompression and custom dictionaries, use Aron's other library <a href="https://github.com/kyr0/brotli-compress" target="_blank" rel="noopener">brotli-compress<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (opens in a new tab)</span></a>. It has all those features, but is much bigger in code size.</template>
+<template data-i18n-for="t137" data-i18n-locale="de">Wenn Sie den vollen Brotli-Funktionsumfang suchen, mit Streaming-Kompression, Streaming-Dekompression und eigenen Wörterbüchern, nutzen Sie Arons andere Bibliothek <a href="https://github.com/kyr0/brotli-compress" target="_blank" rel="noopener">brotli-compress<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (öffnet in neuem Tab)</span></a>. Sie bietet all diese Funktionen, ihr Code ist aber deutlich größer.</template>
+<template data-i18n-for="t138" data-i18n-locale="en">Brotli for browsers, Node.js and Bun</template>
+<template data-i18n-for="t138" data-i18n-locale="de">Brotli für Browser, Node.js und Bun</template>
+<template data-i18n-for="t139" data-i18n-locale="en">Open source under the MIT license. Pure Rust compiled to WebAssembly, no native addons.</template>
+<template data-i18n-for="t139" data-i18n-locale="de">Open Source unter MIT-Lizenz. Reines Rust als WebAssembly, ohne native Addons.</template>
+<template data-i18n-for="t140" data-i18n-locale="en">Source on GitHub</template>
+<template data-i18n-for="t140" data-i18n-locale="de">Quellcode auf GitHub</template>
+<template data-i18n-for="t141" data-i18n-locale="en">Package on npm</template>
+<template data-i18n-for="t141" data-i18n-locale="de">Paket auf npm</template>
+<template data-i18n-for="t142" data-i18n-locale="en">Project</template>
+<template data-i18n-for="t142" data-i18n-locale="de">Projekt</template>
+<template data-i18n-for="t143" data-i18n-locale="en">Documentation</template>
+<template data-i18n-for="t143" data-i18n-locale="de">Dokumentation</template>
+<template data-i18n-for="t144" data-i18n-locale="en">Architecture</template>
+<template data-i18n-for="t144" data-i18n-locale="de">Architektur</template>
+<template data-i18n-for="t145" data-i18n-locale="en">Changelog</template>
+<template data-i18n-for="t145" data-i18n-locale="de">Änderungen</template>
+<template data-i18n-for="t146" data-i18n-locale="en">Built with</template>
+<template data-i18n-for="t146" data-i18n-locale="de">Gebaut mit</template>
+<template data-i18n-for="t147" data-i18n-locale="en">Professional services</template>
+<template data-i18n-for="t147" data-i18n-locale="de">Professionelle Unterstützung</template>
+<template data-i18n-for="t148" data-i18n-locale="en">Freelance expert and independent AI researcher: compression, WebAssembly and on-device AI.</template>
+<template data-i18n-for="t148" data-i18n-locale="de">Freiberuflicher Experte und unabhängiger KI-Forscher: Kompression, WebAssembly und KI auf dem Gerät.</template>
+<template data-i18n-for="t149" data-i18n-locale="en">Connect on LinkedIn</template>
+<template data-i18n-for="t149" data-i18n-locale="de">Auf LinkedIn vernetzen</template>
+<template data-i18n-for="t150" data-i18n-locale="en"> (opens in a new tab)</template>
+<template data-i18n-for="t150" data-i18n-locale="de"> (öffnet in neuem Tab)</template>
+<template data-i18n-for="t151" data-i18n-locale="en">2026 Aron Homberg (kyr0). MIT license. Brotli is specified in RFC 7932.</template>
+<template data-i18n-for="t151" data-i18n-locale="de">2026 Aron Homberg (kyr0). MIT-Lizenz. Brotli ist in RFC 7932 spezifiziert.</template>
+<template data-i18n-for="t152" data-i18n-locale="en">Choose a file, or press Compress for the sample.</template>
+<template data-i18n-for="t152" data-i18n-locale="de">Wählen Sie eine Datei, oder drücken Sie Komprimieren, um das Beispiel zu verwenden.</template>
+<template data-i18n-for="t153" data-i18n-locale="en">Press Decompress to start.</template>
+<template data-i18n-for="t153" data-i18n-locale="de">Mit Entpacken geht es los.</template>
+<template data-i18n-for="t154" data-i18n-locale="en">Press Start to compare.</template>
+<template data-i18n-for="t154" data-i18n-locale="de">Mit Starten beginnt der Vergleich.</template>
+<template data-i18n-for="t155" data-i18n-locale="en">Loading the encoder (compressor.wasm)...</template>
+<template data-i18n-for="t155" data-i18n-locale="de">Encoder wird geladen (compressor.wasm) ...</template>
+<template data-i18n-for="t156" data-i18n-locale="en">Loading the decoder (decompressor.wasm)...</template>
+<template data-i18n-for="t156" data-i18n-locale="de">Decoder wird geladen (decompressor.wasm) ...</template>
+<template data-i18n-for="t157" data-i18n-locale="en">Preparing the input...</template>
+<template data-i18n-for="t157" data-i18n-locale="de">Eingabe wird vorbereitet ...</template>
+<template data-i18n-for="t158" data-i18n-locale="en">Compressing {size}...</template>
+<template data-i18n-for="t158" data-i18n-locale="de">{size} werden komprimiert ...</template>
+<template data-i18n-for="t159" data-i18n-locale="en">Comparing with gzip and unpacking the result to check it...</template>
+<template data-i18n-for="t159" data-i18n-locale="de">Vergleich mit gzip und Prüfung durch Entpacken ...</template>
+<template data-i18n-for="t160" data-i18n-locale="en">Unpacking the result to check it...</template>
+<template data-i18n-for="t160" data-i18n-locale="de">Ergebnis wird zur Prüfung entpackt ...</template>
+<template data-i18n-for="t161" data-i18n-locale="en">Decompressing...</template>
+<template data-i18n-for="t161" data-i18n-locale="de">Wird entpackt ...</template>
+<template data-i18n-for="t162" data-i18n-locale="en">{times} times smaller</template>
+<template data-i18n-for="t162" data-i18n-locale="de">{times}-mal kleiner</template>
+<template data-i18n-for="t163" data-i18n-locale="en">{output} from {input} in {time}, at quality {quality}.</template>
+<template data-i18n-for="t163" data-i18n-locale="de">{output} aus {input} in {time}, mit Qualität {quality}.</template>
+<template data-i18n-for="t164" data-i18n-locale="en">not available</template>
+<template data-i18n-for="t164" data-i18n-locale="de">nicht verfügbar</template>
+<template data-i18n-for="t165" data-i18n-locale="en">Decoded {input} in {time}.</template>
+<template data-i18n-for="t165" data-i18n-locale="de">{input} in {time} entpackt.</template>
+<template data-i18n-for="t166" data-i18n-locale="en">{bytes} transferred</template>
+<template data-i18n-for="t166" data-i18n-locale="de">{bytes} übertragen</template>
+<template data-i18n-for="t167" data-i18n-locale="en">from the browser cache</template>
+<template data-i18n-for="t167" data-i18n-locale="de">aus dem Browser-Cache</template>
+<template data-i18n-for="t168" data-i18n-locale="en">{times} times faster</template>
+<template data-i18n-for="t168" data-i18n-locale="de">{times}-mal schneller</template>
+<template data-i18n-for="t169" data-i18n-locale="en">compressParallel is running on {threads} cores...</template>
+<template data-i18n-for="t169" data-i18n-locale="de">compressParallel läuft auf {threads} Kernen ...</template>
+<template data-i18n-for="t170" data-i18n-locale="en">compress is running on one core; the page freezes until it is done...</template>
+<template data-i18n-for="t170" data-i18n-locale="de">compress läuft auf einem Kern; die Seite reagiert nicht, bis der Lauf fertig ist ...</template>
+<template data-i18n-for="t171" data-i18n-locale="en">{input}: {parallel} on {threads} cores against {single} on one core.</template>
+<template data-i18n-for="t171" data-i18n-locale="de">{input}: {parallel} auf {threads} Kernen gegen {single} auf einem Kern.</template>
+<template data-i18n-for="t172" data-i18n-locale="en">Both results unpack to the input. The multicore one is {delta} larger.</template>
+<template data-i18n-for="t172" data-i18n-locale="de">Beide Ergebnisse ergeben entpackt die Eingabe. Das Mehrkern-Ergebnis ist {delta} größer.</template>
+<template data-i18n-for="t173" data-i18n-locale="en">quality {quality}</template>
+<template data-i18n-for="t173" data-i18n-locale="de">Qualität {quality}</template>
+<template data-i18n-for="t174" data-i18n-locale="en">quality 11</template>
+<template data-i18n-for="t174" data-i18n-locale="de">Qualität 11</template>
+<template data-i18n-for="t175" data-i18n-locale="en">{n} cores</template>
+<template data-i18n-for="t175" data-i18n-locale="de">{n} Kerne</template>
+<template data-i18n-for="t176" data-i18n-locale="en">Binary data. First bytes in hex:</template>
+<template data-i18n-for="t176" data-i18n-locale="de">Binärdaten. Erste Bytes als Hex:</template>
+<template data-i18n-for="t177" data-i18n-locale="en">It did not work: {message}</template>
+<template data-i18n-for="t177" data-i18n-locale="de">Das hat nicht geklappt: {message}</template>
+<template data-i18n-for="t178" data-i18n-locale="en">Open this page over http(s) to run the demos: browsers do not load WebAssembly from a local file.</template>
+<template data-i18n-for="t178" data-i18n-locale="de">Öffnen Sie die Seite über http(s), um die Demos zu starten: Browser laden WebAssembly nicht aus einer lokalen Datei.</template>
+<template data-i18n-for="t179" data-i18n-locale="en">Built-in Brotli support in this browser (CompressionStream): {native}. defuss-brotli works either way.</template>
+<template data-i18n-for="t179" data-i18n-locale="de">Eingebautes Brotli in diesem Browser (CompressionStream): {native}. defuss-brotli funktioniert in beiden Fällen.</template>
+<template data-i18n-for="t180" data-i18n-locale="en">yes</template>
+<template data-i18n-for="t180" data-i18n-locale="de">ja</template>
+<template data-i18n-for="t181" data-i18n-locale="en">no</template>
+<template data-i18n-for="t181" data-i18n-locale="de">nein</template>
+<template data-i18n-for="t182" data-i18n-locale="en">Measuring quality {quality} of 11...</template>
+<template data-i18n-for="t182" data-i18n-locale="de">Qualität {quality} von 11 wird gemessen ...</template>
+<template data-i18n-for="t183" data-i18n-locale="en">This device</template>
+<template data-i18n-for="t183" data-i18n-locale="de">Dieses Gerät</template>
+<template data-i18n-for="t184" data-i18n-locale="en">Copied</template>
+<template data-i18n-for="t184" data-i18n-locale="de">Kopiert</template>
+<template data-i18n-for="t185" data-i18n-locale="en">{input} ({size}): how long one compression takes at qualities 9 to 11, with <code>compressParallel()</code> on {cores}, with <code>compress()</code> on 1 core, and with the C library built into Node.js, which has no multicore mode. Only qualities 10 and 11, the slowest levels, use more than one core; the table lists all 12.</template>
+<template data-i18n-for="t185" data-i18n-locale="de">{input} ({size}): wie lange eine Kompression bei Qualität 9 bis 11 dauert, mit <code>compressParallel()</code> auf {cores}, mit <code>compress()</code> auf 1 Kern und mit der in Node.js eingebauten C-Bibliothek, die nur einen Kern nutzt. Nur Qualität 10 und 11, die langsamsten Stufen, nutzen mehr als einen Kern; die Tabelle enthält alle 12.</template>
+<template data-i18n-for="t186" data-i18n-locale="en">{input} ({size}): how long one compression takes at each quality on 1 core, against the C library built into Node.js.</template>
+<template data-i18n-for="t186" data-i18n-locale="de">{input} ({size}): wie lange eine Kompression bei Qualität 9 bis 11 auf 1 Kern dauert, im Vergleich zur in Node.js eingebauten C-Bibliothek.</template>
+<template data-i18n-for="t187" data-i18n-locale="en">Brotli saves space by pointing back to data it has already seen. The look-back distance limits how far back it looks: a longer look-back finds more repeats, and unpacking needs that much memory. Sizes at quality 11, compared with a 64 KiB look-back.</template>
+<template data-i18n-for="t187" data-i18n-locale="de">Brotli spart Platz, indem es auf schon gesehene Daten zurückverweist. Look-back begrenzt, wie weit zurück geschaut wird: Ein längerer Look-back findet mehr Wiederholungen, und das Entpacken braucht so viel Speicher. Größen bei Qualität 11, im Vergleich zu 64 KiB Look-back.</template>
+<template data-i18n-for="t188" data-i18n-locale="en">Total time of the whole command at quality 11, startup included, median of 5 runs, against Google's brotli CLI on an Apple M5 Max.</template>
+<template data-i18n-for="t188" data-i18n-locale="de">Gesamtausführungszeit des Befehls bei Qualität 11 samt Programmstart, Median aus 5 Läufen, im Vergleich zu Googles brotli-CLI auf einem Apple M5 Max.</template>
+<template data-i18n-for="t189" data-i18n-locale="en">What a browser downloads for each part of the package, depending on how the server compresses the files.</template>
+<template data-i18n-for="t189" data-i18n-locale="de">Was ein Browser für jeden Teil des Pakets an Codemenge lädt, je nachdem, wie der Server die Dateien komprimiert.</template>
 </div>
 <div class="fab" data-scroll-top>
   <a class="btn fab-trigger" href="#/" data-router-link aria-label="Back to top" data-i18n-aria-label-en="Back to top" data-i18n-aria-label-de="Nach oben"><span class="fab-icon" aria-hidden="true"><svg class="icon"><use href="#i-arrow-up"/></svg></span></a>

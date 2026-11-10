@@ -127,6 +127,8 @@ try {
     assert.match(ratio, /times smaller/);
     assert.match(await page.textContent("#compress-code"), /compressParallel\(input, \{ quality: 11, lgwin: 22/);
     assert.ok(await page.locator("#compress-code span[style*='--code-example-light']").count() > 3, "call line highlighted");
+    assert.equal(await page.isChecked("#compress-gzip"), false, "gzip comparison is off by default");
+    assert.ok(await page.locator('#compress-bars [data-bar="gzip"]').isHidden(), "no gzip bar while the comparison is off");
     check("compress demo: File by default, Compress without a file runs the sample", { ratio });
     assert.match(await page.textContent("#browser-check"), /Built-in Brotli support in this browser \(CompressionStream\): (yes|no)/);
 
@@ -144,11 +146,14 @@ try {
     await page.click('#compress-source .toggle[value="text"]');
     await page.fill("#compress-text", "hello brotli ".repeat(500));
     await page.locator("#compress-threads").fill("1");
+    await page.check("#compress-gzip");
     await arm(page, "compress-result");
     await page.click("#compress-run");
     await busyDone(page, "compress-result");
     assert.match(await page.textContent("#compress-code"), /^>?\s*compress\(input, \{ quality: 5, lgwin: 22 \}\)/);
-    check("compress demo: own text on one thread");
+    assert.match(await page.textContent('#compress-bars [data-bar="gzip"]:not([hidden]) .bar-value'), /^\d[\d.,]* (B|KB)$/);
+    await page.uncheck("#compress-gzip");
+    check("compress demo: own text on one thread, compared with gzip");
 
     // "File" without a file falls back to the sample instead of failing (regression: the fallback re-entered the
     // run and cleared its busy state)
