@@ -1,6 +1,6 @@
 # defuss-brotli
 
-> Brotli compression and decompression (RFC 7932) for browsers, Node.js and Bun, compiled from the Rust `brotli` crates to WebAssembly. The decoder is a separate 51 KB download; `compressParallel` runs quality 11 on one worker per CPU core; a `defuss-brotli` command takes the options of the `brotli` CLI. MIT licensed, no native addons, version 0.4.0.
+> Brotli compression and decompression (RFC 7932) for browsers, Node.js and Bun, compiled from the Rust `brotli` crates to WebAssembly. The decoder is a separate ~50 KB download; `compressParallel` runs quality 11 on one worker per CPU core; a `defuss-brotli` command takes the options of the `brotli` CLI. MIT licensed, no native addons, version 0.4.0.
 
 Every number below was measured on Apple Silicon (M5 Max) on 2026-11-09 and comes with its method in the repository's README.md and ARCH.md. Sizes are exact; timings depend on the machine.
 

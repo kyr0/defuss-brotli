@@ -2,7 +2,7 @@
 
 A split pure-Rust Brotli package for Node.js + browsers. Live demos and charts: [brotli.defuss.org](https://brotli.defuss.org/); for coding agents: [llms.txt](https://brotli.defuss.org/llms.txt).
 
-- **Small browser decoder** - `defuss-brotli/decompressor/slim` loads only the decoder: about 51 KB precompressed with Brotli quality 11 and 85 KB from jsDelivr (quality 4), most of it the Brotli dictionary every decoder carries
+- **Small browser decoder** - `defuss-brotli/decompressor/slim` loads only the decoder: about 50 KB precompressed with Brotli quality 11 and 85 KB from jsDelivr (quality 4), most of it the Brotli dictionary every decoder carries
 - **Separate heavier encoder bundle** - used server-side or at build time
 - **Single NPM package** with split exports
 - **Inlined or separate `.wasm`** - one self-contained file by default, or a `/slim` entry that loads the binary on its own

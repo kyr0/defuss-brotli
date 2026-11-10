@@ -23,9 +23,7 @@ export function setupPerf(): void {
   let chart: ChartMount | undefined;
   let measuring = false;
 
-  for (const [key, value] of [["cpu", bench.cpu], ["node", bench.node.replace(/^v/, "")], ["date", bench.measured]]) {
-    for (const element of document.querySelectorAll(`[data-perf="${key}"]`)) element.textContent = value!;
-  }
+  for (const element of document.querySelectorAll('[data-perf="cpu"]')) element.textContent = bench.cpu;
 
   const lead = () => {
     const l = locale();

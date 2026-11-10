@@ -17,7 +17,9 @@ interface Decompressor {
 }
 
 const LIB = new URL("assets/lib/", document.baseURI);
-const MAX_FILE = 64 * 1024 * 1024;
+// Files stay on the device and are only limited by the round-trip check: the decoder writes at most 2^32 - 1 bytes.
+// Memory is the practical limit: the input and its decompressed copy, about twice the file.
+const MAX_FILE = 2 ** 32 - 1;
 const once = <T>(load: () => Promise<T>) => {
   let pending: Promise<T> | undefined;
   return () => (pending ??= load().catch((error) => ((pending = undefined), Promise.reject(error))));
@@ -49,14 +51,21 @@ async function fetchBytes(path: string): Promise<Uint8Array> {
   return new Uint8Array(await response.arrayBuffer());
 }
 
-const equal = (a: Uint8Array, b: Uint8Array) => a.length === b.length && a.every((v, i) => v === b[i]);
+/** Byte equality with a plain loop: `every` with a callback is several times slower on a gigabyte. */
+function equal(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
 
 /** gzip by the browser's own CompressionStream, the baseline every page already has. */
-async function gzip(input: Uint8Array): Promise<{ size: number; ms: number } | null> {
+/** Counts the bytes as they stream, so a large file needs no second copy and no gzip output in memory. */
+async function gzip(input: Blob): Promise<{ size: number; ms: number } | null> {
   if (typeof CompressionStream !== "function") return null;
   const start = performance.now();
-  const stream = new Blob([input as BlobPart]).stream().pipeThrough(new CompressionStream("gzip"));
-  const size = (await new Response(stream).arrayBuffer()).byteLength;
+  const reader = input.stream().pipeThrough(new CompressionStream("gzip")).getReader();
+  let size = 0;
+  for (let chunk = await reader.read(); !chunk.done; chunk = await reader.read()) size += chunk.value.byteLength;
   return { size, ms: performance.now() - start };
 }
 
@@ -118,7 +127,7 @@ async function runCompress(): Promise<void> {
   const quality = Number($<HTMLInputElement>("#compress-quality").value);
   const lgwin = Number($<HTMLInputElement>("#compress-lgwin").value);
   const threads = Number($<HTMLInputElement>("#compress-threads").value);
-  let source = $("#compress-source").querySelector<HTMLButtonElement>('[aria-pressed="true"]')?.value ?? "sample";
+  let source = sourceOf();
   // no file chosen yet: the sample keeps the demo working instead of failing
   if (source === "file" && !$<HTMLInputElement>("#compress-file").files?.length) {
     source = "sample";
@@ -132,11 +141,12 @@ async function runCompress(): Promise<void> {
     summary.textContent = msg("loading-input");
     let input: Uint8Array;
     let name: string;
+    let file: File | undefined;
     if (source === "text") {
       input = new TextEncoder().encode($<HTMLTextAreaElement>("#compress-text").value);
       name = "text.txt";
     } else if (source === "file") {
-      const file = $<HTMLInputElement>("#compress-file").files![0]!;
+      file = $<HTMLInputElement>("#compress-file").files![0]!;
       if (file.size > MAX_FILE) throw new Error(`${file.name}: ${bytes(file.size, locale())} > ${bytes(MAX_FILE, locale())}`);
       input = new Uint8Array(await file.arrayBuffer());
       name = file.name;
@@ -147,11 +157,19 @@ async function runCompress(): Promise<void> {
     }
     summary.textContent = msg("loading-encoder");
     const lib = await compressor();
-    summary.textContent = msg("compressing", { size: bytes(input.length, locale()) });
+    const status = () => msg("compressing", { size: bytes(input.length, locale()) });
+    summary.textContent = status();
     await painted();
     const parallel = threads > 1;
     const start = performance.now();
-    const packed = parallel ? await lib.compressParallel(input, { quality, lgwin, threads }) : lib.compress(input, { quality, lgwin });
+    // Large files take minutes at quality 11; the workers leave this thread free to show the time so far.
+    const ticker = setInterval(() => (summary.textContent = `${status()} ${Math.round((performance.now() - start) / 1000)} s`), 1000);
+    let packed: Uint8Array;
+    try {
+      packed = parallel ? await lib.compressParallel(input, { quality, lgwin, threads }) : lib.compress(input, { quality, lgwin });
+    } finally {
+      clearInterval(ticker);
+    }
     const ms = performance.now() - start;
     setCode(
       "compress-code",
@@ -159,7 +177,10 @@ async function runCompress(): Promise<void> {
         ? `await compressParallel(input, { quality: ${quality}, lgwin: ${lgwin}, threads: ${threads} })`
         : `compress(input, { quality: ${quality}, lgwin: ${lgwin} })`,
     );
-    const baseline = await gzip(input);
+    // gzip and the round trip take a while on large files too, so the status says what runs
+    summary.textContent = msg("checking");
+    await painted();
+    const baseline = await gzip(file ?? new Blob([input as BlobPart]));
     const decoder = await decompressor();
     const back = decoder.decompress(packed, { maxOutputSize: Math.max(input.length, 1) });
     if (!equal(back, input)) throw new Error("round trip differs");
@@ -180,6 +201,8 @@ async function runCompress(): Promise<void> {
     result.removeAttribute("aria-busy");
   }
 }
+
+const sourceOf = () => $("#compress-source").querySelector<HTMLButtonElement>('[aria-pressed="true"]')?.value ?? "sample";
 
 function showSource(source: string): void {
   for (const pane of document.querySelectorAll<HTMLElement>("#compress-form [data-source]")) pane.hidden = pane.dataset.source !== source;
@@ -254,7 +277,7 @@ async function runDecompress(): Promise<void> {
     summary.textContent = msg("decompressing");
     await painted();
     const start = performance.now();
-    const output = lib.decompress(packed, { maxOutputSize: 256 * 1024 * 1024 });
+    const output = lib.decompress(packed, { maxOutputSize: MAX_FILE });
     const ms = performance.now() - start;
     setCode("decompress-code", `decompress(bytes) // ${label}`);
     lastDecompressed = { input: packed.length, output, ms };
@@ -370,10 +393,11 @@ export function runActive(): void {
 }
 
 export function setupDemos(): void {
-  const cores = Math.min(navigator.hardwareConcurrency || 4, 8);
-  for (const id of ["compress-threads", "race-threads"]) {
+  // Every core for files, which can be large enough for more than 8 parts; the race's samples split into at most 8.
+  const cores = navigator.hardwareConcurrency || 4;
+  for (const [id, max] of [["compress-threads", cores], ["race-threads", Math.min(cores, 8)]] as const) {
     const slider = $<HTMLInputElement>(`#${id}`);
-    slider.max = String(Math.max(cores, Number(slider.min)));
+    slider.max = String(Math.max(max, Number(slider.min)));
     slider.value = slider.max;
   }
   const outputs: Array<[string, (v: number) => string]> = [
@@ -400,7 +424,11 @@ export function setupDemos(): void {
   });
   for (const [input, label] of [["compress-file", "compress-file-name"], ["decompress-file", "decompress-file-name"]] as const) {
     const element = $<HTMLInputElement>(`#${input}`);
-    element.addEventListener("change", () => ($(`#${label}`).textContent = element.files?.[0]?.name ?? ""));
+    element.addEventListener("change", () => {
+      $(`#${label}`).textContent = element.files?.[0]?.name ?? "";
+      // a chosen file is the point of the File tab: compress it right away
+      if (input === "compress-file" && element.files?.length) void RUNNERS["panel-compress"]!();
+    });
     const drop = element.previousElementSibling?.matches("label") ? element.previousElementSibling : document.querySelector(`label[for="${input}"]`);
     drop?.addEventListener("dragover", (event) => event.preventDefault());
     drop?.addEventListener("drop", (event) => {
@@ -430,6 +458,8 @@ export function setupDemos(): void {
   const autoRun = (panel: HTMLElement) => {
     if (panel.hidden || ran.has(panel.id) || location.protocol === "file:") return;
     ran.add(panel.id);
+    // File is the default source; without a file there is nothing to run yet, the idle text says what to do
+    if (panel.id === "panel-compress" && sourceOf() === "file" && !$<HTMLInputElement>("#compress-file").files?.length) return;
     void RUNNERS[panel.id]?.();
   };
   const panels = [...document.querySelectorAll<HTMLElement>(".demo-tabs > .tab-content")];

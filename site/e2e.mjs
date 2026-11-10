@@ -6,7 +6,7 @@
 // VERIFIED: 27 checks pass on Chromium 158 against docs/ built from this tree (output/e2e-site.json). A real browser
 // beats a DOM emulation here: the demos need WebAssembly, workers, CompressionStream and the clipboard.
 import assert from "node:assert/strict";
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -106,7 +106,7 @@ try {
     // hero and cards: the folding box, the footnote of the speed claim, six cards, no anchor on the services ad
     assert.equal(await page.locator(".hero-stage .pack-face").count(), 4);
     assert.equal(await page.locator(".hero-stage .pack-flap").count(), 4);
-    assert.match(await page.textContent(".hero-note"), /Files from 1 MiB at quality 11/);
+    assert.match(await page.textContent(".hero-note"), /For files of 1 MiB and larger at quality 11/);
     assert.equal(await page.locator(".usps .usp").count(), 6);
     assert.equal(await page.locator("#services-title .heading-anchor").count(), 0);
     const title = await page.locator(".hero-title").boundingBox();
@@ -114,14 +114,20 @@ try {
     assert.ok(title.x + title.width <= stage.x, "the hero title stays left of the box");
     check("hero box, footnote, six cards, services without anchor");
 
-    // compress demo: runs once by itself with its defaults (HTML sample, quality 11)
+    // compress demo: File is the default source; without a file it waits, and Compress runs the sample (HTML, quality 11)
     await page.locator("#demo").scrollIntoViewIfNeeded();
+    await page.waitForFunction(() => document.getElementById("compress-summary").textContent.startsWith("Choose a file, or press Compress"));
+    assert.equal(await page.getAttribute('#compress-source .toggle[value="file"]', "aria-pressed"), "true");
+    assert.ok(await page.locator("#compress-check").isHidden(), "no run before a file or a click");
+    await arm(page, "compress-result");
+    await page.click("#compress-run");
+    await busyDone(page, "compress-result");
     await page.waitForSelector("#compress-check:not([hidden])", { timeout: 60_000 });
     const ratio = await page.textContent("#compress-ratio");
     assert.match(ratio, /times smaller/);
     assert.match(await page.textContent("#compress-code"), /compressParallel\(input, \{ quality: 11, lgwin: 22/);
     assert.ok(await page.locator("#compress-code span[style*='--code-example-light']").count() > 3, "call line highlighted");
-    check("compress demo runs with its defaults", { ratio });
+    check("compress demo: File by default, Compress without a file runs the sample", { ratio });
     assert.match(await page.textContent("#browser-check"), /Built-in Brotli support in this browser \(CompressionStream\): (yes|no)/);
 
     // the SVG at quality 5: the case that failed in 0.3.0 (a brotli crate panic in a part)
@@ -154,16 +160,34 @@ try {
     assert.equal(await page.getAttribute('#compress-source .toggle[value="sample"]', "aria-pressed"), "true");
     check("compress demo: File without a file uses the sample");
 
-    // own file, with Ctrl+Enter
+    // own file: choosing it starts the run; Ctrl+Enter runs it again
     await page.click('#compress-source .toggle[value="file"]');
-    await page.setInputFiles("#compress-file", join(root, "input/data.json"));
     await page.locator("#compress-quality").fill("11");
+    await arm(page, "compress-result");
+    await page.setInputFiles("#compress-file", join(root, "input/data.json"));
+    await busyDone(page, "compress-result");
+    assert.match(await page.textContent("#compress-summary"), /from 20\.7 KB/);
+    assert.equal(await page.getAttribute("#compress-download", "download"), "data.json.br");
     await arm(page, "compress-result");
     await page.keyboard.press("Control+Enter");
     await busyDone(page, "compress-result");
     assert.match(await page.textContent("#compress-summary"), /from 20\.7 KB/);
-    assert.equal(await page.getAttribute("#compress-download", "download"), "data.json.br");
-    check("compress demo: own file, started with Ctrl+Enter");
+    check("compress demo: a chosen file compresses right away, again with Ctrl+Enter");
+
+    // a file above the former 64 MiB limit, at quality 1 to stay quick; the result is a .br download
+    const big = join(root, "tmp/e2e/big.bin");
+    mkdirSync(join(root, "tmp/e2e"), { recursive: true });
+    const page29k = readFileSync(join(root, "input/page.html"));
+    writeFileSync(big, Buffer.concat(Array.from({ length: Math.ceil((80 * 2 ** 20) / page29k.length) }, () => page29k)).subarray(0, 80 * 2 ** 20));
+    await page.locator("#compress-quality").fill("1");
+    await arm(page, "compress-result");
+    await page.setInputFiles("#compress-file", big);
+    await busyDone(page, "compress-result");
+    assert.equal(await page.getAttribute("#compress-result", "data-state"), null, await page.textContent("#compress-summary"));
+    assert.match(await page.textContent("#compress-summary"), /from 83\.9 MB/);
+    assert.equal(await page.getAttribute("#compress-download", "download"), "big.bin.br");
+    assert.match(await page.getAttribute("#compress-download", "href"), /^blob:/);
+    check("compress demo: an 80 MiB file compresses locally and downloads as .br");
 
     // decompress: its default runs when the tab opens; then the last result; then a corrupt file
     await page.click("#tab-decompress");
@@ -236,7 +260,7 @@ try {
 
     // performance views, ECharts through defuss-shadcn's chart
     await page.waitForSelector("#perf-chart svg", { timeout: 30_000 });
-    assert.match(await page.textContent("#perf-lead"), /Log lines \(.+\): how long one compression takes at each quality, with compressParallel\(\) on \d+ cores/);
+    assert.match(await page.textContent("#perf-lead"), /Log lines \(.+\): how long one compression takes at qualities 9 to 11, with compressParallel\(\) on \d+ cores/);
     assert.equal(await page.locator("#perf-view .toggle").count(), 4, "Speed, Look-back, Command line, Download size");
     for (const [view, head] of [["window", "Look-back distance"], ["cli", "brotli 1.2.0"], ["download", "jsDelivr"], ["speed", "Quality"]]) {
       await page.click(`#perf-view .toggle[value="${view}"]`);
@@ -282,6 +306,8 @@ try {
     await page.waitForFunction(() => Math.abs(document.getElementById("perf").getBoundingClientRect().top) < 200);
     check("German deep link #/de/perf, dark mode from the preferences");
     await page.locator("#demo").scrollIntoViewIfNeeded();
+    assert.match(await page.textContent("#compress-summary"), /^Wählen Sie eine Datei/);
+    await page.click("#compress-run");
     await page.waitForSelector("#compress-check:not([hidden])", { timeout: 60_000 });
     assert.match(await page.textContent("#compress-ratio"), /-mal kleiner/);
     check("German demo result text");

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>defuss-brotli: Brotli compression in the browser, Node.js and Bun</title>
-  <meta name="description" content="Brotli compression and decompression in WebAssembly for browsers, Node.js and Bun: a 51 KB decoder, quality 11 on all CPU cores and a brotli-compatible CLI.">
+  <meta name="description" content="Brotli compression and decompression in WebAssembly for browsers, Node.js and Bun: a ~50 KB decoder, quality 11 on all CPU cores and a brotli-compatible CLI.">
   <meta name="color-scheme" content="light dark">
   <meta property="og:title" content="defuss-brotli">
   <meta property="og:description" content="Brotli compression and decompression in WebAssembly for browsers, Node.js and Bun.">
@@ -132,13 +132,13 @@
       <div class="hero section-inner">
         <div class="hero-copy">
           <a class="mk-hero-pill" href="https://github.com/kyr0/defuss-brotli/blob/main/CHANGELOG.md"><span class="badge" data-size="sm">0.4.0</span><span data-t>Rust compiled to WebAssembly, MIT licensed<template lang="de">Rust als WebAssembly, MIT-lizenziert</template></span><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-          <h1 class="hero-title" id="hero-title"><span data-t="hero-title">Brotli compression <span class="text-rotate hero-rotate" style="--text-rotate-duration:12s"><span><span class="accent">in your browser</span><span class="accent">on many CPU cores</span><span class="accent">with a 51 KB decoder</span><span class="accent">in Node.js and Bun</span></span></span><template lang="de">Brotli-Kompression <span class="text-rotate hero-rotate" style="--text-rotate-duration:12s"><span><span class="accent">im Browser</span><span class="accent">auf vielen CPU-Kernen</span><span class="accent">mit 51-KB-Decoder</span><span class="accent">in Node.js und Bun</span></span></span></template></span></h1>
-          <p class="hero-desc" data-t>Compress and decompress Brotli in browsers, Node.js and Bun. The decoder is tiny, and the command line compresses at least twice as fast as the official brotli CLI.*<template lang="de">Brotli komprimieren und entpacken, in Browsern, Node.js und Bun. Der Decoder ist winzig, und die Kommandozeile komprimiert mindestens doppelt so schnell wie die offizielle brotli-CLI.*</template></p>
+          <h1 class="hero-title" id="hero-title"><span data-t="hero-title">Brotli compression <span class="text-rotate hero-rotate" style="--text-rotate-duration:12s"><span><span class="accent">in your browser</span><span class="accent">on many CPU cores</span><span class="accent">with a ~50 KB decoder</span><span class="accent">in Node.js and Bun</span></span></span><template lang="de">Brotli-Kompression <span class="text-rotate hero-rotate" style="--text-rotate-duration:12s"><span><span class="accent">im Browser</span><span class="accent">auf vielen CPU-Kernen</span><span class="accent">mit ~50-KB-Decoder</span><span class="accent">in Node.js und Bun</span></span></span></template></span></h1>
+          <p class="hero-desc" data-t>Compress and decompress Brotli in browsers, Node.js and Bun. The decoder is tiny, and the CLI compresses at least twice as fast as the official brotli CLI.*<template lang="de">Brotli in Browsern, Node.js und Bun komprimieren und entpacken. Der Decoder ist winzig, und die CLI komprimiert mindestens doppelt so schnell wie die offizielle brotli-CLI.*</template></p>
           <div class="hero-actions">
             <span class="aura aura-gold cta-aura"><a class="btn" data-size="lg" href="#/demo" data-router-link data-route="demo"><span data-t>Try it now<template lang="de">Jetzt ausprobieren</template></span><svg class="icon" aria-hidden="true"><use href="#i-arrow-down"/></svg></a></span>
             <a class="btn" data-variant="outline" data-size="lg" href="#/perf" data-router-link data-route="perf"><svg class="icon" aria-hidden="true"><use href="#i-chart"/></svg><span data-t>See the numbers<template lang="de">Zu den Messwerten</template></span></a>
           </div>
-          <p class="hero-note" data-t>* Files from 1 MiB at quality 11, the default. Measured on an Apple M5 Max with 48 GB of RAM. The demo runs locally in this browser tab, without a server.<template lang="de">* Dateien ab 1 MiB mit Qualität 11, dem Standard. Gemessen auf einem Apple M5 Max mit 48 GB RAM. Die Demo läuft lokal in diesem Browser-Tab, ohne Server.</template></p>
+          <p class="hero-note" data-t>* For files of 1 MiB and larger at quality 11, the default. Measured on an Apple M5 Max with 48 GB of RAM. The demo runs locally in this browser tab, without a server, and is still up to 5.3 times faster.<template lang="de">* Dateien ab 1 MiB mit Qualität 11, dem Standard. Gemessen auf einem Apple M5 Max mit 48 GB RAM. Die Demo läuft lokal in diesem Browser-Tab, ohne Server, und ist trotzdem bis zu 5,3-mal schneller.</template></p>
           <div class="install" data-install>
             <div class="toggle-group pm-switch" role="group" data-type="single" data-variant="outline" data-size="sm" aria-label="Package manager" de-aria-label="Paketmanager">
               <button class="toggle" aria-pressed="true" value="bun">bun</button>
@@ -180,7 +180,7 @@
               <div data-code="quick"></div>
               <button type="button" class="btn copy-btn" data-variant="ghost" data-size="icon" data-copy aria-label="Copy command" de-aria-label="Befehl kopieren"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg></button>
             </div>
-            <p class="mk-hero-note hero-credit" data-t>Multicore compression and command line implemented by <a href="https://www.linkedin.com/in/aronhomberg/" target="_blank" rel="noopener">Aron Homberg (kyr0)<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (opens in a new tab)</span></a> - Open Source (<a href="https://github.com/kyr0/defuss-brotli/blob/main/LICENSE" target="_blank" rel="noopener">MIT<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (opens in a new tab)</span></a>)<br>Optimized WebAssembly build of <a href="https://github.com/dropbox/rust-brotli" target="_blank" rel="noopener">dropbox/rust-brotli<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (opens in a new tab)</span></a> · <a href="https://github.com/dropbox/rust-brotli-decompressor" target="_blank" rel="noopener">dropbox/rust-brotli-decompressor<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (opens in a new tab)</span></a><template lang="de">Mehrkern-Kompression und Kommandozeile umgesetzt von <a href="https://www.linkedin.com/in/aronhomberg/" target="_blank" rel="noopener">Aron Homberg (kyr0)<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (öffnet in neuem Tab)</span></a> - Open Source (<a href="https://github.com/kyr0/defuss-brotli/blob/main/LICENSE" target="_blank" rel="noopener">MIT<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (öffnet in neuem Tab)</span></a>)<br>Optimierter WebAssembly-Build von <a href="https://github.com/dropbox/rust-brotli" target="_blank" rel="noopener">dropbox/rust-brotli<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (öffnet in neuem Tab)</span></a> · <a href="https://github.com/dropbox/rust-brotli-decompressor" target="_blank" rel="noopener">dropbox/rust-brotli-decompressor<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (öffnet in neuem Tab)</span></a></template></p>
+            <p class="mk-hero-note hero-credit" data-t>Multicore compression and command line implemented by <a href="https://www.linkedin.com/in/aronhomberg/" target="_blank" rel="noopener">Aron Homberg (kyr0)<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (opens in a new tab)</span></a>, open source (<a href="https://github.com/kyr0/defuss-brotli/blob/main/LICENSE" target="_blank" rel="noopener">MIT<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (opens in a new tab)</span></a>)<br>Optimized WebAssembly build of <a href="https://github.com/dropbox/rust-brotli" target="_blank" rel="noopener">dropbox/rust-brotli<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (opens in a new tab)</span></a> · <a href="https://github.com/dropbox/rust-brotli-decompressor" target="_blank" rel="noopener">dropbox/rust-brotli-decompressor<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (opens in a new tab)</span></a><template lang="de">Mehrkern-Kompression und Kommandozeile umgesetzt von <a href="https://www.linkedin.com/in/aronhomberg/" target="_blank" rel="noopener">Aron Homberg (kyr0)<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (öffnet in neuem Tab)</span></a>, Open Source (<a href="https://github.com/kyr0/defuss-brotli/blob/main/LICENSE" target="_blank" rel="noopener">MIT<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (öffnet in neuem Tab)</span></a>)<br>Optimierter WebAssembly-Build von <a href="https://github.com/dropbox/rust-brotli" target="_blank" rel="noopener">dropbox/rust-brotli<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (öffnet in neuem Tab)</span></a> · <a href="https://github.com/dropbox/rust-brotli-decompressor" target="_blank" rel="noopener">dropbox/rust-brotli-decompressor<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (öffnet in neuem Tab)</span></a></template></p>
           </div>
         </div>
       </div>
@@ -193,8 +193,8 @@
         </li>
         <li class="usp">
           <span class="usp-icon" aria-hidden="true"><svg class="icon"><use href="#i-download"/></svg></span>
-          <h2 class="usp-title" data-t>51 KB to decompress<template lang="de">51 KB zum Entpacken</template></h2>
-          <p data-t>Pages that only decompress load just the decoder: <strong>51 KB</strong>, or 85 KB from jsDelivr. The compression code is never loaded.<template lang="de">Seiten, die nur entpacken, laden nur den Decoder: <strong>51 KB</strong>, über jsDelivr 85 KB. Der Code zum Komprimieren wird nie geladen.</template></p>
+          <h2 class="usp-title" data-t>~50 KB to decompress<template lang="de">~50 KB zum Entpacken</template></h2>
+          <p data-t>Pages that only decompress load just the decoder: <strong>~50 KB</strong> when the server compresses it at Brotli quality 11, or 85 KB from jsDelivr. The compression code is never loaded.<template lang="de">Seiten, die nur entpacken, laden nur den Decoder: <strong>~50 KB</strong>, wenn der Server ihn mit Brotli-Qualität 11 komprimiert, über jsDelivr 85 KB. Der Code zum Komprimieren wird nie geladen.</template></p>
         </li>
         <li class="usp">
           <span class="usp-icon" aria-hidden="true"><svg class="icon"><use href="#i-shrink"/></svg></span>
@@ -204,17 +204,17 @@
         <li class="usp">
           <span class="usp-icon" aria-hidden="true"><svg class="icon"><use href="#i-cpu"/></svg></span>
           <h2 class="usp-title" data-t>Multicore Brotli<template lang="de">Mehrkern-Brotli</template></h2>
-          <p data-t><code>compressParallel</code> spreads large inputs over your CPU cores: 100 MiB at quality 11 takes <strong>17 s on 13 cores instead of 139 s</strong> on one, at most 0.1 % larger.<template lang="de"><code>compressParallel</code> verteilt große Eingaben auf Ihre CPU-Kerne: 100 MiB mit Qualität 11 dauern <strong>17 s auf 13 Kernen statt 139 s</strong> auf einem, höchstens 0,1 % größer.</template></p>
+          <p data-t><code>compressParallel</code> spreads large inputs over your CPU cores: 100 MiB at quality 11 takes <strong>17 s on 13 cores instead of 139 s</strong> on one, and the output is at most 0.1 % larger.<template lang="de"><code>compressParallel</code> verteilt große Eingaben auf Ihre CPU-Kerne: 100 MiB mit Qualität 11 dauern <strong>17 s auf 13 Kernen statt 139 s</strong> auf einem, und die Ausgabe ist höchstens 0,1 % größer.</template></p>
         </li>
         <li class="usp">
           <span class="usp-icon" aria-hidden="true"><svg class="icon"><use href="#i-memory"/></svg></span>
           <h2 class="usp-title" data-t>Little memory<template lang="de">Wenig Arbeitsspeicher</template></h2>
-          <p data-t>Data passes through in 1 MiB pieces. Unpacking 100 MiB, the decoder uses <strong>19.6 MiB</strong> of RAM.<template lang="de">Die Daten laufen in 1-MiB-Stücken durch. Beim Entpacken von 100 MiB belegt der Decoder <strong>19,6 MiB</strong> RAM.</template></p>
+          <p data-t>Data passes through in 1 MiB pieces. Unpacking 100 MiB, the decoder uses <strong>~20 MiB</strong> of RAM.<template lang="de">Die Daten laufen in 1-MiB-Stücken durch. Beim Entpacken von 100 MiB belegt der Decoder <strong>~20 MiB</strong> RAM.</template></p>
         </li>
         <li class="usp">
           <span class="usp-icon" aria-hidden="true"><svg class="icon"><use href="#i-terminal"/></svg></span>
           <h2 class="usp-title" data-t>Faster than the brotli CLI<template lang="de">Schneller als die brotli-CLI</template></h2>
-          <p data-t><code>bunx defuss-brotli</code> accepts the options of the brotli command and is <strong>1.2 to 5.3 times faster</strong> than brotli 1.2.0 on files from 256 KiB.<template lang="de"><code>bunx defuss-brotli</code> versteht die Optionen des brotli-Befehls und ist bei Dateien ab 256 KiB <strong>1,2- bis 5,3-mal schneller</strong> als brotli 1.2.0.</template></p>
+          <p data-t><code>bunx defuss-brotli</code> accepts the options of the brotli command and is <strong>1.2 to 5.3 times faster</strong> than the official brotli CLI on files of 256 KiB and larger.<template lang="de"><code>bunx defuss-brotli</code> versteht die Optionen des brotli-Befehls und ist bei Dateien ab 256 KiB <strong>1,2- bis 5,3-mal schneller</strong> als die offizielle brotli-CLI.</template></p>
         </li>
       </ul>
     </div>
@@ -237,8 +237,8 @@
     <header class="mk-section-header" data-align="center">
       <div class="mk-section-header-copy">
         <span class="mk-section-header-eyebrow" data-t>Live demo<template lang="de">Live-Demo</template></span>
-        <h2 class="mk-section-header-title" id="demo-title" data-anchor="demo"><span data-t>Try it on your own data<template lang="de">Probieren Sie es mit Ihren Daten</template></span></h2>
-        <p class="mk-section-header-desc" data-t>Everything runs in this tab; nothing is uploaded. Start with <kbd class="kbd-group"><kbd class="kbd" data-mod>Ctrl</kbd><kbd class="kbd">Enter</kbd></kbd>.<template lang="de">Alles läuft in diesem Tab; nichts wird hochgeladen. Starten mit <kbd class="kbd-group"><kbd class="kbd" data-mod>Ctrl</kbd><kbd class="kbd">Enter</kbd></kbd>.</template></p>
+        <h2 class="mk-section-header-title" id="demo-title" data-anchor="demo"><span data-t>Try it on your own data<template lang="de">Probieren Sie es mit Ihren eigenen Daten aus</template></span></h2>
+        <p class="mk-section-header-desc" data-t>Everything runs in this tab; nothing is uploaded. Start with <kbd class="kbd-group"><kbd class="kbd" data-mod>Ctrl</kbd><kbd class="kbd">Enter</kbd></kbd>.<template lang="de">Alles läuft in diesem Tab; nichts wird hochgeladen. Starten Sie mit <kbd class="kbd-group"><kbd class="kbd" data-mod>Ctrl</kbd><kbd class="kbd">Enter</kbd></kbd>.</template></p>
       </div>
     </header>
     <p class="browser-check" id="browser-check" role="status" hidden></p>
@@ -247,7 +247,7 @@
       <div class="tabs demo-tabs">
         <div class="tab-list" role="tablist" aria-label="Demos" data-size="lg" id="demo-tabs">
           <button class="tab-trigger demo-tab" role="tab" aria-selected="true" aria-controls="panel-compress" id="tab-compress"><svg class="icon demo-tab-icon" aria-hidden="true"><use href="#i-zip"/></svg><span class="demo-tab-text"><span class="demo-tab-title" data-t>Compress<template lang="de">Komprimieren</template></span><span class="demo-tab-desc" data-t>Any input, any quality<template lang="de">Beliebige Daten und Qualität</template></span></span></button>
-          <button class="tab-trigger demo-tab" role="tab" aria-selected="false" aria-controls="panel-decompress" id="tab-decompress" tabindex="-1"><svg class="icon demo-tab-icon" aria-hidden="true"><use href="#i-unpack"/></svg><span class="demo-tab-text"><span class="demo-tab-title" data-t>Decompress<template lang="de">Entpacken</template></span><span class="demo-tab-desc" data-t>With the 51 KB decoder<template lang="de">Mit dem 51-KB-Decoder</template></span></span></button>
+          <button class="tab-trigger demo-tab" role="tab" aria-selected="false" aria-controls="panel-decompress" id="tab-decompress" tabindex="-1"><svg class="icon demo-tab-icon" aria-hidden="true"><use href="#i-unpack"/></svg><span class="demo-tab-text"><span class="demo-tab-title" data-t>Decompress<template lang="de">Entpacken</template></span><span class="demo-tab-desc" data-t>With the ~50 KB decoder<template lang="de">Mit dem ~50-KB-Decoder</template></span></span></button>
           <button class="tab-trigger demo-tab" role="tab" aria-selected="false" aria-controls="panel-race" id="tab-race" tabindex="-1"><svg class="icon demo-tab-icon" aria-hidden="true"><use href="#i-zap"/></svg><span class="demo-tab-text"><span class="demo-tab-title" data-t>Single vs. Multicore<template lang="de">Einzel- vs. Mehrkern</template></span><span class="demo-tab-desc" data-t>Same data, 1 core against several<template lang="de">Gleiche Daten, 1 Kern gegen mehrere</template></span></span></button>
         </div>
 
@@ -257,11 +257,11 @@
               <fieldset class="field">
                 <legend class="field-label" data-t>Input<template lang="de">Eingabe</template></legend>
                 <div class="toggle-group source-switch" role="group" data-type="single" data-variant="outline" aria-label="Input source" de-aria-label="Quelle der Eingabe" id="compress-source">
-                  <button type="button" class="toggle" aria-pressed="true" value="sample"><svg class="icon" aria-hidden="true"><use href="#i-file"/></svg><span data-t>Sample<template lang="de">Beispiel</template></span></button>
+                  <button type="button" class="toggle" aria-pressed="false" value="sample"><svg class="icon" aria-hidden="true"><use href="#i-file"/></svg><span data-t>Sample<template lang="de">Beispiel</template></span></button>
                   <button type="button" class="toggle" aria-pressed="false" value="text"><svg class="icon" aria-hidden="true"><use href="#i-type"/></svg><span data-t>Text<template lang="de">Text</template></span></button>
-                  <button type="button" class="toggle" aria-pressed="false" value="file"><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg><span data-t>File<template lang="de">Datei</template></span></button>
+                  <button type="button" class="toggle" aria-pressed="true" value="file"><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg><span data-t>File<template lang="de">Datei</template></span></button>
                 </div>
-                <div data-source="sample">
+                <div data-source="sample" hidden>
                   <label class="sr-only" for="compress-sample" data-t>Sample input<template lang="de">Beispieldaten</template></label>
                   <select class="select" id="compress-sample">
                     <option value="html" data-t>HTML page, 29 KB<template lang="de">HTML-Seite, 29 KB</template></option>
@@ -274,8 +274,8 @@
                   <label class="sr-only" for="compress-text" data-t>Text to compress<template lang="de">Zu komprimierender Text</template></label>
                   <textarea class="textarea" id="compress-text" rows="5" spellcheck="false">Brotli finds repeats: the more a text repeats itself, the smaller it gets. Brotli finds repeats: the more a text repeats itself, the smaller it gets.</textarea>
                 </div>
-                <div data-source="file" hidden>
-                  <label class="file-drop" for="compress-file"><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg><span data-t>Choose a file or drop it here. It stays on this device.<template lang="de">Datei wählen oder hier ablegen. Sie bleibt auf diesem Gerät.</template></span><span class="file-name" id="compress-file-name"></span></label>
+                <div data-source="file">
+                  <label class="file-drop" for="compress-file"><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg><span data-t>Choose a file or drop it here, up to 4 GiB. It stays on this device; large files need about twice their size in memory.<template lang="de">Datei wählen oder hier ablegen, bis 4 GiB. Sie bleibt auf diesem Gerät; große Dateien brauchen etwa das Doppelte ihrer Größe an Arbeitsspeicher.</template></span><span class="file-name" id="compress-file-name"></span></label>
                   <input class="sr-only" type="file" id="compress-file">
                 </div>
               </fieldset>
@@ -287,12 +287,12 @@
               <div class="field">
                 <div class="field-row"><label class="field-label" for="compress-lgwin" data-t>Look-back distance<template lang="de">Look-back</template></label><output class="field-value" for="compress-lgwin" id="compress-lgwin-value">4 MiB</output></div>
                 <input class="slider" type="range" id="compress-lgwin" min="10" max="24" step="1" value="22">
-                <p class="field-hint" data-t>How far back Brotli looks for repeated data. Further finds more, and unpacking needs that much memory.<template lang="de">Wie weit Brotli nach wiederholten Daten zurückschaut. Weiter findet mehr, und das Entpacken braucht so viel Speicher.</template></p>
+                <p class="field-hint" data-t>How far back Brotli looks for repeated data. A longer look-back finds more repeats, and unpacking needs that much memory.<template lang="de">Wie weit Brotli nach wiederholten Daten zurückschaut. Ein längerer Look-back findet mehr Wiederholungen, und das Entpacken braucht so viel Speicher.</template></p>
               </div>
               <div class="field">
                 <div class="field-row"><label class="field-label" for="compress-threads" data-t>CPU cores<template lang="de">CPU-Kerne</template></label><output class="field-value" for="compress-threads" id="compress-threads-value">8</output></div>
-                <input class="slider" type="range" id="compress-threads" min="1" max="8" step="1" value="8">
-                <p class="field-hint" data-t>Shares the work at quality 10 and 11 for inputs above 32 KiB. Inputs up to 64 MiB split into 8 parts, so more than 8 cores add nothing here.<template lang="de">Teilt die Arbeit bei Qualität 10 und 11 für Eingaben über 32 KiB auf. Eingaben bis 64 MiB werden in 8 Teile geteilt, mehr als 8 Kerne bringen hier also nichts.</template></p>
+                <input class="slider" type="range" id="compress-threads" min="1" max="64" step="1" value="8">
+                <p class="field-hint" data-t>Shares the work at quality 10 and 11 for inputs above 32 KiB: up to 8 parts, above 64 MiB one part per 8 MiB; each core compresses one part at a time. With a look-back other than 4 MiB, 64 and 8 MiB change in proportion.<template lang="de">Teilt die Arbeit bei Qualität 10 und 11 für Eingaben über 32 KiB auf: in bis zu 8 Teile, über 64 MiB in einen Teil je 8 MiB; jeder Kern komprimiert einen Teil nach dem anderen. Bei einem anderen Look-back als 4 MiB ändern sich 64 und 8 MiB im selben Verhältnis.</template></p>
               </div>
               <button class="btn run-btn" data-size="lg" type="submit" id="compress-run"><svg class="icon" aria-hidden="true"><use href="#i-zip"/></svg><span data-t>Compress<template lang="de">Komprimieren</template></span><kbd class="kbd-group" aria-hidden="true"><kbd class="kbd" data-size="sm" data-mod>Ctrl</kbd><kbd class="kbd" data-size="sm">Enter</kbd></kbd></button>
             </form>
@@ -300,7 +300,7 @@
             <div class="pane result" aria-live="polite" id="compress-result">
               <div class="result-head">
                 <p class="result-big"><span id="compress-ratio">-</span></p>
-                <p class="result-sub" id="compress-summary" data-idle="compress-idle">Press Compress to start.</p>
+                <p class="result-sub" id="compress-summary" data-idle="compress-idle">Choose a file, or press Compress for the sample.</p>
               </div>
               <ul class="bars" id="compress-bars" aria-label="Sizes" de-aria-label="Größen">
                 <li class="bar" data-bar="input"><span class="bar-label" data-t>Original<template lang="de">Original</template></span><span class="bar-track"><span class="bar-fill"></span></span><span class="bar-value">-</span></li>
@@ -311,7 +311,7 @@
               <div class="mockup-code call-code" data-variant="outline" data-wrap data-title="what ran" id="compress-code"><pre data-prefix=">"><code>await compressParallel(input, { quality: 11 })</code></pre></div>
               <div class="result-actions">
                 <a class="btn" data-variant="outline" id="compress-download" hidden download="input.br"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><span data-t>Download .br<template lang="de">.br herunterladen</template></span></a>
-                <button type="button" class="btn" data-variant="ghost" id="compress-to-decoder" hidden><svg class="icon" aria-hidden="true"><use href="#i-unpack"/></svg><span data-t>Decompress this<template lang="de">Das hier entpacken</template></span></button>
+                <button type="button" class="btn" data-variant="ghost" id="compress-to-decoder" hidden><svg class="icon" aria-hidden="true"><use href="#i-unpack"/></svg><span data-t>Decompress this<template lang="de">Dieses Ergebnis entpacken</template></span></button>
               </div>
             </div>
           </div>
@@ -362,7 +362,7 @@
                 <div class="field-row"><label class="field-label" for="race-threads" data-t>CPU cores<template lang="de">CPU-Kerne</template></label><output class="field-value" for="race-threads" id="race-threads-value">8</output></div>
                 <input class="slider" type="range" id="race-threads" min="2" max="8" step="1" value="8">
               </div>
-              <p class="field-hint race-note" data-t>Both run at quality 11. The single-core run uses this page's own thread, so the page freezes until it is done.<template lang="de">Beide laufen mit Qualität 11. Der Lauf auf einem Kern nutzt den Thread dieser Seite, die Seite steht also, bis er fertig ist.</template></p>
+              <p class="field-hint race-note" data-t>Both run at quality 11. The single-core run uses this page's own thread, so the page freezes until it is done.<template lang="de">Beide laufen mit Qualität 11. Der Lauf auf einem Kern nutzt den Thread dieser Seite; sie reagiert daher nicht, bis er fertig ist.</template></p>
               <button class="btn run-btn" data-size="lg" type="submit" id="race-run"><svg class="icon" aria-hidden="true"><use href="#i-zap"/></svg><span data-t>Start<template lang="de">Starten</template></span><kbd class="kbd-group" aria-hidden="true"><kbd class="kbd" data-size="sm" data-mod>Ctrl</kbd><kbd class="kbd" data-size="sm">Enter</kbd></kbd></button>
             </form>
             <div class="pane result" aria-live="polite" id="race-result">
@@ -400,12 +400,12 @@
         </div>
         <div class="diagram-node" data-node="split" style="--col:3;--row:1">
           <span class="diagram-node-eyebrow" data-t>Quality 10 and 11<template lang="de">Qualität 10 und 11</template></span>
-          <span class="diagram-node-name" data-t>8 parts, above 64 MiB 8 MiB each<template lang="de">8 Teile, über 64 MiB je 8 MiB</template></span>
+          <span class="diagram-node-name" data-t>Up to 8 parts, above 64 MiB 8 MiB each<template lang="de">Bis zu 8 Teile, über 64 MiB je 8 MiB</template></span>
           <span class="diagram-node-meta" data-t>each may refer back to the data before it<template lang="de">jeder darf auf die Daten davor verweisen</template></span>
         </div>
         <div class="diagram-node" data-node="workers" data-tone="accent" style="--col:4;--row:1">
           <span class="diagram-node-eyebrow">compressor.wasm</span>
-          <span class="diagram-node-name" data-t>One core per part<template lang="de">Ein Kern pro Teil</template></span>
+          <span class="diagram-node-name" data-t>Parts in parallel<template lang="de">Teile parallel</template></span>
           <span class="diagram-node-meta" data-t>each with its own encoder<template lang="de">jeder mit eigenem Encoder</template></span>
         </div>
         <div class="diagram-node" data-node="stream" data-shape="store" style="--col:5;--row:1">
@@ -418,7 +418,7 @@
         </div>
         <div class="diagram-node" data-node="decoder" style="--col:3;--row:2">
           <span class="diagram-node-eyebrow">decompressor.wasm</span>
-          <span class="diagram-node-name" data-t>51 KB decoder<template lang="de">51-KB-Decoder</template></span>
+          <span class="diagram-node-name" data-t>~50 KB decoder<template lang="de">~50-KB-Decoder</template></span>
           <span class="diagram-node-meta" data-t>1 MiB at a time, little memory<template lang="de">1 MiB pro Schritt, wenig Speicher</template></span>
         </div>
         <div class="diagram-node" data-node="output" data-shape="pill" style="--col:4;--row:2">
@@ -438,15 +438,15 @@
     <ul class="facts">
       <li class="fact">
         <h3 class="fact-title"><svg class="icon" aria-hidden="true"><use href="#i-layers"/></svg><span data-t>Separate downloads<template lang="de">Getrennte Downloads</template></span></h3>
-        <p data-t>The decoder is a 51 KB download, the encoder 397 KB. Build tools leave the encoder out of apps that only decompress.<template lang="de">Der Decoder ist ein Download von 51 KB, der Encoder von 397 KB. Build-Tools lassen den Encoder aus Apps heraus, die nur entpacken.</template></p>
+        <p data-t>The decoder is a ~50 KB download, the encoder 397 KB. Build tools leave the encoder out of apps that only decompress.<template lang="de">Der Decoder ist ein Download von ~50 KB, der Encoder von 397 KB. Build-Tools lassen den Encoder aus Apps heraus, die nur entpacken.</template></p>
       </li>
       <li class="fact">
-        <h3 class="fact-title"><svg class="icon" aria-hidden="true"><use href="#i-gauge"/></svg><span data-t>Memory stays flat<template lang="de">Speicher bleibt flach</template></span></h3>
-        <p data-t>Data passes through 1 MiB at a time, so memory does not grow with the input: unpacking 100 MiB takes 19.6 MiB.<template lang="de">Die Daten laufen in Schritten von 1 MiB durch, der Speicher wächst also nicht mit der Eingabe: 100 MiB entpacken braucht 19,6 MiB.</template></p>
+        <h3 class="fact-title"><svg class="icon" aria-hidden="true"><use href="#i-gauge"/></svg><span data-t>Memory stays flat<template lang="de">Speicherbedarf bleibt gleich</template></span></h3>
+        <p data-t>Data passes through 1 MiB at a time, so memory does not grow with the input: unpacking 100 MiB takes ~20 MiB.<template lang="de">Die Daten laufen in Schritten von 1 MiB durch, der Speicherbedarf wächst also nicht mit der Eingabe: Das Entpacken von 100 MiB braucht ~20 MiB.</template></p>
       </li>
       <li class="fact">
         <h3 class="fact-title"><svg class="icon" aria-hidden="true"><use href="#i-cpu"/></svg><span data-t>Same bytes on any machine<template lang="de">Gleiche Bytes auf jeder Maschine</template></span></h3>
-        <p data-t>Where the input is split depends only on its length, so any number of cores produces the same file, byte for byte.<template lang="de">Wo die Eingabe geteilt wird, hängt nur von ihrer Länge ab, also erzeugt jede Zahl von Kernen dieselbe Datei, Byte für Byte.</template></p>
+        <p data-t>Where the input is split depends only on its length and the settings, never on the cores, so any number of cores produces the same file, byte for byte.<template lang="de">Wo die Eingabe geteilt wird, hängt nur von ihrer Länge und den Einstellungen ab, nie von den Kernen; daher erzeugt jede Anzahl von Kernen dieselbe Datei, Byte für Byte.</template></p>
       </li>
     </ul>
   </section>
@@ -457,8 +457,8 @@
         <div class="aura aura-glow aura-gold consult-portrait" style="--shape-round:1.25rem"><img class="shape-squircle" src="assets/aron-homberg.jpg" width="400" height="400" alt="Portrait of Aron Homberg" de-alt="Porträt von Aron Homberg" loading="lazy"></div>
         <div>
           <p class="consult-eyebrow" data-t>For teams and companies<template lang="de">Für Teams und Unternehmen</template></p>
-          <h2 class="consult-title" id="services-title"><span data-t>Adapted to your tech stack<template lang="de">Anpassung an Ihren TechStack</template></span></h2>
-          <p class="consult-desc" data-t>I am glad to help you integrate optimized Brotli compression into your projects, for example with custom code dictionaries, a streaming API or Brotli in special edge runtimes.<template lang="de">Gerne unterstütze ich Sie bei der Integration optimierter Brotli-Kompression in Ihren Projekten. Etwa mittels eigener Code-Wörterbücher, Streaming-API oder Brotli in speziellen Edge-Runtimes.</template></p>
+          <h2 class="consult-title" id="services-title"><span data-t>Adapted to your tech stack<template lang="de">Anpassung an Ihren Tech-Stack</template></span></h2>
+          <p class="consult-desc" data-t>I am glad to help you integrate optimized Brotli compression into your projects, for example with custom code dictionaries, a streaming API or Brotli in special edge runtimes.<template lang="de">Gerne unterstütze ich Sie bei der Integration optimierter Brotli-Kompression in Ihre Projekte, etwa mit eigenen Code-Wörterbüchern, einer Streaming-API oder Brotli in speziellen Edge-Runtimes.</template></p>
         </div>
       </div>
       <div class="consult-actions">
@@ -472,7 +472,7 @@
       <div class="mk-section-header-copy">
         <span class="mk-section-header-eyebrow" data-t>Performance<template lang="de">Leistung</template></span>
         <h2 class="mk-section-header-title" id="perf-title" data-anchor="perf"><span data-t>Measured, with the method attached<template lang="de">Gemessen, mit Methode</template></span></h2>
-        <p class="mk-section-header-desc" id="perf-method" data-t>Measured on <span data-perf="cpu">Apple M5 Max</span> with Node.js <span data-perf="node">26</span> on <span data-perf="date">2026-11-09</span>; each time is the middle value of 3 runs after a warm-up run, for the 100 MiB of log lines a single run. The table under the chart has every value.<template lang="de">Gemessen auf <span data-perf="cpu">Apple M5 Max</span> mit Node.js <span data-perf="node">26</span> am <span data-perf="date">2026-11-09</span>; jede Zeit ist der mittlere Wert aus 3 Läufen nach einem Aufwärmlauf, bei den 100 MiB Logzeilen ein einzelner Lauf. Die Tabelle unter dem Diagramm enthält jeden Wert.</template></p>
+        <p class="mk-section-header-desc" id="perf-method" data-t>Measured on <span data-perf="cpu">Apple M5 Max</span> with Node.js; each time is the median of 3 runs after a warm-up run; the 100 MiB of log lines ran once at quality 10 and 11. The table under the chart has every value.<template lang="de">Gemessen auf <span data-perf="cpu">Apple M5 Max</span> mit Node.js; jede Zeit ist der Median aus 3 Läufen nach einem Aufwärmlauf; die 100 MiB Logzeilen liefen bei Qualität 10 und 11 nur einmal. Die Tabelle unter dem Diagramm enthält jeden Wert.</template></p>
       </div>
     </header>
     <div class="perf-card">
@@ -532,14 +532,14 @@
               <div class="copy-wrap"><div data-code="server"></div><button type="button" class="btn copy-btn" data-variant="ghost" data-size="icon" data-copy aria-label="Copy code" de-aria-label="Code kopieren"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg></button></div>
             </div>
             <div class="tab-content" role="tabpanel" id="code-cdn" aria-labelledby="code-tab-cdn" tabindex="0" hidden>
-              <p class="way-desc" data-t>An import map from jsDelivr; the decoder fetches its .wasm from the same folder.<template lang="de">Eine Import-Map von jsDelivr; der Decoder lädt seine .wasm aus demselben Ordner.</template></p>
+              <p class="way-desc" data-t>An import map that points at jsDelivr; the decoder fetches its .wasm from the same folder.<template lang="de">Eine Import-Map, die auf jsDelivr zeigt; der Decoder lädt seine .wasm-Datei aus demselben Ordner.</template></p>
               <div class="copy-wrap"><div data-code="cdn"></div><button type="button" class="btn copy-btn" data-variant="ghost" data-size="icon" data-copy aria-label="Copy code" de-aria-label="Code kopieren"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg></button></div>
             </div>
           </div>
         </div>
         <div class="way">
           <h3 class="way-title"><svg class="icon" aria-hidden="true"><use href="#i-terminal"/></svg><span data-t>On the command line<template lang="de">Auf der Kommandozeile</template></span></h3>
-          <p class="way-desc" data-t>Same options, defaults and output names as brotli 1.2.0, so build scripts can swap it in.<template lang="de">Gleiche Optionen, Standards und Dateinamen wie brotli 1.2.0, Build-Skripte können also einfach wechseln.</template></p>
+          <p class="way-desc" data-t>Same options, defaults and output names as the brotli CLI, so build scripts can swap it in.<template lang="de">Gleiche Optionen, Standardwerte und Dateinamen wie die brotli-CLI, sodass Build-Skripte einfach wechseln können.</template></p>
           <div class="toggle-group pm-switch" role="group" data-type="single" data-variant="outline" data-size="sm" aria-label="Package manager" de-aria-label="Paketmanager">
             <button class="toggle" aria-pressed="true" value="bun">bun</button>
             <button class="toggle" aria-pressed="false" value="pnpm">pnpm</button>
@@ -548,7 +548,7 @@
           </div>
           <div class="copy-wrap"><div data-code="cli"></div><button type="button" class="btn copy-btn" data-variant="ghost" data-size="icon" data-copy aria-label="Copy commands" de-aria-label="Befehle kopieren"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg></button></div>
           <p class="agent-note"><svg class="icon" aria-hidden="true"><use href="#i-bot"/></svg><span data-t>Coding agents: <a href="llms.txt">llms.txt</a> has the API, limits and numbers in one file.<template lang="de">Coding-Agenten: <a href="llms.txt">llms.txt</a> enthält API, Grenzen und Zahlen in einer Datei.</template></span></p>
-          <p class="agent-note"><svg class="icon" aria-hidden="true"><use href="#i-package"/></svg><span data-t>If you are looking for maximum Brotli feature support, including streaming compression, streaming decompression and custom dictionaries, use Aron's other library <a href="https://github.com/kyr0/brotli-compress" target="_blank" rel="noopener">brotli-compress<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (opens in a new tab)</span></a>. It has all those features, but is much bigger in code size.<template lang="de">Wenn Sie den vollen Brotli-Funktionsumfang suchen, mit Streaming-Kompression, Streaming-Dekompression und eigenen Wörterbüchern, nutzen Sie Arons andere Bibliothek <a href="https://github.com/kyr0/brotli-compress" target="_blank" rel="noopener">brotli-compress<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (öffnet in neuem Tab)</span></a>. Sie hat all diese Funktionen, ist aber deutlich größer im Code.</template></span></p>
+          <p class="agent-note"><svg class="icon" aria-hidden="true"><use href="#i-package"/></svg><span data-t>If you are looking for maximum Brotli feature support, including streaming compression, streaming decompression and custom dictionaries, use Aron's other library <a href="https://github.com/kyr0/brotli-compress" target="_blank" rel="noopener">brotli-compress<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (opens in a new tab)</span></a>. It has all those features, but is much bigger in code size.<template lang="de">Wenn Sie den vollen Brotli-Funktionsumfang suchen, mit Streaming-Kompression, Streaming-Dekompression und eigenen Wörterbüchern, nutzen Sie Arons andere Bibliothek <a href="https://github.com/kyr0/brotli-compress" target="_blank" rel="noopener">brotli-compress<svg class="icon ext" aria-hidden="true"><use href="#i-external"/></svg><span class="sr-only"> (öffnet in neuem Tab)</span></a>. Sie bietet all diese Funktionen, ihr Code ist aber deutlich größer.</template></span></p>
         </div>
       </div>
     </div>
@@ -615,13 +615,14 @@
   </footer>
 
   <div hidden data-messages>
-    <span data-t data-msg="compress-idle">Press Compress to start.<template lang="de">Mit Komprimieren geht es los.</template></span>
+    <span data-t data-msg="compress-idle">Choose a file, or press Compress for the sample.<template lang="de">Wählen Sie eine Datei, oder drücken Sie Komprimieren, um das Beispiel zu verwenden.</template></span>
     <span data-t data-msg="decompress-idle">Press Decompress to start.<template lang="de">Mit Entpacken geht es los.</template></span>
     <span data-t data-msg="race-idle">Press Start to compare.<template lang="de">Mit Starten beginnt der Vergleich.</template></span>
     <span data-t data-msg="loading-encoder">Loading the encoder (compressor.wasm)...<template lang="de">Encoder wird geladen (compressor.wasm) ...</template></span>
     <span data-t data-msg="loading-decoder">Loading the decoder (decompressor.wasm)...<template lang="de">Decoder wird geladen (decompressor.wasm) ...</template></span>
     <span data-t data-msg="loading-input">Preparing the input...<template lang="de">Eingabe wird vorbereitet ...</template></span>
     <span data-t data-msg="compressing">Compressing {size}...<template lang="de">{size} werden komprimiert ...</template></span>
+    <span data-t data-msg="checking">Comparing with gzip and unpacking the result to check it...<template lang="de">Vergleich mit gzip und Prüfung durch Entpacken ...</template></span>
     <span data-t data-msg="decompressing">Decompressing...<template lang="de">Wird entpackt ...</template></span>
     <span data-t data-msg="smaller">{times} times smaller<template lang="de">{times}-mal kleiner</template></span>
     <span data-t data-msg="compress-done">{output} from {input} in {time}, at quality {quality}.<template lang="de">{output} aus {input} in {time}, mit Qualität {quality}.</template></span>
@@ -631,7 +632,7 @@
     <span data-t data-msg="decoder-cached">from the browser cache<template lang="de">aus dem Browser-Cache</template></span>
     <span data-t data-msg="faster">{times} times faster<template lang="de">{times}-mal schneller</template></span>
     <span data-t data-msg="race-running-parallel">compressParallel is running on {threads} cores...<template lang="de">compressParallel läuft auf {threads} Kernen ...</template></span>
-    <span data-t data-msg="race-running-single">compress is running on one core; the page freezes until it is done...<template lang="de">compress läuft auf einem Kern; die Seite steht, bis es fertig ist ...</template></span>
+    <span data-t data-msg="race-running-single">compress is running on one core; the page freezes until it is done...<template lang="de">compress läuft auf einem Kern; die Seite reagiert nicht, bis der Lauf fertig ist ...</template></span>
     <span data-t data-msg="race-done">{input}: {parallel} on {threads} cores against {single} on one core.<template lang="de">{input}: {parallel} auf {threads} Kernen gegen {single} auf einem Kern.</template></span>
     <span data-t data-msg="race-check">Both results unpack to the input. The multicore one is {delta} larger.<template lang="de">Beide Ergebnisse ergeben entpackt die Eingabe. Das Mehrkern-Ergebnis ist {delta} größer.</template></span>
     <span data-t data-msg="bar-quality">quality {quality}<template lang="de">Qualität {quality}</template></span>
@@ -646,10 +647,10 @@
     <span data-t data-msg="measuring">Measuring quality {quality} of 11...<template lang="de">Qualität {quality} von 11 wird gemessen ...</template></span>
     <span data-t data-msg="this-device">This device<template lang="de">Dieses Gerät</template></span>
     <span data-t data-msg="copied">Copied<template lang="de">Kopiert</template></span>
-    <span data-t data-msg="lead-multi">{input} ({size}): how long one compression takes at each quality, with <code>compressParallel()</code> on {cores}, with <code>compress()</code> on 1 core, and with the C library built into Node.js, which has no multicore mode. Only quality 10 and 11, the slowest levels, use more than one core.<template lang="de">{input} ({size}): Wie lange eine Kompression je Qualität dauert, mit <code>compressParallel()</code> auf {cores}, mit <code>compress()</code> auf 1 Kern und mit der in Node.js eingebauten C-Bibliothek, die nur einen Kern nutzt. Nur Qualität 10 und 11, die langsamsten Stufen, nutzen mehr als einen Kern.</template></span>
-    <span data-t data-msg="lead-single">{input} ({size}): how long one compression takes at each quality on 1 core, against the C library built into Node.js.<template lang="de">{input} ({size}): Wie lange eine Kompression je Qualität auf 1 Kern dauert, im Vergleich zur in Node.js eingebauten C-Bibliothek.</template></span>
-    <span data-t data-msg="lead-window">Brotli saves space by pointing back to data it has already seen. The look-back distance limits how far back: further finds more repeats, and unpacking needs that much memory. Sizes at quality 11, against 64 KiB.<template lang="de">Brotli spart Platz, indem es auf schon gesehene Daten zurückverweist. Look-back begrenzt, wie weit zurück geschaut wird: Weiter findet mehr Wiederholungen, und das Entpacken braucht so viel Speicher. Größen bei Qualität 11, im Vergleich zu 64 KiB.</template></span>
-    <span data-t data-msg="lead-cli">Total time of the whole command at quality 11, startup included, middle value of 5 runs, against Google's brotli 1.2.0 on an Apple M5 Max.<template lang="de">Gesamtausführungszeit des Befehls bei Qualität 11 samt Start, mittlerer Wert aus 5 Läufen, gegen Googles brotli 1.2.0 auf einem Apple M5 Max.</template></span>
+    <span data-t data-msg="lead-multi">{input} ({size}): how long one compression takes at qualities 9 to 11, with <code>compressParallel()</code> on {cores}, with <code>compress()</code> on 1 core, and with the C library built into Node.js, which has no multicore mode. Only qualities 10 and 11, the slowest levels, use more than one core; the table lists all 12.<template lang="de">{input} ({size}): wie lange eine Kompression bei Qualität 9 bis 11 dauert, mit <code>compressParallel()</code> auf {cores}, mit <code>compress()</code> auf 1 Kern und mit der in Node.js eingebauten C-Bibliothek, die nur einen Kern nutzt. Nur Qualität 10 und 11, die langsamsten Stufen, nutzen mehr als einen Kern; die Tabelle enthält alle 12.</template></span>
+    <span data-t data-msg="lead-single">{input} ({size}): how long one compression takes at each quality on 1 core, against the C library built into Node.js.<template lang="de">{input} ({size}): wie lange eine Kompression bei Qualität 9 bis 11 auf 1 Kern dauert, im Vergleich zur in Node.js eingebauten C-Bibliothek.</template></span>
+    <span data-t data-msg="lead-window">Brotli saves space by pointing back to data it has already seen. The look-back distance limits how far back it looks: a longer look-back finds more repeats, and unpacking needs that much memory. Sizes at quality 11, compared with a 64 KiB look-back.<template lang="de">Brotli spart Platz, indem es auf schon gesehene Daten zurückverweist. Look-back begrenzt, wie weit zurück geschaut wird: Ein längerer Look-back findet mehr Wiederholungen, und das Entpacken braucht so viel Speicher. Größen bei Qualität 11, im Vergleich zu 64 KiB Look-back.</template></span>
+    <span data-t data-msg="lead-cli">Total time of the whole command at quality 11, startup included, median of 5 runs, against Google's brotli CLI on an Apple M5 Max.<template lang="de">Gesamtausführungszeit des Befehls bei Qualität 11 samt Programmstart, Median aus 5 Läufen, im Vergleich zu Googles brotli-CLI auf einem Apple M5 Max.</template></span>
     <span data-t data-msg="lead-download">What a browser downloads for each part of the package, depending on how the server compresses the files.<template lang="de">Was ein Browser für jeden Teil des Pakets an Codemenge lädt, je nachdem, wie der Server die Dateien komprimiert.</template></span>
   </div>
   <!--i18n-templates-->

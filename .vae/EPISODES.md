@@ -6,28 +6,13 @@ Agents append `<UTC ISO> s=<session> LESSON <VAE-DIALECT>` only for a falsified 
 Session start injects the 3 newest open entries: LESSON, FINDING learn=none, FAIL without a later DONE.
 Wrap: EVERY lead becomes a test | .vae/VERIFY.py rule | one MEMORY line with BC, then delete; OR delete BC evidence. -->
 
-2026-11-08T20:09:48Z s=698894d0 FAIL prose,layout,wiring,lint=?,tests.unit,tests.e2e=?,coverage=?
-2026-11-08T20:29:59Z s=698894d0 FAIL docs.pages,prose,package
-2026-11-08T20:51:38Z s=698894d0 DONE fp=583037436150 cov=96.4% paths=.github/workflows/verify.yml,AGENTS.md,ARCH.md,Makefile(+29)
 2026-11-08T20:51:38Z s=698894d0 FINDING scripts/build.ts:wasm-opt step learn=none: build fails loudly on recurrence (wasm-opt exits non-zero), no silent path left
-2026-11-08T20:51:38Z s=698894d0 FINDING rust/compressor/src/lib.rs:compress learn=test: rust fast_qualities_match_across_4k_chunks + src/compressor.test.ts 'fast qualities match repeats across 4 KiB chunks' fail on the old implementation
-2026-11-08T20:51:38Z s=698894d0 FINDING src/decompressor.ts:decompress learn=test: src/decompressor.test.ts 'maxOutputSize above the 32-bit range is not wrapped'
-2026-11-08T20:51:38Z s=698894d0 FINDING rust/*/src/lib.rs:compress_bytes|decompress_bytes learn=test: src/decompressor.test.ts Error-shape assertions for corrupt, truncated and over-limit input
-2026-11-08T20:51:38Z s=698894d0 FINDING scripts/build.ts:buildInlinedModule learn=verifier: .vae/VERIFY.py rules build.no-hardcoded-wasm-bindgen-shims and src.no-hardcoded-wasm-bindgen-shims
-2026-11-08T20:51:38Z s=698894d0 FINDING rust/Cargo.toml:profile.release learn=memory: .vae/MEMORY.md: wasm-opt -Oz raises gzip size; benchmark one build per process
 2026-11-08T20:51:38Z s=698894d0 FINDING package.json:files learn=none: packed contents are exercised by make e2e
 2026-11-08T20:51:38Z s=698894d0 FINDING bench/*.ts + README.md:Benchmarks learn=none: label text, not mechanically checkable without coupling to fixture size
-2026-11-08T20:51:38Z s=698894d0 FINDING e2e/e2e.ts learn=verifier: gate tests.e2e.evidence requires fresh output/ files from make e2e
 2026-11-08T20:51:38Z s=698894d0 FINDING README.md:Limits learn=none: prose review
-2026-11-08T21:02:26Z s=698894d0 DONE fp=5fd2c5427c50 cov=94.0% paths=.github/workflows/verify.yml,AGENTS.md,ARCH.md,Makefile(+36)
-2026-11-08T21:02:26Z s=698894d0 FINDING src/*-core.ts:initFrom learn=test: src/slim.test.ts 'rejects with the HTTP status ... and a later init() retries' fails with the reset removed (probe run)
 2026-11-08T21:02:26Z s=698894d0 FINDING src/*-slim.ts:init JSDoc learn=none: doc wording, not mechanically checkable
 2026-11-08T21:02:26Z s=698894d0 FINDING ARCH.md:Security and privacy learn=none: prose review
 2026-11-08T21:02:26Z s=698894d0 FINDING README.md:Inlined or separate .wasm learn=none: prose review against make metrics
-2026-11-08T21:10:10Z s=698894d0 FAIL env.example
-2026-11-08T21:11:04Z s=698894d0 DONE fp=a866fc34b9ba cov=94.0% paths=.github/workflows/verify.yml,AGENTS.md,ARCH.md,Makefile(+39)
-2026-11-08T21:11:04Z s=698894d0 FINDING e2e/web/vite-entry.mjs:expose learn=verifier: the gate's env.example check catches any new import.meta.env read
-2026-11-08T21:11:04Z s=698894d0 FINDING src/*-slim.ts:init + README Bundlers learn=test: make e2e-vite and make e2e-bun fail unless both .wasm files are fetched with HTTP 200
 2026-11-08T21:35:43Z s=698894d0 DONE fp=feee3e55c8d2 cov=94.0% paths=.github/workflows/verify.yml,AGENTS.md,ARCH.md,Makefile(+40)
 2026-11-08T21:35:43Z s=698894d0 FINDING rust/decompressor/src/runtime.rs:Arena::reserve|bump learn=none: only reachable at the 4 GiB limit; a test would need 4 GiB of RAM, so the fix is reasoned, and the leak test exercises the out-of-memory path
 2026-11-08T21:35:43Z s=698894d0 FINDING rust/decompressor/src/runtime.rs:Arena::dealloc learn=test: src/decompressor.test.ts leak test
@@ -104,3 +89,20 @@ Wrap: EVERY lead becomes a test | .vae/VERIFY.py rule | one MEMORY line with BC,
 2026-11-09T21:20:55Z s=698894d0 FINDING package.json:version learn=none: release metadata, no code path changed
 2026-11-09T21:23:30Z s=698894d0 DONE fp=a091d6acb1f4 cov=95.9% paths=ARCH.md,CHANGELOG.md,README.md,docs/assets/lib/compressor-slim.js(+20)
 2026-11-09T21:23:30Z s=698894d0 FINDING site/lib/charts.ts:CHART_FROM_QUALITY learn=test: site/lib/site.test.ts speed view test
+2026-11-09T21:32:48Z s=698894d0 DONE fp=028eafe1e90e cov=95.9% paths=Makefile
+2026-11-09T21:32:48Z s=698894d0 FINDING Makefile:lint learn=verifier: .vae/VERIFY.py rule ci.lint-builds-first; it does not match the previous Makefile
+2026-11-09T21:51:40Z s=698894d0 DONE fp=a9b9af7dd4ed cov=95.9% paths=README.md,docs/assets/site.js,docs/index.html,site/e2e.mjs(+2)
+2026-11-09T21:51:40Z s=698894d0 FINDING site/ui/demos.ts:MAX_FILE learn=test: site/e2e.mjs compresses an 80 MiB file (above the former limit) and checks the .br download
+2026-11-09T21:51:40Z s=698894d0 FINDING site/ui/demos.ts:gzip learn=none: memory behaviour; covered functionally by the e2e runs that show the gzip bar
+2026-11-09T21:51:40Z s=698894d0 FINDING site/ui/demos.ts:equal learn=none: performance detail, observed in the 1 GiB run
+2026-11-09T21:51:40Z s=698894d0 FINDING site/ui/demos.ts:runDecompress learn=test: the e2e decompresses the 80 MiB result as 'last compress result'
+2026-11-09T21:51:40Z s=698894d0 FINDING site/ui/demos.ts:autoRun learn=test: site/e2e.mjs checks the idle state, no result before a click, and that choosing a file starts a run
+2026-11-09T21:51:40Z s=698894d0 FINDING site/ui/demos.ts:runCompress status learn=none: UI text, seen in the 1 GiB run
+2026-11-09T21:51:40Z s=698894d0 FINDING site/page.html:51 KB learn=none: wording
+2026-11-10T00:00:56Z s=698894d0 DONE fp=30b93cb6bc4b cov=95.9% paths=README.md,docs/assets/site.js,docs/index.html,mise.toml(+3)
+2026-11-10T00:00:56Z s=698894d0 FINDING mise.toml:github:taiki-e/cargo-llvm-cov learn=verifier: .vae/VERIFY.py ci.llvm-cov-pinned requires the pin in mise.toml
+2026-11-10T00:02:45Z s=698894d0 DONE fp=a9b9af7dd4ed cov=95.9% paths=README.md,docs/assets/site.js,docs/index.html,site/e2e.mjs(+2)
+2026-11-10T00:11:44Z s=698894d0 DONE fp=8aaf7b9b7fb1 cov=95.9% paths=README.md,docs/assets/site.js,docs/index.html,site/e2e.mjs(+2)
+2026-11-10T00:11:44Z s=698894d0 FINDING site/page.html (edit run page-2026-11-10T00-03-27-470Z-54c5b4) learn=test: site/e2e.mjs asserts the hero footnote and the perf lead in their new wording
+2026-11-10T00:27:29Z s=698894d0 DONE fp=bf6dbbac9040 cov=95.9% paths=README.md,docs/assets/site.js,docs/index.html,site/e2e.mjs(+3)
+2026-11-10T00:27:29Z s=698894d0 FINDING site/page.html:141,217,475,542,653; site/ui/perf.ts:setupPerf learn=none: wording decided by the human; the open question about the 5.3x claim goes to the review page, no mechanical check applies
